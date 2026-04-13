@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SoleCraft — Premium Shoe Website
 
-## Getting Started
+A full-featured shoe e-commerce website built with Next.js and Material UI.
 
-First, run the development server:
+## 🚀 Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+shoe-website/
+├── pages/
+│   ├── _app.js          # Theme provider, fonts
+│   └── index.js         # Home page
+├── src/
+│   ├── components/
+│   │   ├── Navbar.js        # Sticky navbar with search, cart, wishlist
+│   │   ├── HeroSlider.js    # Full-screen hero carousel (Swiper.js)
+│   │   ├── FeaturesBar.js   # Delivery/Returns/Warranty/Support bar
+│   │   ├── CategoryBanners.js  # Men's/Women's/Running/Boots grid
+│   │   ├── ProductCard.js   # Product card with hover animations
+│   │   ├── ShopSection.js   # Full shop with filters, categories, sort
+│   │   ├── BrandsSection.js # Infinite scrolling brand marquee
+│   │   ├── Testimonials.js  # Customer reviews grid
+│   │   ├── Newsletter.js    # Email subscription
+│   │   └── Footer.js        # Full footer with links, payment methods
+│   ├── data/
+│   │   └── products.js   # Product data (8 products)
+│   └── theme/
+│       └── theme.js      # MUI theme (Syne + DM Sans fonts)
+├── styles/
+│   └── globals.css       # Global styles, scrollbar, animations
+├── next.config.js
+└── package.json
+```
 
-## Learn More
+## 🎨 Design System
 
-To learn more about Next.js, take a look at the following resources:
+- **Fonts**: Syne (headings, bold) + DM Sans (body text)
+- **Colors**:
+  - Primary: `#1A1A1A` (near black)
+  - Accent: `#C8A97E` (warm gold)
+  - Background: `#FAFAF8` (warm white)
+- **Style**: Clean, editorial luxury — inspired by premium international shoe stores
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ✨ Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 📱 Fully responsive (mobile, tablet, desktop)
+- 🎠 Auto-play hero carousel (Swiper.js)
+- 🔍 Search with expand/collapse animation
+- 🎯 Category filtering tabs
+- 🏷️ Price range slider + brand checkboxes filter drawer
+- 💛 Add to wishlist (per product)
+- 🛒 Add to bag with success feedback
+- 🔤 Infinite brand marquee scroll
+- 📧 Newsletter subscription
+- 🌙 Polished hover animations throughout
 
-## Deploy on Vercel
+## 📦 Dependencies
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `next` 14
+- `@mui/material` + `@mui/icons-material`
+- `@emotion/react` + `@emotion/styled`
+- `swiper` 11 (hero carousel)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠️ Customization
+
+1. **Products**: Edit `src/data/products.js` to add/edit products
+2. **Colors**: Edit `src/theme/theme.js` palette
+3. **Hero slides**: Edit `heroSlides` in `src/data/products.js`
+4. **Currency**: Search `৳` to change from BDT to your currency
