@@ -30,36 +30,18 @@ const PRIMARY = "#1A3C34"; // dark teal (like ghorerbazar dark bar)
 const ACCENT = "#E07B1A"; // orange accent
 
 const categories = [
-  { label: "Oil & Ghee", href: "#" },
-  {
-    label: "Honey",
-    href: "#",
-    children: ["Raw Honey", "Sidr Honey", "Black Seed Honey"],
-  },
-  { label: "Dates", href: "#", children: ["Medjool", "Ajwa", "Safawi"] },
-  {
-    label: "Spices",
-    href: "#",
-    children: ["Turmeric", "Cumin", "Coriander", "Chilli"],
-  },
-  {
-    label: "Nuts & Seeds",
-    href: "#",
-    children: ["Almonds", "Cashews", "Chia Seeds", "Flax Seeds"],
-  },
-  {
-    label: "Beverage",
-    href: "#",
-    children: ["Green Tea", "Black Tea", "Herbal Tea"],
-  },
-  { label: "Rice", href: "#" },
-  {
-    label: "Flours & Lentils",
-    href: "#",
-    children: ["Wheat Flour", "Chickpea Flour", "Red Lentils"],
-  },
-  { label: "Certified", href: "#" },
-  { label: "Pickle", href: "#" },
+  { label: "Home", href: "/" },
+  // {
+  //   label: "Honey",
+  //   href: "#",
+  //   children: ["Raw Honey", "Sidr Honey", "Black Seed Honey"],
+  // },
+  { label: "All Products", href: "/" },
+  { label: "Boishakhi Dhamaka Offer!", href: "/" },
+  { label: "Samba Craze", href: "/" },
+  { label: "Kids", href: "/" },
+  { label: "Sandals", href: "/" },
+  { label: "Sneakers", href: "/" },
 ];
 
 interface NavbarProps {

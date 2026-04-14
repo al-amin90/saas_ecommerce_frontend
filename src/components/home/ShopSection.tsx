@@ -97,7 +97,7 @@ export default function ShopSection() {
         </Box>
 
         {/* Category Tabs */}
-        <Box sx={{ borderBottom: "1px solid #EBEBEB", mb: 4 }}>
+        {/* <Box sx={{ borderBottom: "1px solid #EBEBEB", mb: 4 }}>
           <Tabs
             value={activeCategory}
             onChange={(e, v) => setActiveCategory(v)}
@@ -123,112 +123,15 @@ export default function ShopSection() {
               />
             ))}
           </Tabs>
-        </Box>
+        </Box> */}
 
-        {/* Toolbar */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 4,
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Button
-              startIcon={<FilterListIcon />}
-              variant="outlined"
-              size="small"
-              onClick={() => setFilterOpen(true)}
-              sx={{ fontSize: "0.75rem", borderColor: "#EBEBEB" }}
-            >
-              Filters
-            </Button>
-            {selectedBrands.length > 0 && (
-              <Chip
-                label={`${selectedBrands.length} brand${selectedBrands.length > 1 ? "s" : ""}`}
-                size="small"
-                onDelete={() => setSelectedBrands([])}
-                sx={{ fontSize: "0.7rem" }}
-              />
-            )}
-            <Typography
-              sx={{
-                fontSize: "0.8rem",
-                color: "#6B6B6B",
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              {filteredProducts.length} products
-            </Typography>
-          </Box>
-
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel
-              sx={{ fontSize: "0.8rem", fontFamily: "'Syne', sans-serif" }}
-            >
-              Sort By
-            </InputLabel>
-            <Select
-              value={sortBy}
-              label="Sort By"
-              onChange={(e) => setSortBy(e.target.value)}
-              sx={{ fontSize: "0.8rem", fontFamily: "'DM Sans', sans-serif" }}
-            >
-              <MenuItem value="featured" sx={{ fontSize: "0.8rem" }}>
-                Featured
-              </MenuItem>
-              <MenuItem value="new" sx={{ fontSize: "0.8rem" }}>
-                New Arrivals
-              </MenuItem>
-              <MenuItem value="price-asc" sx={{ fontSize: "0.8rem" }}>
-                Price: Low to High
-              </MenuItem>
-              <MenuItem value="price-desc" sx={{ fontSize: "0.8rem" }}>
-                Price: High to Low
-              </MenuItem>
-              <MenuItem value="rating" sx={{ fontSize: "0.8rem" }}>
-                Top Rated
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-
-        {/* Product Grid */}
-        <Grid container spacing={3}>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {filteredProducts.map((product) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+            <div key={product.id}>
               <ProductCard product={product} />
-            </Grid>
+            </div>
           ))}
-          {filteredProducts.length === 0 && (
-            <Grid item xs={12}>
-              <Box sx={{ textAlign: "center", py: 8 }}>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontFamily: "'Syne', sans-serif",
-                    color: "#6B6B6B",
-                    mb: 2,
-                  }}
-                >
-                  No products found
-                </Typography>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    setSelectedBrands([]);
-                    setPriceRange([0, 10000]);
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              </Box>
-            </Grid>
-          )}
-        </Grid>
+        </div>
 
         {/* Load More */}
         {filteredProducts.length > 0 && (
@@ -249,7 +152,7 @@ export default function ShopSection() {
         anchor="left"
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        paperprops={{ sx: { width: 300, p: 3 } }}
+        PaperProps={{ sx: { width: 300, p: 3 } }}
       >
         <Box
           sx={{
