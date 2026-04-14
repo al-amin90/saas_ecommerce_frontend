@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { baseApi } from "@/redux/api/baseApi";
-import { dynamicTag } from "@/redux/utils/dynamicTag";
+
+import { baseApi } from "../../api/baseApi";
+import { dynamicTag } from "../../utils/dynamicTag";
 
 const dynamicApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -19,7 +20,7 @@ const dynamicApi = baseApi.injectEndpoints({
 
     patchDynamic: builder.mutation({
       query: ({ url, data }) => ({ url, method: "PATCH", body: data }),
-      invalidatesTags: dynamicTag,
+      invalidatesTags: [...dynamicTag],
     }),
 
     putDynamic: builder.mutation({
