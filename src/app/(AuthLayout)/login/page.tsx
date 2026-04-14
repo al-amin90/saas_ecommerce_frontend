@@ -4,6 +4,11 @@ import Link from "next/link";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLoginMutation } from "@/src/redux/features/auth/authApi";
+import { toast } from "sonner";
+import { useAppDispatch } from "@/src/redux/store";
+import { setUser } from "@/src/redux/features/auth/authSlice";
+import { useRouter } from "next/navigation";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
@@ -12,8 +17,39 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [login, { isLoading }] = useLoginMutation();
+  const dispatch = useAppDispatch();
+  const router = useRouter();
 
-  console.log("emailf", email, password);
+  const handleSubmit = async () => {
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+
+    const subdomain =
+      (process.env.NEXT_PUBLIC_TENANCY_TYPE as string) === "multi"
+        ? parts[0]
+        : "bazar";
+
+    const postData = { email, password, subdomain };
+
+    try {
+      const res = await login(postData).unwrap();
+
+      dispatch(
+        setUser({
+          // user: res.data.user,
+          accessToken: res.data.accessToken,
+        }),
+      );
+
+      toast.success("Welcome back!");
+      router.replace("/dashboard");
+    } catch (err: unknown) {
+      console.log("errf", err);
+      const errorMessage = err?.message || "Login failed";
+      toast.error(errorMessage);
+    }
+  };
 
   return (
     <div className="min-h-screen flex bg-[#F7F6F2]">
@@ -200,6 +236,7 @@ export default function LoginPage() {
 
           {/* Submit */}
           <Button
+            onClick={handleSubmit}
             className="w-full py-4 text-base font-bold cursor-pointer tracking-wider rounded-lg transition-all"
             style={{
               background: PRIMARY,
@@ -215,7 +252,32 @@ export default function LoginPage() {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            Sign In
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <svg
+                  className="animate-spin h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                Signing in...
+              </span>
+            ) : (
+              "Sign In"
+            )}
           </Button>
 
           <p className="mt-6 text-center text-xs text-gray-600 font-['DM_Sans']">

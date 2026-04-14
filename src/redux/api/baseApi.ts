@@ -10,7 +10,7 @@ import {
 import { RootState } from "../store";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/api`,
+  baseUrl: `${process.env.NEXT_PUBLIC_Backend_SITE_URL}/api/v1`,
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState;
@@ -20,7 +20,6 @@ const baseQuery = fetchBaseQuery({
       return headers;
     }
 
-    // If no token in state, try to get from localStorage (client-side only)
     if (!token) {
       try {
         const raw = localStorage.getItem("persist:authInfo");
@@ -35,7 +34,31 @@ const baseQuery = fetchBaseQuery({
 
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
-      headers.set("x-tenantid", `school`);
+    }
+
+    let tenantID;
+
+    const tenantType = process.env.NEXT_PUBLIC_TENANCY_TYPE;
+    console.log("tenantType", tenantType);
+
+    if (tenantType === "single") {
+      tenantID = "bazar";
+    } else {
+      const hostname = window.location.hostname;
+      const parts = hostname.split(".");
+
+      //   tenantID = state?.auth?.user?.tenant || state?.tenant?.id || null;
+
+      tenantID = parts[0];
+
+      if (!tenantID) {
+        console.warn("⚠️ Multi-tenant mode but tenantID not found!");
+      }
+    }
+
+    console.log("tenantID", tenantID);
+    if (tenantID) {
+      headers.set("x-tenant", tenantID);
     }
 
     return headers;
