@@ -262,13 +262,13 @@ export default function LoginPage() {
               fontWeight: 800,
               fontSize: "1.9rem",
               color: PRIMARY,
-              mb: 0.5,
+              mb: 3,
               letterSpacing: "-0.02em",
             }}
           >
             Sign In
           </Typography>
-          <Typography
+          {/* <Typography
             sx={{
               fontFamily: "'DM Sans', sans-serif",
               fontSize: "0.9rem",
@@ -284,10 +284,10 @@ export default function LoginPage() {
             >
               Create one free
             </Link>
-          </Typography>
+          </Typography> */}
 
           {/* Google button */}
-          <Button
+          {/* <Button
             fullWidth
             variant="outlined"
             sx={{
@@ -324,9 +324,9 @@ export default function LoginPage() {
               />
             </svg>
             Continue with Google
-          </Button>
+          </Button> */}
 
-          <Divider sx={{ mb: 3 }}>
+          {/* <Divider sx={{ mb: 3 }}>
             <Typography
               sx={{
                 fontSize: "0.75rem",
@@ -337,7 +337,7 @@ export default function LoginPage() {
             >
               or sign in with email
             </Typography>
-          </Divider>
+          </Divider> */}
 
           {/* Email */}
           <Typography
@@ -350,7 +350,7 @@ export default function LoginPage() {
               letterSpacing: "0.04em",
             }}
           >
-            EMAIL ADDRESS
+            Email
           </Typography>
           <TextField
             fullWidth
@@ -381,7 +381,7 @@ export default function LoginPage() {
                 },
               },
             }}
-            sx={{ mb: 2.5 }}
+            sx={{ mb: 1.5 }}
           />
 
           {/* Password */}
@@ -395,7 +395,7 @@ export default function LoginPage() {
               letterSpacing: "0.04em",
             }}
           >
-            PASSWORD
+            Password
           </Typography>
           <TextField
             fullWidth
