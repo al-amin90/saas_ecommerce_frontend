@@ -249,7 +249,7 @@ export default function ShopSection() {
         anchor="left"
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        PaperProps={{ sx: { width: 300, p: 3 } }}
+        paperprops={{ sx: { width: 300, p: 3 } }}
       >
         <Box
           sx={{

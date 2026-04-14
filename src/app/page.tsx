@@ -35,133 +35,8 @@ export default function Home() {
       {/* Hero Slider */}
       <ImageSlider />
 
-      {/* Features Bar */}
-      <FeaturesBar />
-
       {/* Category Banners */}
-      <CategoryBanners />
-
-      {/* Featured Products */}
-      <Box id="new" sx={{ py: { xs: 6, md: 10 }, background: "#FFFFFF" }}>
-        <Container maxWidth="xl">
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-              mb: 5,
-              flexWrap: "wrap",
-              gap: 2,
-            }}
-          >
-            <Box>
-              <Typography
-                sx={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "0.72rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.25em",
-                  textTransform: "uppercase",
-                  color: "#C8A97E",
-                  mb: 1.5,
-                }}
-              >
-                Curated for You
-              </Typography>
-              <Typography
-                variant="h2"
-                sx={{
-                  fontSize: { xs: "1.8rem", md: "2.4rem" },
-                  fontWeight: 800,
-                  letterSpacing: "-0.03em",
-                }}
-              >
-                Featured Collection
-              </Typography>
-            </Box>
-            <Button
-              variant="outlined"
-              endIcon={<ArrowForward />}
-              href="#shop"
-              sx={{ fontWeight: 700, fontSize: "0.78rem" }}
-            >
-              View All
-            </Button>
-          </Box>
-
-          <Grid container spacing={3}>
-            {featuredProducts.map((product) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
-                <ProductCard product={product} />
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* Promo Banner */}
-      <Box
-        sx={{
-          background: "linear-gradient(90deg, #C8A97E 0%, #A8835A 100%)",
-          py: { xs: 4, md: 5 },
-        }}
-      >
-        <Container maxWidth="xl">
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: 3,
-            }}
-          >
-            <Box>
-              <Typography
-                sx={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: "0.72rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.7)",
-                  mb: 0.5,
-                }}
-              >
-                Limited Time Offer
-              </Typography>
-              <Typography
-                variant="h3"
-                sx={{
-                  color: "#FFFFFF",
-                  fontWeight: 800,
-                  fontSize: { xs: "1.5rem", md: "2rem" },
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                End of Season Sale — Up to 40% Off
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              endIcon={<ArrowForward />}
-              href="#sale"
-              sx={{
-                background: "#1A1A1A",
-                color: "#FFFFFF",
-                px: 4,
-                py: 1.5,
-                fontWeight: 700,
-                fontSize: "0.78rem",
-                "&:hover": { background: "#000000" },
-                flexShrink: 0,
-              }}
-            >
-              Shop the Sale
-            </Button>
-          </Box>
-        </Container>
-      </Box>
+      {/* <CategoryBanners /> */}
 
       {/* Main Shop Section */}
       <ShopSection />
@@ -170,12 +45,11 @@ export default function Home() {
       <BrandsSection />
 
       {/* Testimonials */}
-      <Testimonials />
+      {/* <Testimonials /> */}
 
       {/* Newsletter */}
-      <Newsletter />
+      {/* <Newsletter /> */}
 
-      {/* Footer */}
       <Footer />
     </>
   );

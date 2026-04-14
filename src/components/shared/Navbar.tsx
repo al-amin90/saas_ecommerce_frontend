@@ -1,239 +1,336 @@
 "use client";
+import { useState } from "react";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
   Badge,
-  Button,
   Drawer,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Divider,
+  Button,
   List,
   ListItem,
   ListItemText,
-  Container,
-  TextField,
-  InputAdornment,
-  Divider,
-  Collapse,
   Box,
+  Typography,
+  Container,
+  AppBar,
+  Toolbar,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { useState } from "react";
-import { PersonPinCircleOutlined } from "@mui/icons-material";
+import { Person2 } from "@mui/icons-material";
 
-const navLinks = [
-  { label: "New Arrivals", href: "#new" },
+const PRIMARY = "#1A3C34"; // dark teal (like ghorerbazar dark bar)
+const ACCENT = "#E07B1A"; // orange accent
+
+const categories = [
+  { label: "Oil & Ghee", href: "#" },
   {
-    label: "Shop",
-    href: "#shop",
-    children: ["Running", "Casual", "Boots", "Heels", "Sandals"],
+    label: "Honey",
+    href: "#",
+    children: ["Raw Honey", "Sidr Honey", "Black Seed Honey"],
   },
-  { label: "Brands", href: "#brands" },
-  { label: "Sale", href: "#sale", highlight: true },
-  { label: "About", href: "#about" },
+  { label: "Dates", href: "#", children: ["Medjool", "Ajwa", "Safawi"] },
+  {
+    label: "Spices",
+    href: "#",
+    children: ["Turmeric", "Cumin", "Coriander", "Chilli"],
+  },
+  {
+    label: "Nuts & Seeds",
+    href: "#",
+    children: ["Almonds", "Cashews", "Chia Seeds", "Flax Seeds"],
+  },
+  {
+    label: "Beverage",
+    href: "#",
+    children: ["Green Tea", "Black Tea", "Herbal Tea"],
+  },
+  { label: "Rice", href: "#" },
+  {
+    label: "Flours & Lentils",
+    href: "#",
+    children: ["Wheat Flour", "Chickpea Flour", "Red Lentils"],
+  },
+  { label: "Certified", href: "#" },
+  { label: "Pickle", href: "#" },
 ];
 
-export default function Navbar({ cartCount = 0, wishlistCount = 0 }) {
+interface NavbarProps {
+  cartCount?: number;
+  wishlistCount?: number;
+}
+
+export default function Navbar({
+  cartCount = 3,
+  wishlistCount = 2,
+}: NavbarProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [shopOpen, setShopOpen] = useState(false);
+  const [searchVal, setSearchVal] = useState("");
+  const [openDrop, setOpenDrop] = useState<string | null>(null);
 
   return (
     <>
-      {/* Top announcement bar */}
-
+      {/* ── Row 1: Logo / Search / Icons ─────────────────────────────── */}
       <AppBar
         position="sticky"
         elevation={0}
         sx={{
-          background: "rgba(250, 250, 248, 0.97)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid #EBEBEB",
-          color: "#1A1A1A",
+          background: "#FFFFFF",
+          color: PRIMARY,
+          zIndex: 1200,
         }}
       >
         <Container maxWidth="xl">
           <Toolbar
-            sx={{ py: 1, px: { xs: 0, md: 0 }, minHeight: { xs: 64, md: 72 } }}
+            sx={{ minHeight: { xs: 64, md: 72 }, px: { xs: 0 }, gap: 2 }}
           >
             {/* Logo */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mr: 4 }}>
-              <Box
-                sx={{
-                  width: 36,
-                  height: 36,
-                  background: "#1A1A1A",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Typography
-                  sx={{ color: "#C8A97E", fontSize: "1.2rem", lineHeight: 1 }}
-                >
-                  S
-                </Typography>
-              </Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontFamily: "'Syne', sans-serif",
-                  fontWeight: 800,
-                  fontSize: "1.3rem",
-                  letterSpacing: "-0.02em",
-                  color: "#1A1A1A",
-                  display: { xs: "none", sm: "block" },
-                }}
-              >
-                SOLE<span style={{ color: "#C8A97E" }}>CRAFT</span>
-              </Typography>
-            </Box>
-
-            {/* Desktop nav */}
-            <Box
-              sx={{
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                gap: 0.5,
-                flex: 1,
-              }}
-            >
-              {navLinks.map((link) => (
-                <Box key={link.label} sx={{ position: "relative" }}>
-                  {link.children ? (
-                    <Button
-                      endIcon={
-                        <KeyboardArrowDownIcon
-                          sx={{ fontSize: "1rem !important" }}
-                        />
-                      }
-                      sx={{
-                        color: "#1A1A1A",
-                        fontFamily: "'Syne', sans-serif",
-                        fontWeight: 600,
-                        fontSize: "0.78rem",
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        px: 2,
-                        py: 1,
-                        background: "transparent",
-                        "&:hover": {
-                          color: "#C8A97E",
-                          background: "transparent",
-                        },
-                      }}
-                    >
-                      {link.label}
-                    </Button>
-                  ) : (
-                    <Button
-                      href={link.href}
-                      sx={{
-                        color: link.highlight ? "#C8A97E" : "#1A1A1A",
-                        fontFamily: "'Syne', sans-serif",
-                        fontWeight: link.highlight ? 700 : 600,
-                        fontSize: "0.78rem",
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        px: 2,
-                        py: 1,
-                        background: "transparent",
-                        "&:hover": {
-                          color: "#C8A97E",
-                          background: "transparent",
-                        },
-                      }}
-                    >
-                      {link.label}
-                    </Button>
-                  )}
-                </Box>
-              ))}
-            </Box>
-
-            {/* Right actions */}
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 0.5,
+                gap: 1,
+                flexShrink: 0,
+                mr: 3,
+              }}
+            >
+              {/* House icon (inline SVG) */}
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  background: ACCENT,
+                  borderRadius: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M3 9.5L12 3l9 6.5V21H3V9.5z"
+                    stroke="#fff"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M9 21v-7h6v7"
+                    stroke="#fff"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="12" cy="10" r="1.5" fill="#fff" />
+                </svg>
+              </Box>
+              <Box
+                sx={{ display: { xs: "none", sm: "block" }, lineHeight: 1.1 }}
+              >
+                <Typography
+                  sx={{
+                    fontFamily: "'Syne', sans-serif",
+                    fontWeight: 900,
+                    fontSize: "1rem",
+                    letterSpacing: "0.08em",
+                    color: ACCENT,
+                    textTransform: "uppercase",
+                    lineHeight: 1,
+                  }}
+                >
+                  Ghorer
+                </Typography>
+                <Typography
+                  sx={{
+                    fontFamily: "'Syne', sans-serif",
+                    fontWeight: 900,
+                    fontSize: "1rem",
+                    letterSpacing: "0.08em",
+                    color: ACCENT,
+                    textTransform: "uppercase",
+                    lineHeight: 1,
+                  }}
+                >
+                  Bazar
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Search bar — takes remaining space */}
+            <Box
+              sx={{
+                flex: 1,
+                display: { xs: "none", md: "flex" },
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div className="relative w-[300px] max-w-full">
+                <input
+                  type="text"
+                  placeholder="Search in..."
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  className="w-full pl-4 pr-12 py-1.5 text-sm font-['DM_Sans'] border border-[#DDDDDD] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#E07B1A] focus:border-transparent"
+                />
+                <button
+                  onClick={() => {
+                    /* handle search */
+                  }}
+                  className="absolute right-0 top-0 h-full w-9 bg-[#E07B1A] rounded-r-md flex items-center justify-center cursor-pointer hover:bg-[#b8976e] transition-colors"
+                >
+                  <SearchIcon sx={{ color: "#fff", fontSize: 18 }} />
+                </button>
+              </div>
+            </Box>
+
+            {/* Right icons */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 0.5, md: 1 },
                 ml: "auto",
               }}
             >
-              {/* Search bar (desktop) */}
-              <Collapse in={searchOpen} orientation="horizontal">
-                <TextField
-                  placeholder="Search shoes..."
-                  size="small"
-                  autoFocus
-                  sx={{
-                    width: 220,
-                    "& .MuiOutlinedInput-root": {
-                      fontSize: "0.85rem",
-                      fontFamily: "'DM Sans', sans-serif",
-                    },
-                  }}
-                  inputprops={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          size="small"
-                          onClick={() => setSearchOpen(false)}
-                        >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Collapse>
-
-              <IconButton
-                size="small"
-                onClick={() => setSearchOpen(!searchOpen)}
-                sx={{ color: "#1A1A1A", "&:hover": { color: "#C8A97E" } }}
-              >
-                <SearchIcon fontSize="small" />
-              </IconButton>
-
-              <IconButton
-                size="small"
+              {/* Track Order */}
+              {/* <Box
                 sx={{
-                  color: "#1A1A1A",
-                  "&:hover": { color: "#C8A97E" },
-                  display: { xs: "none", sm: "flex" },
+                  display: { xs: "none", lg: "flex" },
+                  flexDirection: "column",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  px: 1,
+                  "& svg": { color: PRIMARY },
+                  "&:hover svg, &:hover span": { color: ACCENT },
                 }}
               >
-                <PersonPinCircleOutlined fontSize="small" />
-              </IconButton>
+                <LocalShippingOutlinedIcon sx={{ fontSize: 22 }} />
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: "0.65rem",
+                    fontFamily: "'DM Sans', sans-serif",
+                    color: PRIMARY,
+                    mt: 0.2,
+                  }}
+                >
+                  Track Order
+                </Typography>
+              </Box> */}
 
-              <IconButton
-                size="small"
-                sx={{ color: "#1A1A1A", "&:hover": { color: "#C8A97E" } }}
+              {/* Sign In */}
+              <Box
+                component="a"
+                href="/login"
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  flexDirection: "column",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  px: 1,
+                  textDecoration: "none",
+                  "& svg": { color: PRIMARY },
+                  "&:hover svg, &:hover span": { color: ACCENT },
+                }}
               >
-                <Badge badgeContent={wishlistCount} color="secondary">
-                  <FavoriteBorderIcon fontSize="small" />
-                </Badge>
-              </IconButton>
+                <Person2 sx={{ fontSize: 22 }} />
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: "0.65rem",
+                    fontFamily: "'DM Sans', sans-serif",
+                    color: PRIMARY,
+                    mt: 0.2,
+                  }}
+                >
+                  Sign In
+                </Typography>
+              </Box>
 
-              <IconButton
-                size="small"
-                sx={{ color: "#1A1A1A", "&:hover": { color: "#C8A97E" } }}
+              {/* Wishlist */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  px: 1,
+                  "&:hover svg, &:hover span": { color: ACCENT },
+                }}
               >
-                <Badge badgeContent={cartCount} color="secondary">
-                  <ShoppingBagOutlinedIcon fontSize="small" />
+                <Badge
+                  badgeContent={wishlistCount}
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      background: ACCENT,
+                      color: "#fff",
+                      fontSize: "0.6rem",
+                    },
+                  }}
+                >
+                  <FavoriteBorderIcon sx={{ fontSize: 22, color: PRIMARY }} />
                 </Badge>
-              </IconButton>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: "0.65rem",
+                    fontFamily: "'DM Sans', sans-serif",
+                    color: PRIMARY,
+                    mt: 0.2,
+                  }}
+                >
+                  Wishlist
+                </Typography>
+              </Box>
 
-              {/* Mobile menu */}
+              {/* Cart */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  px: 1,
+                  "&:hover svg, &:hover span": { color: ACCENT },
+                }}
+              >
+                <Badge
+                  badgeContent={cartCount}
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      background: ACCENT,
+                      color: "#fff",
+                      fontSize: "0.6rem",
+                    },
+                  }}
+                >
+                  <ShoppingCartOutlinedIcon
+                    sx={{ fontSize: 22, color: PRIMARY }}
+                  />
+                </Badge>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: "0.65rem",
+                    fontFamily: "'DM Sans', sans-serif",
+                    color: PRIMARY,
+                    mt: 0.2,
+                  }}
+                >
+                  Cart
+                </Typography>
+              </Box>
+
+              {/* More / hamburger on mobile */}
               <IconButton
-                sx={{ display: { xs: "flex", md: "none" }, color: "#1A1A1A" }}
+                sx={{ color: PRIMARY, display: { xs: "flex", md: "none" } }}
                 onClick={() => setDrawerOpen(true)}
               >
                 <MenuIcon />
@@ -241,9 +338,101 @@ export default function Navbar({ cartCount = 0, wishlistCount = 0 }) {
             </Box>
           </Toolbar>
         </Container>
+
+        {/* ── Row 2: Category nav ─────────────────────────────────────── */}
+        <Box sx={{ background: PRIMARY, display: { xs: "none", md: "block" } }}>
+          <Container maxWidth="xl">
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0 }}>
+              {categories.map((cat) => (
+                <Box
+                  key={cat.label}
+                  onMouseEnter={() => cat.children && setOpenDrop(cat.label)}
+                  onMouseLeave={() => setOpenDrop(null)}
+                  sx={{ position: "relative" }}
+                >
+                  <Box
+                    component="a"
+                    href={cat.href}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.3,
+                      px: 1.6,
+                      py: 1.4,
+                      color: "rgba(255,255,255,0.88)",
+                      fontSize: "0.78rem",
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontWeight: 500,
+                      letterSpacing: "0.01em",
+                      textDecoration: "none",
+                      whiteSpace: "nowrap",
+                      transition: "color 0.2s",
+                      "&:hover": { color: "#FFD18C" },
+                    }}
+                  >
+                    {cat.label}
+                    {cat.children && (
+                      <KeyboardArrowDownIcon
+                        sx={{
+                          fontSize: 14,
+                          transition: "transform 0.2s",
+                          transform:
+                            openDrop === cat.label ? "rotate(180deg)" : "none",
+                        }}
+                      />
+                    )}
+                  </Box>
+
+                  {/* Dropdown */}
+                  {cat.children && openDrop === cat.label && (
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        background: "#FFFFFF",
+                        border: "1px solid #EBEBEB",
+                        borderRadius: "0 0 8px 8px",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                        minWidth: 180,
+                        zIndex: 1300,
+                        py: 0.5,
+                        animation: "fadeDown 0.18s ease",
+                        "@keyframes fadeDown": {
+                          from: { opacity: 0, transform: "translateY(-6px)" },
+                          to: { opacity: 1, transform: "translateY(0)" },
+                        },
+                      }}
+                    >
+                      {cat.children.map((child) => (
+                        <Box
+                          key={child}
+                          component="a"
+                          href="#"
+                          sx={{
+                            display: "block",
+                            px: 2,
+                            py: 1,
+                            fontSize: "0.82rem",
+                            fontFamily: "'DM Sans', sans-serif",
+                            color: "#1A1A1A",
+                            textDecoration: "none",
+                            "&:hover": { background: "#FFF5EC", color: ACCENT },
+                          }}
+                        >
+                          {child}
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              ))}
+            </Box>
+          </Container>
+        </Box>
       </AppBar>
 
-      {/* Mobile Drawer */}
+      {/* ── Mobile Drawer ────────────────────────────────────────────── */}
       <Drawer
         anchor="right"
         open={drawerOpen}
@@ -260,29 +449,30 @@ export default function Navbar({ cartCount = 0, wishlistCount = 0 }) {
             }}
           >
             <Typography
-              variant="h6"
               sx={{
                 fontFamily: "'Syne', sans-serif",
-                fontWeight: 800,
-                letterSpacing: "-0.02em",
+                fontWeight: 900,
+                fontSize: "1.2rem",
+                color: ACCENT,
               }}
             >
-              SOLE<span style={{ color: "#C8A97E" }}>CRAFT</span>
+              Ghorer Bazar
             </Typography>
-            <IconButton onClick={() => setDrawerOpen(false)}>
+            <IconButton onClick={() => setDrawerOpen(false)} size="small">
               <CloseIcon />
             </IconButton>
           </Box>
 
+          {/* Mobile search */}
           <TextField
-            placeholder="Search shoes..."
             fullWidth
             size="small"
+            placeholder="Search..."
             sx={{ mb: 3 }}
-            inputprops={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <SearchIcon sx={{ fontSize: 18, color: PRIMARY }} />
                 </InputAdornment>
               ),
             }}
@@ -291,41 +481,68 @@ export default function Navbar({ cartCount = 0, wishlistCount = 0 }) {
           <Divider sx={{ mb: 2 }} />
 
           <List disablePadding>
-            {navLinks.map((link) => (
+            {categories.map((cat) => (
               <ListItem
-                key={link.label}
-                button
+                key={cat.label}
+                component="a"
+                href={cat.href}
                 sx={{
-                  py: 1.5,
+                  py: 1.3,
                   px: 0,
                   borderBottom: "1px solid #F0EFE9",
-                  color: link.highlight ? "#C8A97E" : "#1A1A1A",
+                  textDecoration: "none",
+                  display: "flex",
+                  justifyContent: "space-between",
                 }}
               >
                 <ListItemText
-                  primary={link.label}
+                  primary={cat.label}
                   primaryTypographyProps={{
-                    fontFamily: "'Syne', sans-serif",
-                    fontWeight: 600,
-                    fontSize: "0.9rem",
-                    letterSpacing: "0.05em",
-                    textTransform: "uppercase",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 500,
+                    fontSize: "0.88rem",
+                    color: PRIMARY,
                   }}
                 />
+                {cat.children && (
+                  <KeyboardArrowDownIcon sx={{ fontSize: 16, color: "#999" }} />
+                )}
               </ListItem>
             ))}
           </List>
 
-          <Box sx={{ mt: 4 }}>
+          <Box
+            sx={{ mt: 4, display: "flex", flexDirection: "column", gap: 1.5 }}
+          >
             <Button
               fullWidth
               variant="contained"
-              color="primary"
-              sx={{ mb: 1.5 }}
+              href="/login"
+              sx={{
+                background: PRIMARY,
+                "&:hover": { background: "#0F2820" },
+                fontFamily: "'Syne', sans-serif",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
             >
               Sign In
             </Button>
-            <Button fullWidth variant="outlined">
+            <Button
+              fullWidth
+              variant="outlined"
+              href="/signup"
+              sx={{
+                borderColor: PRIMARY,
+                color: PRIMARY,
+                "&:hover": { background: "#F0FFF8", borderColor: PRIMARY },
+                fontFamily: "'Syne', sans-serif",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
               Create Account
             </Button>
           </Box>
