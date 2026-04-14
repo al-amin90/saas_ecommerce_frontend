@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import Navbar from "../components/shared/Navbar";
-import HeroSlider from "../components/home/HeroSlider";
+import HeroSlider from "../components/home/ImageSlider";
 import FeaturesBar from "../components/shared/FeaturesBar";
 import CategoryBanners from "../components/home/CategoryBanners";
 import { products } from "../data/products";
@@ -10,6 +10,10 @@ import BrandsSection from "../components/home/BrandsSection";
 import Testimonials from "../components/home/Testimonials";
 import Newsletter from "../components/home/Newsletter";
 import Footer from "../components/shared/Footer";
+import { Box, Button, Container, Grid, Typography } from "@mui/material";
+import { ArrowForward } from "@mui/icons-material";
+import ProductCard from "../components/shared/ProductCard";
+import ImageSlider from "../components/home/ImageSlider";
 
 export default function Home() {
   const featuredProducts = products.filter((p) => p.isFeatured);
@@ -29,16 +33,16 @@ export default function Home() {
       <Navbar cartCount={2} wishlistCount={3} />
 
       {/* Hero Slider */}
-      {/* <HeroSlider /> */}
+      <ImageSlider />
 
       {/* Features Bar */}
-      {/* <FeaturesBar /> */}
+      <FeaturesBar />
 
       {/* Category Banners */}
-      {/* <CategoryBanners /> */}
+      <CategoryBanners />
 
       {/* Featured Products */}
-      {/* <Box id="new" sx={{ py: { xs: 6, md: 10 }, background: "#FFFFFF" }}>
+      <Box id="new" sx={{ py: { xs: 6, md: 10 }, background: "#FFFFFF" }}>
         <Container maxWidth="xl">
           <Box
             sx={{
@@ -77,7 +81,7 @@ export default function Home() {
             </Box>
             <Button
               variant="outlined"
-              endIcon={<ArrowForwardIcon />}
+              endIcon={<ArrowForward />}
               href="#shop"
               sx={{ fontWeight: 700, fontSize: "0.78rem" }}
             >
@@ -93,10 +97,10 @@ export default function Home() {
             ))}
           </Grid>
         </Container>
-      </Box> */}
+      </Box>
 
       {/* Promo Banner */}
-      {/* <Box
+      <Box
         sx={{
           background: "linear-gradient(90deg, #C8A97E 0%, #A8835A 100%)",
           py: { xs: 4, md: 5 },
@@ -140,7 +144,7 @@ export default function Home() {
             </Box>
             <Button
               variant="contained"
-              endIcon={<ArrowForwardIcon />}
+              endIcon={<ArrowForward />}
               href="#sale"
               sx={{
                 background: "#1A1A1A",
@@ -157,22 +161,22 @@ export default function Home() {
             </Button>
           </Box>
         </Container>
-      </Box> */}
+      </Box>
 
       {/* Main Shop Section */}
-      {/* <ShopSection /> */}
+      <ShopSection />
 
       {/* Brands */}
-      {/* <BrandsSection /> */}
+      <BrandsSection />
 
       {/* Testimonials */}
-      {/* <Testimonials /> */}
+      <Testimonials />
 
       {/* Newsletter */}
-      {/* <Newsletter /> */}
+      <Newsletter />
 
       {/* Footer */}
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }
