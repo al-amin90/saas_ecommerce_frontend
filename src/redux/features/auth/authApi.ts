@@ -1,13 +1,9 @@
-import {
-  ILoginPayload,
-  IRegisterPayload,
-  IUser,
-} from "@/modules/auth/auth.interface";
-import { baseApi } from "@/redux/api/baseApi";
+import { baseApi } from "../../api/baseApi";
 
 interface ILoginRequest {
   email: string;
   password: string;
+  subdomain: string;
 }
 
 interface IRegisterRequest {
@@ -21,35 +17,27 @@ interface IAuthResponse {
   success: boolean;
   message: string;
   data: {
-    user: IUser;
+    // user: IUser;
     accessToken: string;
   };
 }
 
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    register: builder.mutation<IAuthResponse, IRegisterPayload>({
-      query: (credentials: IRegisterPayload) => ({
-        url: "auth/register",
-        method: "POST",
-        body: credentials,
-      }),
-    }),
+    // register: builder.mutation<IAuthResponse, IRegisterPayload>({
+    //   query: (credentials: IRegisterPayload) => ({
+    //     url: "auth/register",
+    //     method: "POST",
+    //     body: credentials,
+    //   }),
+    // }),
 
     login: builder.mutation<IAuthResponse, ILoginRequest>({
-      query: (credentials: ILoginPayload) => ({
+      query: (credentials: ILoginRequest) => ({
         url: "auth/login",
         method: "POST",
         body: credentials,
       }),
-    }),
-
-    getMe: builder.query<IAuthResponse, void>({
-      query: () => ({
-        url: "auth/me",
-        method: "GET",
-      }),
-      providesTags: ["auth"],
     }),
 
     logout: builder.mutation({
@@ -61,11 +49,6 @@ const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const {
-  useLoginMutation,
-  useRegisterMutation,
-  useGetMeQuery,
-  useLogoutMutation,
-} = authApi;
+export const { useLoginMutation, useLogoutMutation } = authApi;
 
 export default authApi;

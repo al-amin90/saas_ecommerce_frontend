@@ -13,6 +13,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  console.log("emailf", email, password);
+
   return (
     <div className="min-h-screen flex bg-[#F7F6F2]">
       {/* ── Left panel (image + brand) ─────────────────────────────── */}
