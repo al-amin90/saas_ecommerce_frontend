@@ -1,41 +1,29 @@
 "use client";
 import { useState } from "react";
 import {
-  Badge,
-  Drawer,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Divider,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  Box,
-  Typography,
-  Container,
-  AppBar,
-  Toolbar,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Person2 } from "@mui/icons-material";
+  Search,
+  Menu,
+  X,
+  Heart,
+  ShoppingCart,
+  User,
+  ChevronDown,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
-const PRIMARY = "#1A3C34"; // dark teal (like ghorerbazar dark bar)
-const ACCENT = "#E07B1A"; // orange accent
+const PRIMARY = "#1A3C34";
+const ACCENT = "#E07B1A";
 
 const categories = [
   { label: "Home", href: "/" },
-  // {
-  //   label: "Honey",
-  //   href: "#",
-  //   children: ["Raw Honey", "Sidr Honey", "Black Seed Honey"],
-  // },
   { label: "All Products", href: "/" },
   { label: "Boishakhi Dhamaka Offer!", href: "/" },
   { label: "Samba Craze", href: "/" },
@@ -60,43 +48,16 @@ export default function Navbar({
   return (
     <>
       {/* ── Row 1: Logo / Search / Icons ─────────────────────────────── */}
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          background: "#FFFFFF",
-          color: PRIMARY,
-          zIndex: 1200,
-        }}
-      >
-        <Container maxWidth="xl">
-          <Toolbar
-            sx={{ minHeight: { xs: 64, md: 72 }, px: { xs: 0 }, gap: 2 }}
-          >
+      <header className="sticky top-0 z-50 bg-white ">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-6 py-4 md:py-6">
             {/* Logo */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                flexShrink: 0,
-                mr: 3,
-              }}
-            >
-              {/* House icon (inline SVG) */}
-              <Box
-                sx={{
-                  width: 44,
-                  height: 44,
-                  background: ACCENT,
-                  borderRadius: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
+            <div className="flex items-center gap-3 flex-shrink-0 mr-3">
+              <div
+                className="w-14 h-14 rounded-[10px] flex items-center justify-center flex-shrink-0"
+                style={{ background: ACCENT }}
               >
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M3 9.5L12 3l9 6.5V21H3V9.5z"
                     stroke="#fff"
@@ -111,425 +72,253 @@ export default function Navbar({
                   />
                   <circle cx="12" cy="10" r="1.5" fill="#fff" />
                 </svg>
-              </Box>
-              <Box
-                sx={{ display: { xs: "none", sm: "block" }, lineHeight: 1.1 }}
-              >
-                <Typography
-                  sx={{
-                    fontFamily: "'Syne', sans-serif",
-                    fontWeight: 900,
-                    fontSize: "1rem",
-                    letterSpacing: "0.08em",
-                    color: ACCENT,
-                    textTransform: "uppercase",
-                    lineHeight: 1,
-                  }}
+              </div>
+              <div className="hidden sm:block leading-none">
+                <h1
+                  className="font-black text-lg tracking-widest uppercase leading-tight"
+                  style={{ color: ACCENT, fontFamily: "'Syne', sans-serif" }}
                 >
                   Ghorer
-                </Typography>
-                <Typography
-                  sx={{
-                    fontFamily: "'Syne', sans-serif",
-                    fontWeight: 900,
-                    fontSize: "1rem",
-                    letterSpacing: "0.08em",
-                    color: ACCENT,
-                    textTransform: "uppercase",
-                    lineHeight: 1,
-                  }}
+                </h1>
+                <h1
+                  className="font-black text-lg tracking-widest uppercase leading-tight"
+                  style={{ color: ACCENT, fontFamily: "'Syne', sans-serif" }}
                 >
                   Bazar
-                </Typography>
-              </Box>
-            </Box>
+                </h1>
+              </div>
+            </div>
 
-            {/* Search bar — takes remaining space */}
-            <Box
-              sx={{
-                flex: 1,
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div className="relative w-[300px] max-w-full">
-                <input
+            {/* Search bar */}
+            <div className="hidden md:flex flex-1 items-center justify-center">
+              <div className="relative w-[350px] max-w-full">
+                <Input
                   type="text"
                   placeholder="Search in..."
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
-                  className="w-full pl-4 pr-12 py-1.5 text-sm font-['DM_Sans'] border border-[#DDDDDD] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#E07B1A] focus:border-transparent"
+                  className="w-full pl-4 pr-14 py-3 text-base border border-[#DDDDDD] rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                  style={{ "--tw-ring-color": ACCENT } as React.CSSProperties}
                 />
                 <button
                   onClick={() => {
                     /* handle search */
                   }}
-                  className="absolute right-0 top-0 h-full w-9 bg-[#E07B1A] rounded-r-md flex items-center justify-center cursor-pointer hover:bg-[#b8976e] transition-colors"
+                  className="absolute right-0 top-0 h-full w-14 rounded-r-lg flex items-center justify-center cursor-pointer transition-colors hover:opacity-90"
+                  style={{ background: ACCENT }}
                 >
-                  <SearchIcon sx={{ color: "#fff", fontSize: 18 }} />
+                  <Search size={24} color="#fff" />
                 </button>
               </div>
-            </Box>
+            </div>
 
             {/* Right icons */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: { xs: 0.5, md: 1 },
-                ml: "auto",
-              }}
-            >
-              {/* Track Order */}
-              {/* <Box
-                sx={{
-                  display: { xs: "none", lg: "flex" },
-                  flexDirection: "column",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  px: 1,
-                  "& svg": { color: PRIMARY },
-                  "&:hover svg, &:hover span": { color: ACCENT },
-                }}
-              >
-                <LocalShippingOutlinedIcon sx={{ fontSize: 22 }} />
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: "0.65rem",
-                    fontFamily: "'DM Sans', sans-serif",
-                    color: PRIMARY,
-                    mt: 0.2,
-                  }}
-                >
-                  Track Order
-                </Typography>
-              </Box> */}
-
+            <div className="flex items-center gap-2 md:gap-3 ml-auto">
               {/* Sign In */}
-              <Box
-                component="a"
+              <a
                 href="/login"
-                sx={{
-                  display: { xs: "none", md: "flex" },
-                  flexDirection: "column",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  px: 1,
-                  textDecoration: "none",
-                  "& svg": { color: PRIMARY },
-                  "&:hover svg, &:hover span": { color: ACCENT },
-                }}
+                className="hidden md:flex flex-col items-center cursor-pointer px-2 text-decoration-none transition-colors hover:opacity-80"
               >
-                <Person2 sx={{ fontSize: 22 }} />
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: "0.65rem",
-                    fontFamily: "'DM Sans', sans-serif",
+                <User size={28} style={{ color: PRIMARY }} />
+                <span
+                  className="text-sm font-medium mt-1"
+                  style={{
                     color: PRIMARY,
-                    mt: 0.2,
+                    fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
                   Sign In
-                </Typography>
-              </Box>
+                </span>
+              </a>
 
               {/* Wishlist */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  px: 1,
-                  "&:hover svg, &:hover span": { color: ACCENT },
-                }}
-              >
-                <Badge
-                  badgeContent={wishlistCount}
-                  sx={{
-                    "& .MuiBadge-badge": {
-                      background: ACCENT,
-                      color: "#fff",
-                      fontSize: "0.6rem",
-                    },
-                  }}
-                >
-                  <FavoriteBorderIcon sx={{ fontSize: 22, color: PRIMARY }} />
-                </Badge>
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: "0.65rem",
-                    fontFamily: "'DM Sans', sans-serif",
+              <div className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80">
+                <div className="relative">
+                  <Heart size={28} style={{ color: PRIMARY }} />
+                  {wishlistCount > 0 && (
+                    <Badge
+                      className="absolute -top-3 -right-2 h-6 w-6 flex items-center justify-center text-xs font-bold"
+                      style={{ background: ACCENT, color: "white" }}
+                    >
+                      {wishlistCount}
+                    </Badge>
+                  )}
+                </div>
+                <span
+                  className="text-sm font-medium mt-1"
+                  style={{
                     color: PRIMARY,
-                    mt: 0.2,
+                    fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
                   Wishlist
-                </Typography>
-              </Box>
+                </span>
+              </div>
 
               {/* Cart */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  px: 1,
-                  "&:hover svg, &:hover span": { color: ACCENT },
-                }}
-              >
-                <Badge
-                  badgeContent={cartCount}
-                  sx={{
-                    "& .MuiBadge-badge": {
-                      background: ACCENT,
-                      color: "#fff",
-                      fontSize: "0.6rem",
-                    },
-                  }}
-                >
-                  <ShoppingCartOutlinedIcon
-                    sx={{ fontSize: 22, color: PRIMARY }}
-                  />
-                </Badge>
-                <Typography
-                  component="span"
-                  sx={{
-                    fontSize: "0.65rem",
-                    fontFamily: "'DM Sans', sans-serif",
+              <div className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80">
+                <div className="relative">
+                  <ShoppingCart size={28} style={{ color: PRIMARY }} />
+                  {cartCount > 0 && (
+                    <Badge
+                      className="absolute -top-3 -right-2 h-6 w-6 flex items-center justify-center text-xs font-bold"
+                      style={{ background: ACCENT, color: "white" }}
+                    >
+                      {cartCount}
+                    </Badge>
+                  )}
+                </div>
+                <span
+                  className="text-sm font-medium mt-1"
+                  style={{
                     color: PRIMARY,
-                    mt: 0.2,
+                    fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
                   Cart
-                </Typography>
-              </Box>
+                </span>
+              </div>
 
-              {/* More / hamburger on mobile */}
-              <IconButton
-                sx={{ color: PRIMARY, display: { xs: "flex", md: "none" } }}
+              {/* Mobile menu button */}
+              <Button
+                variant="ghost"
+                size="lg"
+                className="md:hidden"
                 onClick={() => setDrawerOpen(true)}
               >
-                <MenuIcon />
-              </IconButton>
-            </Box>
-          </Toolbar>
-        </Container>
+                <Menu size={32} style={{ color: PRIMARY }} />
+              </Button>
+            </div>
+          </div>
 
-        {/* ── Row 2: Category nav ─────────────────────────────────────── */}
-        <Box sx={{ background: PRIMARY, display: { xs: "none", md: "block" } }}>
-          <Container maxWidth="xl">
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0 }}>
-              {categories.map((cat) => (
-                <Box
-                  key={cat.label}
-                  onMouseEnter={() => cat.children && setOpenDrop(cat.label)}
-                  onMouseLeave={() => setOpenDrop(null)}
-                  sx={{ position: "relative" }}
+          {/* ── Row 2: Category nav ─────────────────────────────────────── */}
+        </div>
+        <nav
+          className="hidden md:block border-t"
+          style={{ background: PRIMARY }}
+        >
+          <div className="flex max-w-7xl mx-auto items-center gap-0">
+            {categories.map((cat) => (
+              <div
+                key={cat.label}
+                className="relative group"
+                onMouseEnter={() => cat.children && setOpenDrop(cat.label)}
+                onMouseLeave={() => setOpenDrop(null)}
+              >
+                <a
+                  href={cat.href}
+                  className="flex items-center gap-1 px-5 py-4 text-white/90 text-base font-semibold tracking-wide whitespace-nowrap transition-colors hover:text-yellow-100"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
-                  <Box
-                    component="a"
-                    href={cat.href}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.3,
-                      px: 1.6,
-                      py: 1.4,
-                      color: "rgba(255,255,255,0.88)",
-                      fontSize: "0.78rem",
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontWeight: 500,
-                      letterSpacing: "0.01em",
-                      textDecoration: "none",
-                      whiteSpace: "nowrap",
-                      transition: "color 0.2s",
-                      "&:hover": { color: "#FFD18C" },
-                    }}
-                  >
-                    {cat.label}
-                    {cat.children && (
-                      <KeyboardArrowDownIcon
-                        sx={{
-                          fontSize: 14,
-                          transition: "transform 0.2s",
-                          transform:
-                            openDrop === cat.label ? "rotate(180deg)" : "none",
-                        }}
-                      />
-                    )}
-                  </Box>
-
-                  {/* Dropdown */}
-                  {cat.children && openDrop === cat.label && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: "100%",
-                        left: 0,
-                        background: "#FFFFFF",
-                        border: "1px solid #EBEBEB",
-                        borderRadius: "0 0 8px 8px",
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                        minWidth: 180,
-                        zIndex: 1300,
-                        py: 0.5,
-                        animation: "fadeDown 0.18s ease",
-                        "@keyframes fadeDown": {
-                          from: { opacity: 0, transform: "translateY(-6px)" },
-                          to: { opacity: 1, transform: "translateY(0)" },
-                        },
-                      }}
-                    >
-                      {cat.children.map((child) => (
-                        <Box
-                          key={child}
-                          component="a"
-                          href="#"
-                          sx={{
-                            display: "block",
-                            px: 2,
-                            py: 1,
-                            fontSize: "0.82rem",
-                            fontFamily: "'DM Sans', sans-serif",
-                            color: "#1A1A1A",
-                            textDecoration: "none",
-                            "&:hover": { background: "#FFF5EC", color: ACCENT },
-                          }}
-                        >
-                          {child}
-                        </Box>
-                      ))}
-                    </Box>
+                  {cat.label}
+                  {cat.children && (
+                    <ChevronDown
+                      size={18}
+                      className={`transition-transform ${
+                        openDrop === cat.label ? "rotate-180" : ""
+                      }`}
+                    />
                   )}
-                </Box>
-              ))}
-            </Box>
-          </Container>
-        </Box>
-      </AppBar>
+                </a>
+
+                {/* Dropdown */}
+                {cat.children && openDrop === cat.label && (
+                  <div className="absolute top-full left-0 bg-white border border-gray-200 rounded-b-lg shadow-lg min-w-[200px] z-50 py-3 animate-in fade-in slide-in-from-top-2">
+                    {cat.children.map((child) => (
+                      <a
+                        key={child}
+                        href="#"
+                        className="block px-5 py-3 text-base text-gray-800 hover:bg-orange-50 transition-colors font-medium"
+                        style={{
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = ACCENT;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = "#1f2937";
+                        }}
+                      >
+                        {child}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </nav>
+      </header>
 
       {/* ── Mobile Drawer ────────────────────────────────────────────── */}
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        PaperProps={{ sx: { width: 300, background: "#FAFAF8" } }}
-      >
-        <Box sx={{ p: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
-            }}
-          >
-            <Typography
-              sx={{
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 900,
-                fontSize: "1.2rem",
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="right" className="w-[300px] bg-gray-50 p-6">
+          <SheetHeader className="mb-8">
+            <SheetTitle
+              className="text-2xl font-black tracking-wide"
+              style={{
                 color: ACCENT,
+                fontFamily: "'Syne', sans-serif",
               }}
             >
               Ghorer Bazar
-            </Typography>
-            <IconButton onClick={() => setDrawerOpen(false)} size="small">
-              <CloseIcon />
-            </IconButton>
-          </Box>
+            </SheetTitle>
+          </SheetHeader>
 
           {/* Mobile search */}
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Search..."
-            sx={{ mb: 3 }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <SearchIcon sx={{ fontSize: 18, color: PRIMARY }} />
-                </InputAdornment>
-              ),
-            }}
-          />
+          <div className="mb-6">
+            <Input
+              type="text"
+              placeholder="Search..."
+              className="w-full text-base h-11"
+            />
+          </div>
 
-          <Divider sx={{ mb: 2 }} />
+          <div className="border-t border-gray-300 mb-6" />
 
-          <List disablePadding>
+          {/* Mobile nav */}
+          <nav className="space-y-0 mb-8">
             {categories.map((cat) => (
-              <ListItem
+              <a
                 key={cat.label}
-                component="a"
                 href={cat.href}
-                sx={{
-                  py: 1.3,
-                  px: 0,
-                  borderBottom: "1px solid #F0EFE9",
-                  textDecoration: "none",
-                  display: "flex",
-                  justifyContent: "space-between",
+                className="flex items-center justify-between py-4 px-0 border-b border-gray-200 text-base font-semibold transition-colors hover:text-orange-500"
+                style={{
+                  color: PRIMARY,
+                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                <ListItemText
-                  primary={cat.label}
-                  primaryTypographyProps={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontWeight: 500,
-                    fontSize: "0.88rem",
-                    color: PRIMARY,
-                  }}
-                />
+                <span>{cat.label}</span>
                 {cat.children && (
-                  <KeyboardArrowDownIcon sx={{ fontSize: 16, color: "#999" }} />
+                  <ChevronDown size={20} className="text-gray-600" />
                 )}
-              </ListItem>
+              </a>
             ))}
-          </List>
+          </nav>
 
-          <Box
-            sx={{ mt: 4, display: "flex", flexDirection: "column", gap: 1.5 }}
-          >
+          {/* Mobile buttons */}
+          <div className="space-y-4 flex flex-col">
             <Button
-              fullWidth
-              variant="contained"
-              href="/login"
-              sx={{
-                background: PRIMARY,
-                "&:hover": { background: "#0F2820" },
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-              }}
+              asChild
+              className="w-full uppercase font-bold tracking-wider text-white h-12 text-base"
+              style={{ background: PRIMARY }}
             >
-              Sign In
+              <a href="/login">Sign In</a>
             </Button>
             <Button
-              fullWidth
-              variant="outlined"
-              href="/signup"
-              sx={{
+              asChild
+              variant="outline"
+              className="w-full uppercase font-bold tracking-wider h-12 text-base"
+              style={{
                 borderColor: PRIMARY,
                 color: PRIMARY,
-                "&:hover": { background: "#F0FFF8", borderColor: PRIMARY },
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
               }}
             >
-              Create Account
+              <a href="/signup">Create Account</a>
             </Button>
-          </Box>
-        </Box>
-      </Drawer>
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

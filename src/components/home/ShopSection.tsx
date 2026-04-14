@@ -1,28 +1,17 @@
 "use client";
 import { useState } from "react";
+import { Filter, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Tabs,
-  Tab,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  Chip,
-  Slider,
-  Button,
-  Drawer,
-  IconButton,
-  Divider,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-} from "@mui/material";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import CloseIcon from "@mui/icons-material/Close";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 import { products, categories, brands } from "@/src/data/products";
 import ProductCard from "../shared/ProductCard";
@@ -55,77 +44,65 @@ export default function ShopSection() {
   };
 
   return (
-    <Box id="shop" sx={{ py: { xs: 6, md: 10 }, background: "#FAFAF8" }}>
-      <Container maxWidth="xl">
+    <section id="shop" className="py-20 md:py-32 bg-[#FAFAF8]">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <Box sx={{ textAlign: "center", mb: 6 }}>
-          <Typography
-            sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              color: "#C8A97E",
-              mb: 1.5,
-            }}
+        <div className="text-center mb-12">
+          <p
+            className="font-['DM_Sans'] text-sm font-semibold tracking-[0.25em] uppercase mb-3"
+            style={{ color: "#C8A97E" }}
           >
             Our Collection
-          </Typography>
-          <Typography
-            variant="h2"
-            sx={{
-              fontSize: { xs: "2rem", md: "2.8rem" },
-              fontWeight: 800,
-              letterSpacing: "-0.03em",
-              mb: 2,
-            }}
-          >
+          </p>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Shop All Shoes
-          </Typography>
-          <Typography
-            sx={{
-              color: "#6B6B6B",
-              maxWidth: 480,
-              mx: "auto",
-              fontSize: "1rem",
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto text-lg font-['DM_Sans']">
             Premium footwear for every occasion, style, and stride.
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
-        {/* Category Tabs */}
-        {/* <Box sx={{ borderBottom: "1px solid #EBEBEB", mb: 4 }}>
-          <Tabs
-            value={activeCategory}
-            onChange={(e, v) => setActiveCategory(v)}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{ minHeight: 44 }}
+        {/* Filter and Sort Bar */}
+        <div className="flex items-center justify-between gap-4 mb-8">
+          {/* Filter Button */}
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setFilterOpen(true)}
+            className="flex items-center gap-2"
           >
-            {categories.map((cat) => (
-              <Tab
-                key={cat.id}
-                value={cat.id}
-                label={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <span>{cat.icon}</span>
-                    <span>{cat.name}</span>
-                  </Box>
-                }
-                sx={{
-                  minHeight: 44,
-                  fontSize: "0.72rem",
-                  "&.Mui-selected": { color: "#1A1A1A" },
-                }}
-              />
-            ))}
-          </Tabs>
-        </Box> */}
+            <Filter size={20} />
+            <span>Filters</span>
+          </Button>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          {/* Sort Dropdown */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-4 py-2.5 border border-gray-300 rounded-lg text-base font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#C8A97E] focus:border-transparent"
+          >
+            <option value="featured">Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+            <option value="new">New Arrivals</option>
+          </select>
+
+          {/* Active Filters Count */}
+          {(selectedBrands.length > 0 ||
+            priceRange[0] > 0 ||
+            priceRange[1] < 10000) && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 font-['DM_Sans']">
+                {selectedBrands.length > 0 &&
+                  `${selectedBrands.length} brand${selectedBrands.length !== 1 ? "s" : ""}`}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
           {filteredProducts.map((product) => (
             <div key={product.id}>
               <ProductCard product={product} />
@@ -133,149 +110,103 @@ export default function ShopSection() {
           ))}
         </div>
 
+        {/* No Results */}
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-gray-500 text-lg font-['DM_Sans']">
+              No products found. Try adjusting your filters.
+            </p>
+          </div>
+        )}
+
         {/* Load More */}
         {filteredProducts.length > 0 && (
-          <Box sx={{ textAlign: "center", mt: 6 }}>
-            <Button
-              variant="outlined"
-              size="large"
-              sx={{ px: 6, py: 1.5, borderColor: "#1A1A1A", minWidth: 200 }}
-            >
+          <div className="text-center">
+            <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
               Load More
             </Button>
-          </Box>
+          </div>
         )}
-      </Container>
+      </div>
 
-      {/* Filter Drawer */}
-      <Drawer
-        anchor="left"
-        open={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        PaperProps={{ sx: { width: 300, p: 3 } }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 3,
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ fontFamily: "'Syne', sans-serif", fontWeight: 700 }}
-          >
-            Filters
-          </Typography>
-          <IconButton size="small" onClick={() => setFilterOpen(false)}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
+      {/* Filter Sheet */}
+      <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+        <SheetContent side="left" className="w-[320px] bg-white p-6">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-2xl font-bold font-['Syne']">
+              Filters
+            </SheetTitle>
+          </SheetHeader>
 
-        <Divider sx={{ mb: 3 }} />
+          {/* Price Range */}
+          <div className="mb-8">
+            <h3 className="font-['Syne'] font-bold text-sm tracking-[0.08em] uppercase mb-4">
+              Price Range
+            </h3>
+            <div className="px-2 mb-4">
+              <Slider
+                value={priceRange}
+                onValueChange={setPriceRange}
+                min={0}
+                max={10000}
+                step={500}
+                className="w-full"
+              />
+            </div>
+            <div className="flex justify-between text-sm font-['DM_Sans'] text-gray-700">
+              <span>৳{priceRange[0].toLocaleString()}</span>
+              <span>৳{priceRange[1].toLocaleString()}</span>
+            </div>
+          </div>
 
-        {/* Price Range */}
-        <Typography
-          sx={{
-            fontFamily: "'Syne', sans-serif",
-            fontWeight: 700,
-            fontSize: "0.85rem",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            mb: 2,
-          }}
-        >
-          Price Range
-        </Typography>
-        <Box sx={{ px: 1, mb: 1 }}>
-          <Slider
-            value={priceRange}
-            onChange={(e, v) => setPriceRange(v)}
-            min={0}
-            max={10000}
-            step={500}
-            valueLabelDisplay="auto"
-            valueLabelFormat={(v) => `৳${v.toLocaleString()}`}
-            sx={{ color: "#C8A97E" }}
-          />
-        </Box>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Typography
-            sx={{ fontSize: "0.8rem", fontFamily: "'DM Sans', sans-serif" }}
-          >
-            ৳{priceRange[0].toLocaleString()}
-          </Typography>
-          <Typography
-            sx={{ fontSize: "0.8rem", fontFamily: "'DM Sans', sans-serif" }}
-          >
-            ৳{priceRange[1].toLocaleString()}
-          </Typography>
-        </Box>
+          <div className="border-t border-gray-200 my-6" />
 
-        <Divider sx={{ mb: 3 }} />
+          {/* Brands */}
+          <div className="mb-8">
+            <h3 className="font-['Syne'] font-bold text-sm tracking-[0.08em] uppercase mb-4">
+              Brands
+            </h3>
+            <div className="space-y-3">
+              {brands.map((brand) => (
+                <div key={brand} className="flex items-center gap-3">
+                  <Checkbox
+                    id={brand}
+                    checked={selectedBrands.includes(brand)}
+                    onCheckedChange={() => toggleBrand(brand)}
+                  />
+                  <Label
+                    htmlFor={brand}
+                    className="text-base font-['DM_Sans'] cursor-pointer"
+                  >
+                    {brand}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        {/* Brands */}
-        <Typography
-          sx={{
-            fontFamily: "'Syne', sans-serif",
-            fontWeight: 700,
-            fontSize: "0.85rem",
-            textTransform: "uppercase",
-            letterSpacing: "0.08em",
-            mb: 2,
-          }}
-        >
-          Brands
-        </Typography>
-        <FormGroup>
-          {brands.map((brand) => (
-            <FormControlLabel
-              key={brand}
-              control={
-                <Checkbox
-                  checked={selectedBrands.includes(brand)}
-                  onChange={() => toggleBrand(brand)}
-                  size="small"
-                  sx={{ "&.Mui-checked": { color: "#C8A97E" } }}
-                />
-              }
-              label={
-                <Typography
-                  sx={{
-                    fontSize: "0.85rem",
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  {brand}
-                </Typography>
-              }
-            />
-          ))}
-        </FormGroup>
-
-        <Box sx={{ mt: 4, display: "flex", gap: 1 }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => {
-              setSelectedBrands([]);
-              setPriceRange([0, 10000]);
-            }}
-            sx={{ fontSize: "0.75rem" }}
-          >
-            Clear All
-          </Button>
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={() => setFilterOpen(false)}
-            sx={{ fontSize: "0.75rem" }}
-          >
-            Apply
-          </Button>
-        </Box>
-      </Drawer>
-    </Box>
+          {/* Buttons */}
+          <div className="border-t border-gray-200 pt-6 flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1 text-base"
+              onClick={() => {
+                setSelectedBrands([]);
+                setPriceRange([0, 10000]);
+              }}
+            >
+              Clear All
+            </Button>
+            <Button
+              className="flex-1 text-base"
+              style={{ background: "#1A1A1A" }}
+              onClick={() => setFilterOpen(false)}
+            >
+              Apply
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </section>
   );
 }

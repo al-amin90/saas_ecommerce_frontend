@@ -1,19 +1,9 @@
 "use client";
 import { useState } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Divider,
-  InputAdornment,
-  IconButton,
-  Link,
-} from "@mui/material";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import Link from "next/link";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
@@ -24,66 +14,29 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        background: "#F7F6F2",
-      }}
-    >
+    <div className="min-h-screen flex bg-[#F7F6F2]">
       {/* ── Left panel (image + brand) ─────────────────────────────── */}
-      <Box
-        sx={{
-          display: { xs: "none", md: "flex" },
-          width: "45%",
-          flexShrink: 0,
-          background: PRIMARY,
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          px: 6,
-          position: "relative",
-          overflow: "hidden",
-        }}
+      <div
+        className="hidden md:flex w-[45%] flex-shrink-0 flex-col justify-center items-center px-8 relative overflow-hidden"
+        style={{ background: PRIMARY }}
       >
         {/* decorative circles */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: -80,
-            left: -80,
-            width: 300,
-            height: 300,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.04)",
-          }}
+        <div
+          className="absolute top-[-80px] left-[-80px] w-80 h-80 rounded-full"
+          style={{ background: "rgba(255,255,255,0.04)" }}
         />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: -60,
-            right: -60,
-            width: 240,
-            height: 240,
-            borderRadius: "50%",
-            background: "rgba(224,123,26,0.15)",
-          }}
+        <div
+          className="absolute bottom-[-60px] right-[-60px] w-60 h-60 rounded-full"
+          style={{ background: "rgba(224,123,26,0.15)" }}
         />
 
         {/* Logo */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 5 }}>
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              background: ACCENT,
-              borderRadius: "14px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+        <div className="flex items-center gap-4 mb-12 relative z-10">
+          <div
+            className="w-16 h-16 rounded-[14px] flex items-center justify-center flex-shrink-0"
+            style={{ background: ACCENT }}
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
               <path
                 d="M3 9.5L12 3l9 6.5V21H3V9.5z"
                 stroke="#fff"
@@ -98,138 +51,65 @@ export default function LoginPage() {
               />
               <circle cx="12" cy="10" r="1.5" fill="#fff" />
             </svg>
-          </Box>
-          <Box>
-            <Typography
-              sx={{
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 900,
-                fontSize: "1.4rem",
-                color: "#fff",
-                letterSpacing: "0.06em",
-                lineHeight: 1,
-              }}
+          </div>
+          <div>
+            <h1
+              className="font-['Syne'] font-black text-2xl text-white tracking-wide leading-tight"
+              style={{ letterSpacing: "0.06em" }}
             >
               GHORER
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 900,
-                fontSize: "1.4rem",
-                color: ACCENT,
-                letterSpacing: "0.06em",
-                lineHeight: 1,
-              }}
+            </h1>
+            <h1
+              className="font-['Syne'] font-black text-2xl tracking-wide leading-tight"
+              style={{ color: ACCENT, letterSpacing: "0.06em" }}
             >
               BAZAR
-            </Typography>
-          </Box>
-        </Box>
+            </h1>
+          </div>
+        </div>
 
-        <Typography
-          sx={{
-            fontFamily: "'Syne', sans-serif",
-            fontWeight: 800,
-            fontSize: "2.2rem",
-            color: "#fff",
-            textAlign: "center",
-            lineHeight: 1.2,
-            letterSpacing: "-0.02em",
-            mb: 2,
-          }}
+        <h2
+          className="font-['Syne'] font-black text-4xl text-white text-center leading-tight mb-3"
+          style={{ letterSpacing: "-0.02em" }}
         >
           Welcome Back!
-        </Typography>
-        <Typography
-          sx={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "1rem",
-            color: "rgba(255,255,255,0.55)",
-            textAlign: "center",
-            maxWidth: 320,
-            lineHeight: 1.7,
-          }}
-        >
+        </h2>
+        <p className="font-['DM_Sans'] text-lg text-white/60 text-center max-w-sm leading-relaxed">
           Sign in to access your orders, wishlist, and exclusive member deals.
-        </Typography>
+        </p>
 
         {/* Feature pills */}
-        {[
-          "Free delivery on ৳3,000+",
-          "100% authentic products",
-          "Easy 30-day returns",
-        ].map((f) => (
-          <Box
-            key={f}
-            sx={{
-              mt: 2,
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              background: "rgba(255,255,255,0.07)",
-              borderRadius: "8px",
-              px: 2.5,
-              py: 1.2,
-              width: "100%",
-              maxWidth: 320,
-            }}
-          >
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background: ACCENT,
-                flexShrink: 0,
-              }}
-            />
-            <Typography
-              sx={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "0.85rem",
-                color: "rgba(255,255,255,0.75)",
-              }}
+        <div className="space-y-3 mt-8 w-full max-w-sm">
+          {[
+            "Free delivery on ৳3,000+",
+            "100% authentic products",
+            "Easy 30-day returns",
+          ].map((f) => (
+            <div
+              key={f}
+              className="flex items-center gap-3 rounded-lg px-4 py-3 w-full"
+              style={{ background: "rgba(255,255,255,0.07)" }}
             >
-              {f}
-            </Typography>
-          </Box>
-        ))}
-      </Box>
+              <div
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ background: ACCENT }}
+              />
+              <p className="font-['DM_Sans'] text-base text-white/75">{f}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ── Right panel (form) ─────────────────────────────────────── */}
-      <Box
-        sx={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          px: { xs: 3, sm: 6 },
-          py: 6,
-        }}
-      >
-        <Box sx={{ width: "100%", maxWidth: 420 }}>
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-8 py-8">
+        <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <Box
-            sx={{
-              display: { xs: "flex", md: "none" },
-              alignItems: "center",
-              gap: 1.5,
-              mb: 4,
-            }}
-          >
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                background: ACCENT,
-                borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+          <div className="flex md:hidden items-center gap-2 mb-8">
+            <div
+              className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
+              style={{ background: ACCENT }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M3 9.5L12 3l9 6.5V21H3V9.5z"
                   stroke="#fff"
@@ -243,272 +123,111 @@ export default function LoginPage() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </Box>
-            <Typography
-              sx={{
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 900,
-                fontSize: "1.2rem",
-                color: ACCENT,
-              }}
+            </div>
+            <h1
+              className="font-['Syne'] font-black text-xl"
+              style={{ color: ACCENT }}
             >
               GHORER BAZAR
-            </Typography>
-          </Box>
+            </h1>
+          </div>
 
-          <Typography
-            sx={{
-              fontFamily: "'Syne', sans-serif",
-              fontWeight: 800,
-              fontSize: "1.9rem",
+          <h1
+            className="font-['Syne'] font-black text-4xl mb-8"
+            style={{
               color: PRIMARY,
-              mb: 3,
               letterSpacing: "-0.02em",
             }}
           >
             Sign In
-          </Typography>
-          {/* <Typography
-            sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: "0.9rem",
-              color: "#888",
-              mb: 4,
-            }}
-          >
-            Don't have an account?{" "}
-            <Link
-              href="/signup"
-              underline="hover"
-              sx={{ color: ACCENT, fontWeight: 600 }}
-            >
-              Create one free
-            </Link>
-          </Typography> */}
-
-          {/* Google button */}
-          {/* <Button
-            fullWidth
-            variant="outlined"
-            sx={{
-              borderColor: "#DDDDDD",
-              color: "#333",
-              py: 1.4,
-              mb: 3,
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: 600,
-              fontSize: "0.88rem",
-              textTransform: "none",
-              borderRadius: "8px",
-              "&:hover": { borderColor: "#BBBBBB", background: "#FAFAFA" },
-              display: "flex",
-              gap: 1.5,
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 48 48">
-              <path
-                fill="#FFC107"
-                d="M43.6 20H24v8h11.3C33.6 33.3 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C33.7 6.1 29.1 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"
-              />
-              <path
-                fill="#FF3D00"
-                d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3l5.7-5.7C33.7 6.1 29.1 4 24 4c-7.8 0-14.5 4.3-17.7 10.7z"
-              />
-              <path
-                fill="#4CAF50"
-                d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.3 35.4 26.8 36 24 36c-5.2 0-9.6-3.3-11.3-8L6 32.9C9.2 39.4 16 44 24 44z"
-              />
-              <path
-                fill="#1565C0"
-                d="M43.6 20H24v8h11.3c-.9 2.6-2.6 4.8-4.8 6.3l6.2 5.2C41 36.4 44 30.7 44 24c0-1.3-.1-2.7-.4-4z"
-              />
-            </svg>
-            Continue with Google
-          </Button> */}
-
-          {/* <Divider sx={{ mb: 3 }}>
-            <Typography
-              sx={{
-                fontSize: "0.75rem",
-                color: "#BBB",
-                fontFamily: "'DM Sans', sans-serif",
-                px: 1,
-              }}
-            >
-              or sign in with email
-            </Typography>
-          </Divider> */}
+          </h1>
 
           {/* Email */}
-          <Typography
-            sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: 600,
-              fontSize: "0.82rem",
-              color: PRIMARY,
-              mb: 0.8,
-              letterSpacing: "0.04em",
-            }}
-          >
-            Email
-          </Typography>
-          <TextField
-            fullWidth
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <EmailOutlinedIcon sx={{ fontSize: 18, color: "#AAAAAA" }} />
-                </InputAdornment>
-              ),
-              sx: {
-                borderRadius: "8px",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "0.9rem",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#E0E0E0",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: PRIMARY,
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: PRIMARY,
-                  borderWidth: 1.5,
-                },
-              },
-            }}
-            sx={{ mb: 1.5 }}
-          />
+          <div className="mb-3">
+            <div className="relative">
+              <Mail
+                size={20}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
+              <Input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-transparent focus:ring-2 focus:outline-none"
+                style={{ "--tw-ring-color": PRIMARY } as React.CSSProperties}
+              />
+            </div>
+          </div>
 
           {/* Password */}
-          <Typography
-            sx={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: 600,
-              fontSize: "0.82rem",
-              color: PRIMARY,
-              mb: 0.8,
-              letterSpacing: "0.04em",
-            }}
-          >
-            Password
-          </Typography>
-          <TextField
-            fullWidth
-            type={showPass ? "text" : "password"}
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LockOutlinedIcon sx={{ fontSize: 18, color: "#AAAAAA" }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => setShowPass(!showPass)}
-                    edge="end"
-                  >
-                    {showPass ? (
-                      <VisibilityOffOutlinedIcon
-                        sx={{ fontSize: 18, color: "#AAAAAA" }}
-                      />
-                    ) : (
-                      <VisibilityOutlinedIcon
-                        sx={{ fontSize: 18, color: "#AAAAAA" }}
-                      />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
-              sx: {
-                borderRadius: "8px",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: "0.9rem",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#E0E0E0",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: PRIMARY,
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: PRIMARY,
-                  borderWidth: 1.5,
-                },
-              },
-            }}
-            sx={{ mb: 1.5 }}
-          />
+          <div className="mb-3">
+            <div className="relative">
+              <Lock
+                size={20}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
+              <Input
+                type={showPass ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 pr-12 py-3 text-base border-2 border-gray-300 rounded-lg focus:border-transparent focus:ring-2 focus:outline-none"
+                style={{ "--tw-ring-color": PRIMARY } as React.CSSProperties}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
 
           {/* Forgot */}
-          <Box sx={{ textAlign: "right", mb: 3 }}>
+          <div className="text-right mb-6">
             <Link
               href="/forgot-password"
-              underline="hover"
-              sx={{
-                fontSize: "0.8rem",
-                color: ACCENT,
-                fontFamily: "'DM Sans', sans-serif",
-                fontWeight: 600,
-              }}
+              className="text-sm font-semibold font-['DM_Sans'] transition-colors hover:opacity-80"
+              style={{ color: ACCENT }}
             >
               Forgot password?
             </Link>
-          </Box>
+          </div>
 
           {/* Submit */}
           <Button
-            fullWidth
-            variant="contained"
-            sx={{
+            className="w-full py-4 text-base font-bold cursor-pointer tracking-wider rounded-lg transition-all"
+            style={{
               background: PRIMARY,
-              color: "#fff",
-              py: 1.5,
+              color: "white",
               fontFamily: "'Syne', sans-serif",
-              fontWeight: 700,
-              fontSize: "0.88rem",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              borderRadius: "8px",
-              boxShadow: "none",
-              "&:hover": {
-                background: "#0F2820",
-                boxShadow: "0 4px 20px rgba(26,60,52,0.3)",
-              },
-              transition: "all 0.25s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#0F2820";
+              e.currentTarget.style.boxShadow = "0 4px 20px rgba(26,60,52,0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = PRIMARY;
+              e.currentTarget.style.boxShadow = "none";
             }}
           >
             Sign In
           </Button>
 
-          <Typography
-            sx={{
-              mt: 3,
-              textAlign: "center",
-              fontSize: "0.78rem",
-              color: "#AAA",
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
+          <p className="mt-6 text-center text-xs text-gray-600 font-['DM_Sans']">
             By continuing you agree to our{" "}
-            <Link href="#" underline="hover" sx={{ color: "#888" }}>
+            <Link href="#" className="hover:text-gray-800 transition-colors">
               Terms
             </Link>
             {" & "}
-            <Link href="#" underline="hover" sx={{ color: "#888" }}>
+            <Link href="#" className="hover:text-gray-800 transition-colors">
               Privacy Policy
             </Link>
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
