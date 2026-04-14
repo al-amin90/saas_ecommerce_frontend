@@ -1,0 +1,45 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { baseApi } from "@/redux/api/baseApi";
+import { dynamicTag } from "@/redux/utils/dynamicTag";
+
+const dynamicApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    getDynamic: builder.query<
+      { success: boolean; message: string; data: any; meta?: any },
+      { url: string; params?: Record<string, any> }
+    >({
+      query: ({ url, params }) => ({ url, params, method: "GET" }),
+      providesTags: dynamicTag,
+    }),
+
+    postDynamic: builder.mutation({
+      query: ({ url, data }) => ({ url, method: "POST", body: data }),
+      invalidatesTags: dynamicTag,
+    }),
+
+    patchDynamic: builder.mutation({
+      query: ({ url, data }) => ({ url, method: "PATCH", body: data }),
+      invalidatesTags: dynamicTag,
+    }),
+
+    putDynamic: builder.mutation({
+      query: ({ url, data }) => ({ url, method: "PUT", body: data }),
+      invalidatesTags: dynamicTag,
+    }),
+
+    deleteDynamic: builder.mutation({
+      query: ({ url }) => ({ url, method: "DELETE" }),
+      invalidatesTags: dynamicTag,
+    }),
+  }),
+  overrideExisting: false,
+});
+
+export const {
+  useGetDynamicQuery,
+  useLazyGetDynamicQuery,
+  usePostDynamicMutation,
+  usePutDynamicMutation,
+  usePatchDynamicMutation,
+  useDeleteDynamicMutation,
+} = dynamicApi;
