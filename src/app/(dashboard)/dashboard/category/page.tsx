@@ -65,9 +65,11 @@ export default function CategoryPage() {
 
   const handleUpdate = async (form: Record<string, unknown>) => {
     if (!editCategory) return;
+    console.log("editCategory", editCategory);
+
     try {
       await updateCategory({
-        url: `Category/${editCategory._id}`,
+        url: `category/${editCategory._id}`,
         data: form as Partial<ICategory>,
       }).unwrap();
       toast.success("Category updated");
@@ -82,90 +84,22 @@ export default function CategoryPage() {
     if (!deleteId) return;
     try {
       await deleteCategory({
-        url: `Categorys/${deleteId}`,
+        url: `category/${deleteId}`,
       }).unwrap();
       toast.success("Category deleted");
       setDeleteId(null);
-    } catch {
-      toast.error("Failed to delete");
+    } catch (err) {
+      console.log("err", err);
+      toast.error(err?.message ?? "Failed to delete");
     }
   };
 
   const columns = [
-    {
-      key: "name",
-      label: "Category",
-      render: (row: ICategory) => (
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
-            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-              {row.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div>
-            <p className="font-medium text-slate-800 dark:text-white text-sm">
-              {row.name}
-            </p>
-            <p className="text-xs text-slate-400">{row.email}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "age",
-      label: "Age",
-      render: (row: ICategory) => (
-        <span className="text-sm text-slate-600 dark:text-slate-300">
-          {row.age} yrs
-        </span>
-      ),
-    },
-    {
-      key: "gender",
-      label: "Gender",
-      render: (row: ICategory) => (
-        <Badge
-          variant="secondary"
-          className={`border-0 font-medium text-xs capitalize ${genderBadge(row.gender)}`}
-        >
-          {row.gender}
-        </Badge>
-      ),
-    },
-    {
-      key: "condition",
-      label: "Condition",
-      render: (row: ICategory) => (
-        <Badge
-          variant="secondary"
-          className="bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-0 text-xs font-medium"
-        >
-          {row.condition}
-        </Badge>
-      ),
-    },
-    {
-      key: "doctor",
-      label: "Doctor",
-      render: (row: ICategory) => (
-        <span className="text-sm text-slate-600 dark:text-slate-300">
-          {row.doctorId?.name ?? "—"}
-        </span>
-      ),
-    },
-    {
-      key: "createdAt",
-      label: "Registered",
-      render: (row: ICategory) => (
-        <span className="text-xs text-slate-400">
-          {row.createdAt ? format(parseISO(row.createdAt), "MMM d, yyyy") : ""}
-        </span>
-      ),
-    },
+    { key: "name", label: "Category Name" },
     {
       key: "actions",
       label: "Actions",
-      className: "text-right",
+      headClassName: "text-right",
       render: (row: ICategory) => (
         <div className="flex items-center justify-end gap-1">
           <Button
@@ -174,7 +108,7 @@ export default function CategoryPage() {
             className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg"
             onClick={(e) => {
               e.stopPropagation();
-              setEditCategory(row);
+              // setEditDoctor(row);
             }}
           >
             <Pencil className="h-4 w-4" />
@@ -185,7 +119,7 @@ export default function CategoryPage() {
             className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg"
             onClick={(e) => {
               e.stopPropagation();
-              setDeleteId(row._id);
+              setDeleteId(row._id || null);
             }}
           >
             <Trash2 className="h-4 w-4" />
@@ -234,19 +168,19 @@ export default function CategoryPage() {
         isLoading={creating}
         mode="create"
       />
-      {/* <CategoryForm
+      <DynamicModal
         open={!!editCategory}
         onOpenChange={(v) => !v && setEditCategory(null)}
         onSubmit={handleUpdate}
         defaultValues={editCategory ?? undefined}
         isLoading={updating}
         mode="edit"
-      /> */}
+      />
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(v) => !v && setDeleteId(null)}
         title="Delete Category?"
-        description="This will soft-delete the Category record."
+        description="This will delete Paranently. Are you sure?"
         onConfirm={handleDelete}
         loading={deleting}
       />
