@@ -27,10 +27,12 @@ import DataTable from "@/src/components/dashboard/shared/DataTable";
 import Pagination from "@/src/components/dashboard/shared/Pagination";
 import ConfirmDialog from "@/src/components/dashboard/common/modal/ConfirmDialog";
 import DynamicModal from "@/src/components/dashboard/common/modal/DynamicModal";
+import { IErrorResponse } from "@/src/interface";
 
 export default function CategoryPage() {
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [editCategory, setEditCategory] = useState<ICategory | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -43,6 +45,7 @@ export default function CategoryPage() {
   });
 
   console.log("data", data);
+  console.log("editCategory", editCategory);
 
   const [createCategory, { isLoading: creating }] = usePostDynamicMutation();
   const [updateCategory, { isLoading: updating }] = usePatchDynamicMutation();
@@ -73,10 +76,11 @@ export default function CategoryPage() {
         data: form as Partial<ICategory>,
       }).unwrap();
       toast.success("Category updated");
-      setEditCategory(null);
+      setEditOpen(false);
     } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Failed to update");
+      console.log("err", err);
+      const error = err as IErrorResponse;
+      toast.error(error?.message ?? "Failed to delete");
     }
   };
 
@@ -88,9 +92,10 @@ export default function CategoryPage() {
       }).unwrap();
       toast.success("Category deleted");
       setDeleteId(null);
-    } catch (err) {
+    } catch (err: unknown) {
       console.log("err", err);
-      toast.error(err?.message ?? "Failed to delete");
+      const error = err as IErrorResponse;
+      toast.error(error?.message ?? "Failed to delete");
     }
   };
 
@@ -108,7 +113,8 @@ export default function CategoryPage() {
             className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg"
             onClick={(e) => {
               e.stopPropagation();
-              // setEditDoctor(row);
+              setEditOpen(true);
+              setEditCategory(row);
             }}
           >
             <Pencil className="h-4 w-4" />
@@ -169,8 +175,8 @@ export default function CategoryPage() {
         mode="create"
       />
       <DynamicModal
-        open={!!editCategory}
-        onOpenChange={(v) => !v && setEditCategory(null)}
+        open={editOpen}
+        onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
         defaultValues={editCategory ?? undefined}
         isLoading={updating}

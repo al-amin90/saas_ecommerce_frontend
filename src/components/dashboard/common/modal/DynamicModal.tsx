@@ -72,7 +72,7 @@ type DynamicModalProps = {
   mode?: "create" | "edit";
   isLoading?: boolean;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
-  defaultValues?: Partial<PatientFormData> | Partial<DoctorFormData>;
+  defaultValues?: Partial<T> | Partial<DoctorFormData>;
 
   // Patient-specific
   doctors?: IDoctor[];
@@ -282,6 +282,8 @@ const DynamicModal = ({
 }: DynamicModalProps) => {
   const title = defaultTitleMap[variant][mode];
 
+  console.log("open", open);
+
   const renderVariant = () => {
     switch (variant) {
       case "category":
@@ -291,6 +293,7 @@ const DynamicModal = ({
             defaultValues={defaultValues as Partial<CategoryFormData>}
             mode={mode}
             doctors={doctors}
+            onCancel={() => onOpenChange(false)}
           />
         );
 
