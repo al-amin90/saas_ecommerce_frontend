@@ -115,55 +115,55 @@ export default function ImageSlider() {
 
   // Autoplay + progress bar
   useEffect(() => {
-    // const tick = DURATION / 100;
-    // progressRef.current = setInterval(() => {
-    //   setProgress((p) => {
-    //     if (p >= 100) return 0;
-    //     return p + 1;
-    //   });
-    // }, tick);
-    // autoplayRef.current = setInterval(() => {
-    //   setActive((a) => {
-    //     const n = (a + 1) % slides.length;
-    //     setPrev(a);
-    //     setAnimDir("right");
-    //     setIsAnimating(true);
-    //     setProgress(0);
-    //     setTimeout(() => {
-    //       setPrev(null);
-    //       setIsAnimating(false);
-    //     }, 700);
-    //     return n;
-    //   });
-    // }, DURATION);
-    // return () => {
-    //   if (autoplayRef.current) clearInterval(autoplayRef.current);
-    //   if (progressRef.current) clearInterval(progressRef.current);
-    // };
+    const tick = DURATION / 100;
+    progressRef.current = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) return 0;
+        return p + 1;
+      });
+    }, tick);
+    autoplayRef.current = setInterval(() => {
+      setActive((a) => {
+        const n = (a + 1) % slides.length;
+        setPrev(a);
+        setAnimDir("right");
+        setIsAnimating(true);
+        setProgress(0);
+        setTimeout(() => {
+          setPrev(null);
+          setIsAnimating(false);
+        }, 700);
+        return n;
+      });
+    }, DURATION);
+    return () => {
+      if (autoplayRef.current) clearInterval(autoplayRef.current);
+      if (progressRef.current) clearInterval(progressRef.current);
+    };
   }, []);
 
   const resetAutoplay = () => {
-    // if (autoplayRef.current) clearInterval(autoplayRef.current);
-    // if (progressRef.current) clearInterval(progressRef.current);
-    // setProgress(0);
-    // const tick = DURATION / 100;
-    // progressRef.current = setInterval(() => {
-    //   setProgress((p) => (p >= 100 ? 0 : p + 1));
-    // }, tick);
-    // autoplayRef.current = setInterval(() => {
-    //   setActive((a) => {
-    //     const n = (a + 1) % slides.length;
-    //     setPrev(a);
-    //     setAnimDir("right");
-    //     setIsAnimating(true);
-    //     setProgress(0);
-    //     setTimeout(() => {
-    //       setPrev(null);
-    //       setIsAnimating(false);
-    //     }, 700);
-    //     return n;
-    //   });
-    // }, DURATION);
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    if (progressRef.current) clearInterval(progressRef.current);
+    setProgress(0);
+    const tick = DURATION / 100;
+    progressRef.current = setInterval(() => {
+      setProgress((p) => (p >= 100 ? 0 : p + 1));
+    }, tick);
+    autoplayRef.current = setInterval(() => {
+      setActive((a) => {
+        const n = (a + 1) % slides.length;
+        setPrev(a);
+        setAnimDir("right");
+        setIsAnimating(true);
+        setProgress(0);
+        setTimeout(() => {
+          setPrev(null);
+          setIsAnimating(false);
+        }, 700);
+        return n;
+      });
+    }, DURATION);
   };
 
   const handleNav = (fn: () => void) => {

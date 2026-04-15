@@ -20,7 +20,7 @@ const dynamicApi = baseApi.injectEndpoints({
 
     patchDynamic: builder.mutation({
       query: ({ url, data }) => ({ url, method: "PATCH", body: data }),
-      invalidatesTags: [...dynamicTag],
+      invalidatesTags: dynamicTag,
     }),
 
     putDynamic: builder.mutation({

@@ -2,12 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import DataTable from "@/components/shared/DataTable";
-import Pagination from "@/components/shared/Pagination";
-import SearchInput from "@/components/shared/SearchInput";
-import DateRangePicker from "@/components/shared/DateRangePicker";
-import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import PatientForm from "@/components/patients/PatientForm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,89 +12,66 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Plus, Pencil, Trash2, Users } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
-import { IPatient } from "@/modules/patient/patient.interface";
 import {
   useDeleteDynamicMutation,
   useGetDynamicQuery,
   usePatchDynamicMutation,
   usePostDynamicMutation,
-} from "@/redux/features/dynamic/dynamicApi";
-import PageHeadingTitle from "@/components/shared/PageHeadingTitle";
-import FilterBar from "@/components/shared/FilterBar";
+} from "@/src/redux/features/dynamic/dynamicApi";
+import { ICategory } from "@/src/interface/dashboard/dashboard";
+import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
+import DataTable from "@/src/components/dashboard/shared/DataTable";
+import Pagination from "@/src/components/dashboard/shared/Pagination";
+import ConfirmDialog from "@/src/components/dashboard/common/modal/ConfirmDialog";
+import DynamicModal from "@/src/components/dashboard/common/modal/DynamicModal";
 
-const CONDITIONS = [
-  "Hypertension",
-  "Diabetes",
-  "Asthma",
-  "Arthritis",
-  "Cancer",
-  "Heart Disease",
-  "Depression",
-  "Anxiety",
-];
-
-const genderBadge = (g: string) => {
-  if (g === "male")
-    return "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300";
-  if (g === "female")
-    return "bg-pink-50 text-pink-700 dark:bg-pink-950/50 dark:text-pink-300";
-  return "bg-slate-100 text-slate-600";
-};
-
-export default function PatientsPage() {
+export default function CategoryPage() {
   const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [gender, setGender] = useState("");
-  const [condition, setCondition] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
-  const [editPatient, setEditPatient] = useState<IPatient | null>(null);
+  const [editCategory, setEditCategory] = useState<ICategory | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data, isLoading } = useGetDynamicQuery({
-    url: "/patients",
+    url: "/category",
     params: {
       page,
-      limit: 5,
-      searchTerm,
-      gender: gender || undefined,
-      condition: condition || undefined,
-      ...(startDate && { startDate }),
-      ...(endDate && { endDate }),
+      limit: 10,
     },
   });
 
-  const [createPatient, { isLoading: creating }] = usePostDynamicMutation();
-  const [updatePatient, { isLoading: updating }] = usePatchDynamicMutation();
-  const [deletePatient, { isLoading: deleting }] = useDeleteDynamicMutation();
+  console.log("data", data);
 
-  const patients = data?.data ?? [];
+  const [createCategory, { isLoading: creating }] = usePostDynamicMutation();
+  const [updateCategory, { isLoading: updating }] = usePatchDynamicMutation();
+  const [deleteCategory, { isLoading: deleting }] = useDeleteDynamicMutation();
+
+  const categorys = data?.data ?? [];
   const meta = data?.meta;
 
   const handleCreate = async (form: Record<string, unknown>) => {
     try {
-      await createPatient({ url: "patients", data: form }).unwrap();
-      toast.success("Patient added successfully");
+      await createCategory({ url: "category", data: form }).unwrap();
+      toast.success("Category added successfully");
       setCreateOpen(false);
     } catch (err: unknown) {
+      console.log(";errf", err);
       const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Failed to add patient");
+      toast.error(error?.data?.message || "Failed to add Category");
     }
   };
 
   const handleUpdate = async (form: Record<string, unknown>) => {
-    if (!editPatient) return;
+    if (!editCategory) return;
     try {
-      await updatePatient({
-        url: `patients/${editPatient._id}`,
-        data: form as Partial<IPatient>,
+      await updateCategory({
+        url: `Category/${editCategory._id}`,
+        data: form as Partial<ICategory>,
       }).unwrap();
-      toast.success("Patient updated");
-      setEditPatient(null);
+      toast.success("Category updated");
+      setEditCategory(null);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Failed to update");
@@ -110,10 +81,10 @@ export default function PatientsPage() {
   const handleDelete = async () => {
     if (!deleteId) return;
     try {
-      await deletePatient({
-        url: `patients/${deleteId}`,
+      await deleteCategory({
+        url: `Categorys/${deleteId}`,
       }).unwrap();
-      toast.success("Patient deleted");
+      toast.success("Category deleted");
       setDeleteId(null);
     } catch {
       toast.error("Failed to delete");
@@ -123,8 +94,8 @@ export default function PatientsPage() {
   const columns = [
     {
       key: "name",
-      label: "Patient",
-      render: (row: IPatient) => (
+      label: "Category",
+      render: (row: ICategory) => (
         <div className="flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
             <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
@@ -143,7 +114,7 @@ export default function PatientsPage() {
     {
       key: "age",
       label: "Age",
-      render: (row: IPatient) => (
+      render: (row: ICategory) => (
         <span className="text-sm text-slate-600 dark:text-slate-300">
           {row.age} yrs
         </span>
@@ -152,7 +123,7 @@ export default function PatientsPage() {
     {
       key: "gender",
       label: "Gender",
-      render: (row: IPatient) => (
+      render: (row: ICategory) => (
         <Badge
           variant="secondary"
           className={`border-0 font-medium text-xs capitalize ${genderBadge(row.gender)}`}
@@ -164,7 +135,7 @@ export default function PatientsPage() {
     {
       key: "condition",
       label: "Condition",
-      render: (row: IPatient) => (
+      render: (row: ICategory) => (
         <Badge
           variant="secondary"
           className="bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-0 text-xs font-medium"
@@ -176,7 +147,7 @@ export default function PatientsPage() {
     {
       key: "doctor",
       label: "Doctor",
-      render: (row: IPatient) => (
+      render: (row: ICategory) => (
         <span className="text-sm text-slate-600 dark:text-slate-300">
           {row.doctorId?.name ?? "—"}
         </span>
@@ -185,7 +156,7 @@ export default function PatientsPage() {
     {
       key: "createdAt",
       label: "Registered",
-      render: (row: IPatient) => (
+      render: (row: ICategory) => (
         <span className="text-xs text-slate-400">
           {row.createdAt ? format(parseISO(row.createdAt), "MMM d, yyyy") : ""}
         </span>
@@ -195,7 +166,7 @@ export default function PatientsPage() {
       key: "actions",
       label: "Actions",
       className: "text-right",
-      render: (row: IPatient) => (
+      render: (row: ICategory) => (
         <div className="flex items-center justify-end gap-1">
           <Button
             variant="ghost"
@@ -203,7 +174,7 @@ export default function PatientsPage() {
             className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg"
             onClick={(e) => {
               e.stopPropagation();
-              setEditPatient(row);
+              setEditCategory(row);
             }}
           >
             <Pencil className="h-4 w-4" />
@@ -227,40 +198,23 @@ export default function PatientsPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <PageHeadingTitle name={"Patients"} meta={meta} />
+        <PageHeadingTitle name={"Categorys"} meta={meta} />
 
         <Button
           onClick={() => setCreateOpen(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white gap-2 self-start sm:self-auto"
         >
           <Plus className="h-4 w-4" />
-          Add Patient
+          Add Category
         </Button>
       </div>
 
-      <FilterBar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        setPage={setPage}
-        value={condition}
-        setValue={setCondition}
-        valueOptions={CONDITIONS}
-        valueLabel={"Conditions"}
-        startDate={startDate}
-        endDate={endDate}
-        setStartDate={setStartDate}
-        setEndDate={setEndDate}
-        gender={gender}
-        setGender={setGender}
-        isGenderSelect={true}
-      />
-
       <DataTable
-        data={patients}
+        data={categorys}
         columns={columns}
         isLoading={isLoading}
         rowKey={(r) => r._id}
-        emptyMessage="No patients found."
+        emptyMessage="No Categorys found."
       />
 
       {/* pagination ys here*/}
@@ -273,26 +227,26 @@ export default function PatientsPage() {
       )}
 
       {/*all modals are here */}
-      <PatientForm
+      <DynamicModal
         open={createOpen}
         onOpenChange={setCreateOpen}
         onSubmit={handleCreate}
         isLoading={creating}
         mode="create"
       />
-      <PatientForm
-        open={!!editPatient}
-        onOpenChange={(v) => !v && setEditPatient(null)}
+      {/* <CategoryForm
+        open={!!editCategory}
+        onOpenChange={(v) => !v && setEditCategory(null)}
         onSubmit={handleUpdate}
-        defaultValues={editPatient ?? undefined}
+        defaultValues={editCategory ?? undefined}
         isLoading={updating}
         mode="edit"
-      />
+      /> */}
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(v) => !v && setDeleteId(null)}
-        title="Delete Patient?"
-        description="This will soft-delete the patient record."
+        title="Delete Category?"
+        description="This will soft-delete the Category record."
         onConfirm={handleDelete}
         loading={deleting}
       />

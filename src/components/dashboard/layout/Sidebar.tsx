@@ -11,6 +11,7 @@ import {
   Menu,
   X,
   ChevronRight,
+  Shovel,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -24,7 +25,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/doctors", label: "Doctors", icon: Stethoscope },
+  { href: "/dashboard/category", label: "Category", icon: Stethoscope },
   { href: "/patients", label: "Patients", icon: Users },
 ];
 
@@ -44,65 +45,66 @@ export default function Sidebar() {
   //   router.push("/login");
   // };
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      {/* Brand */}
-      <div
-        className={cn(
-          "flex items-center gap-3 px-4 py-5 border-b border-white/10",
-          collapsed && "justify-center px-2",
-        )}
-      >
-        <div className="bg-blue-500/30 rounded-xl p-2 shrink-0">
-          <Stethoscope className="h-5 w-5 text-blue-300" />
+  const SidebarContent = () => {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Brand */}
+        <div
+          className={cn(
+            "flex items-center gap-3 px-4 py-5 border-b border-white/10",
+            collapsed && "justify-center px-2",
+          )}
+        >
+          <div className="bg-blue-500/30 rounded-xl p-2 shrink-0">
+            <Shovel className="h-5 w-5 text-blue-300" />
+          </div>
+          {!collapsed && (
+            <span className="text-white font-bold text-lg tracking-tight">
+              Shoes Bazar
+            </span>
+          )}
         </div>
-        {!collapsed && (
-          <span className="text-white font-bold text-lg tracking-tight">
-            DoctorTracker
-          </span>
-        )}
-      </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
-                isActive
-                  ? "bg-blue-500/30 text-white shadow-sm border border-blue-400/20"
-                  : "text-blue-200/70 hover:bg-white/5 hover:text-white",
-                collapsed && "justify-center px-2",
-              )}
-            >
-              <Icon
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "h-5 w-5 shrink-0",
-                  isActive ? "text-blue-300" : "",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
+                  isActive
+                    ? "bg-blue-500/30 text-white shadow-sm border border-blue-400/20"
+                    : "text-blue-200/70 hover:bg-white/5 hover:text-white",
+                  collapsed && "justify-center px-2",
                 )}
-              />
-              {!collapsed && (
-                <>
-                  <span className="flex-1">{item.label}</span>
-                  {isActive && (
-                    <ChevronRight className="h-3 w-3 text-blue-300" />
+              >
+                <Icon
+                  className={cn(
+                    "h-5 w-5 shrink-0",
+                    isActive ? "text-blue-300" : "",
                   )}
-                </>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+                />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1">{item.label}</span>
+                    {isActive && (
+                      <ChevronRight className="h-3 w-3 text-blue-300" />
+                    )}
+                  </>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
 
-      {/* User + Logout */}
-      {/* <div className="px-3 py-4 border-t border-white/10 space-y-2">
+        {/* User + Logout */}
+        {/* <div className="px-3 py-4 border-t border-white/10 space-y-2">
         {!collapsed && user && (
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/5">
             <Avatar className="h-8 w-8 shrink-0">
@@ -130,8 +132,9 @@ export default function Sidebar() {
           {!collapsed && <span>Logout</span>}
         </Button>
       </div> */}
-    </div>
-  );
+      </div>
+    );
+  };
 
   return (
     <div className="bg-gradient-to-b from-slate-900 to-blue-950 border-r border-white/10">
