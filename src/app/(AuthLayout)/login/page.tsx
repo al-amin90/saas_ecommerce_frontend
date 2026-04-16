@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useAppDispatch } from "@/src/redux/store";
 import { setUser } from "@/src/redux/features/auth/authSlice";
 import { useRouter } from "next/navigation";
+import { IErrorResponse } from "@/src/interface";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
@@ -29,6 +30,7 @@ export default function LoginPage() {
       (process.env.NEXT_PUBLIC_TENANCY_TYPE as string) === "multi"
         ? parts[0]
         : "bazar";
+    console.log("subdomain", subdomain);
 
     const postData = { email, password, subdomain };
 
@@ -46,8 +48,8 @@ export default function LoginPage() {
       router.replace("/dashboard");
     } catch (err: unknown) {
       console.log("errf", err);
-      const errorMessage = err?.message || "Login failed";
-      toast.error(errorMessage);
+      const error = (err as IErrorResponse) || "Login failed";
+      toast.error(error.message);
     }
   };
 

@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/category", label: "Category", icon: Stethoscope },
-  { href: "/patients", label: "Patients", icon: Users },
+  { href: "/dashboard/color", label: "Color", icon: Users },
 ];
 
 export default function Sidebar() {

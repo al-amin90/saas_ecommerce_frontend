@@ -32,15 +32,13 @@ const categorySchema = z.object({
   name: z.string().min(1, "Name is required"),
 });
 
-const doctorSchema = z.object({
+const colorSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  specialization: z.string().min(1, "Specialization is required"),
-  phone: z.string().min(1, "Phone is required"),
-  email: z.string().email("Invalid email"),
+  color: z.string().min(1, "Color is required"),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
-type DoctorFormData = z.infer<typeof doctorSchema>;
+type ColorFormData = z.infer<typeof colorSchema>;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -89,14 +87,12 @@ function CategoryVariant({
   onSubmit,
   defaultValues,
   mode = "create",
-  doctors = [],
   onCancel,
 }: {
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   defaultValues?: Partial<CategoryFormData>;
   isLoading?: boolean;
   mode?: "create" | "edit";
-  doctors?: ICategory[];
   onCancel: () => void;
 }) {
   const {
@@ -164,9 +160,7 @@ function CategoryVariant({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-function DoctorVariant({
+function ColorVariant({
   onSubmit,
   defaultValues,
   isLoading,
@@ -174,7 +168,7 @@ function DoctorVariant({
   onCancel,
 }: {
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
-  defaultValues?: Partial<DoctorFormData>;
+  defaultValues?: Partial<ColorFormData>;
   isLoading?: boolean;
   mode?: "create" | "edit";
   onCancel: () => void;
@@ -183,79 +177,82 @@ function DoctorVariant({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
-  } = useForm<DoctorFormData>({
-    resolver: zodResolver(doctorSchema),
-    defaultValues,
+  } = useForm<ColorFormData>({
+    resolver: zodResolver(colorSchema),
+    defaultValues: {
+      ...defaultValues,
+    },
   });
 
   useEffect(() => {
-    if (defaultValues) reset(defaultValues);
+    reset({ ...defaultValues });
   }, [defaultValues]);
 
-  const textFields: {
-    name: keyof DoctorFormData;
-    label: string;
-    placeholder: string;
-  }[] = [
-    { name: "name", label: "Doctor Name", placeholder: "Dr. John Doe" },
-    {
-      name: "specialization",
-      label: "Specialization",
-      placeholder: "e.g. Cardiologist",
-    },
-    { name: "phone", label: "Phone", placeholder: "Enter phone number" },
-    { name: "email", label: "Email", placeholder: "doctor@hospital.com" },
-  ];
+  const pickedColor = watch("color");
+  console.log("pickedColor", pickedColor);
 
   return (
     <form
       onSubmit={handleSubmit((d) => onSubmit(d as Record<string, unknown>))}
       className="space-y-3 py-2"
     >
-      {textFields.map((f) => (
-        <div key={f.name} className="space-y-1">
-          <Label className="text-slate-700 dark:text-slate-300 text-sm">
-            {f.label}
-          </Label>
-          <Input
-            {...register(f.name)}
-            placeholder={f.placeholder}
-            className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
-          />
-          {errors[f.name] && (
-            <p className="text-xs text-red-500">{errors[f.name]?.message}</p>
-          )}
-        </div>
-      ))}
+      {/* Name */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Color Name
+        </Label>
+        <Input
+          {...register("name")}
+          placeholder="e.g. Red, Ocean Blue"
+          className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+        />
+        {errors.name && (
+          <p className="text-xs text-red-500">{errors.name.message}</p>
+        )}
+      </div>
 
-      <DialogFooter className="pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          className="border-slate-200 dark:border-slate-700"
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          {isLoading
-            ? mode === "create"
-              ? "Adding..."
-              : "Saving..."
-            : mode === "create"
-              ? "Add Doctor"
-              : "Save"}
-        </Button>
-      </DialogFooter>
+      {/* Color Picker */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Color
+        </Label>
+        <div className="flex items-center gap-3">
+          {/* Native color input */}
+          <input
+            value={pickedColor || "#000000"}
+            onChange={(e) => setValue("color", e.target.value)}
+            type="color"
+            className="w-28 h-10 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer bg-transparent p-0.5"
+          />
+          {/* Hex value display */}
+          <Input
+            {...register("color")}
+            placeholder="#000000"
+            className="h-9 font-mono bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+          />
+          {/* Live preview swatch */}
+          <span
+            className="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0"
+            style={{ backgroundColor: pickedColor || "#000000" }}
+          />
+        </div>
+        {errors.color && (
+          <p className="text-xs text-red-500">{errors.color.message}</p>
+        )}
+      </div>
+
+      <ModalFooter
+        isLoading={isLoading}
+        mode={mode}
+        onCancel={onCancel}
+        name="Color"
+      ></ModalFooter>
     </form>
   );
 }
-
 // ─── Title map ────────────────────────────────────────────────────────────────
 
 const defaultTitleMap: Record<Variant, Record<"create" | "edit", string>> = {
@@ -278,7 +275,6 @@ const DynamicModal = ({
   isLoading,
   onSubmit,
   defaultValues,
-  doctors,
 }: DynamicModalProps) => {
   const title = defaultTitleMap[variant][mode];
 
@@ -292,16 +288,15 @@ const DynamicModal = ({
             onSubmit={onSubmit}
             defaultValues={defaultValues as Partial<CategoryFormData>}
             mode={mode}
-            doctors={doctors}
             onCancel={() => onOpenChange(false)}
           />
         );
 
       case "color":
         return (
-          <DoctorVariant
+          <ColorVariant
             onSubmit={onSubmit}
-            defaultValues={defaultValues as Partial<DoctorFormData>}
+            defaultValues={defaultValues as Partial<ColorFormData>}
             isLoading={isLoading}
             mode={mode}
             onCancel={() => onOpenChange(false)}
