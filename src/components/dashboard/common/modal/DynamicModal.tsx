@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect } from "react";
@@ -23,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ICategory } from "@/src/interface/dashboard/dashboard";
+import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
 import ModalFooter from "./ModalFooter";
 
 // ─── Zod Schemas ──────────────────────────────────────────────────────────────
@@ -37,12 +38,35 @@ const colorSchema = z.object({
   color: z.string().min(1, "Color is required"),
 });
 
+const stockSchema = z.object({
+  size: z.number().min(1, "Size required"),
+  quantity: z.number().min(1, "Quantity required"),
+});
+
+const productSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  price: z.number().min(0, "Price required"),
+  discountPrice: z.number().min(0, "Discount price required"),
+  categoryID: z.string().min(1, "Category required"),
+  sku: z.string().min(1, "SKU required"),
+  variant: z
+    .array(
+      z.object({
+        color: z.string().min(1, "Color required"),
+        stock: z.array(stockSchema).min(1, "At least one size required"),
+      }),
+    )
+    .min(1, "At least one variant required"),
+});
+
+type ProductFormData = z.infer<typeof productSchema>;
+
 type CategoryFormData = z.infer<typeof categorySchema>;
 type ColorFormData = z.infer<typeof colorSchema>;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Variant = "category" | "color";
+type Variant = "category" | "color" | "product";
 
 type DynamicModalProps = {
   // Modal control
@@ -70,14 +94,23 @@ type DynamicModalProps = {
   mode?: "create" | "edit";
   isLoading?: boolean;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
-  defaultValues?: Partial<T> | Partial<DoctorFormData>;
+  defaultValues?: unknown;
 
   // Patient-specific
-  doctors?: IDoctor[];
-  defaultDoctorId?: string;
-  hideDoctorField?: boolean;
+  options1?: unknown;
+  options2?: unknown;
 
   // Extensible: add more variant-specific props here as needed
+};
+
+type VariantProps<T> = {
+  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  defaultValues?: Partial<T>;
+  isLoading?: boolean;
+  mode?: "create" | "edit";
+  onCancel: () => void;
+  categories?: { _id: string; name: string }[];
+  colors?: { _id: string; name: string; color: string }[];
 };
 
 // ─── Sub-forms ────────────────────────────────────────────────────────────────
@@ -88,13 +121,7 @@ function CategoryVariant({
   defaultValues,
   mode = "create",
   onCancel,
-}: {
-  onSubmit: (data: Record<string, unknown>) => Promise<void>;
-  defaultValues?: Partial<CategoryFormData>;
-  isLoading?: boolean;
-  mode?: "create" | "edit";
-  onCancel: () => void;
-}) {
+}: VariantProps<CategoryFormData>) {
   const {
     register,
     handleSubmit,
@@ -166,13 +193,7 @@ function ColorVariant({
   isLoading,
   mode = "create",
   onCancel,
-}: {
-  onSubmit: (data: Record<string, unknown>) => Promise<void>;
-  defaultValues?: Partial<ColorFormData>;
-  isLoading?: boolean;
-  mode?: "create" | "edit";
-  onCancel: () => void;
-}) {
+}: VariantProps<ColorFormData>) {
   const {
     register,
     handleSubmit,
@@ -253,11 +274,318 @@ function ColorVariant({
     </form>
   );
 }
+
+function VariantBlock({
+  vIdx,
+  control,
+  register,
+  watch,
+  setValue,
+  errors,
+  colors,
+  onRemove,
+  canRemove,
+}: {
+  vIdx: number;
+  control: any;
+  register: any;
+  watch: any;
+  setValue: any;
+  errors: any;
+  colors: { _id: string; name: string; color: string }[];
+  onRemove: () => void;
+  canRemove: boolean;
+}) {
+  const {
+    fields: stockFields,
+    append: appendStock,
+    remove: removeStock,
+  } = useFieldArray({ control, name: `variant.${vIdx}.stock` });
+
+  return (
+    <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-3 bg-slate-50/50 dark:bg-slate-800/30">
+      {/* Variant header */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+          Variant {vIdx + 1}
+        </span>
+        {canRemove && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="text-xs text-red-500 hover:text-red-600"
+          >
+            Remove
+          </button>
+        )}
+      </div>
+
+      {/* Color select */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-xs">
+          Color
+        </Label>
+        <Select
+          value={watch(`variant.${vIdx}.color`)}
+          onValueChange={(v) => setValue(`variant.${vIdx}.color`, v)}
+        >
+          <SelectTrigger className="h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+            <SelectValue placeholder="Select color" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-slate-900">
+            {colors.map((c) => (
+              <SelectItem key={c._id} value={c._id}>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-full border border-slate-200"
+                    style={{ backgroundColor: c.color }}
+                  />
+                  {c.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors?.variant?.[vIdx]?.color && (
+          <p className="text-xs text-red-500">
+            {errors.variant[vIdx].color.message}
+          </p>
+        )}
+      </div>
+
+      {/* Stock rows */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-slate-700 dark:text-slate-300 text-xs">
+            Stock
+          </Label>
+          <button
+            type="button"
+            onClick={() => appendStock({ size: 0, quantity: 1 })}
+            className="text-xs text-blue-600 hover:text-blue-700"
+          >
+            + Add Size
+          </button>
+        </div>
+
+        {stockFields.map((stockField, sIdx) => (
+          <div key={stockField.id} className="flex items-center gap-2">
+            <Input
+              {...register(`variant.${vIdx}.stock.${sIdx}.size`)}
+              type="number"
+              placeholder="Size"
+              className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+            />
+            <Input
+              {...register(`variant.${vIdx}.stock.${sIdx}.quantity`)}
+              type="number"
+              placeholder="Qty"
+              className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+            />
+            {stockFields.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeStock(sIdx)}
+                className="text-red-400 hover:text-red-500 text-xs flex-shrink-0"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProductVariant({
+  onSubmit,
+  defaultValues,
+  isLoading,
+  mode = "create",
+  onCancel,
+  categories = [],
+  colors = [],
+}: VariantProps<ProductFormData> & {
+  categories?: ICategory[];
+  colors?: IColor[];
+}) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    control,
+    formState: { errors },
+  } = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      variant: [{ color: "", stock: [{ size: 0, quantity: 1 }] }],
+      ...defaultValues,
+    },
+  });
+
+  useEffect(() => {
+    if (defaultValues)
+      reset({
+        variant: [{ color: "", stock: [{ size: 0, quantity: 1 }] }],
+        ...defaultValues,
+      });
+  }, [defaultValues]);
+
+  // variant field array
+  const {
+    fields: variantFields,
+    append: appendVariant,
+    remove: removeVariant,
+  } = useFieldArray({ control, name: "variant" });
+
+  return (
+    <form
+      onSubmit={handleSubmit((d) => onSubmit(d as Record<string, unknown>))}
+      className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-1"
+    >
+      {/* Name */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Product Name
+        </Label>
+        <Input
+          {...register("name")}
+          placeholder="e.g. Premium Cotton T-Shirt"
+          className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+        />
+        {errors.name && (
+          <p className="text-xs text-red-500">{errors.name.message}</p>
+        )}
+      </div>
+
+      {/* SKU */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          SKU
+        </Label>
+        <Input
+          {...register("sku")}
+          placeholder="e.g. TS-BLK-001"
+          className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+        />
+        {errors.sku && (
+          <p className="text-xs text-red-500">{errors.sku.message}</p>
+        )}
+      </div>
+
+      {/* Price + Discount Price */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <Label className="text-slate-700 dark:text-slate-300 text-sm">
+            Price
+          </Label>
+          <Input
+            {...register("price")}
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+          />
+          {errors.price && (
+            <p className="text-xs text-red-500">{errors.price.message}</p>
+          )}
+        </div>
+        <div className="space-y-1">
+          <Label className="text-slate-700 dark:text-slate-300 text-sm">
+            Discount Price
+          </Label>
+          <Input
+            {...register("discountPrice")}
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+          />
+          {errors.discountPrice && (
+            <p className="text-xs text-red-500">
+              {errors.discountPrice.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Category */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Category
+        </Label>
+        <Select
+          value={watch("categoryID")}
+          onValueChange={(v) => setValue("categoryID", v)}
+        >
+          <SelectTrigger className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-slate-900">
+            {categories.map((c) => (
+              <SelectItem key={c._id} value={c._id}>
+                {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.categoryID && (
+          <p className="text-xs text-red-500">{errors.categoryID.message}</p>
+        )}
+      </div>
+
+      {/* ── Variants ── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-slate-700 dark:text-slate-300 text-sm font-semibold">
+            Variants
+          </Label>
+          <button
+            type="button"
+            onClick={() =>
+              appendVariant({ color: "", stock: [{ size: 0, quantity: 1 }] })
+            }
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+          >
+            + Add Variant
+          </button>
+        </div>
+
+        {variantFields.map((variantField, vIdx) => (
+          <VariantBlock
+            key={variantField.id}
+            vIdx={vIdx}
+            control={control}
+            register={register}
+            watch={watch}
+            setValue={setValue}
+            errors={errors}
+            colors={colors}
+            onRemove={() => removeVariant(vIdx)}
+            canRemove={variantFields.length > 1}
+          />
+        ))}
+      </div>
+
+      <ModalFooter
+        isLoading={isLoading}
+        mode={mode}
+        onCancel={onCancel}
+        name="Product"
+      />
+    </form>
+  );
+}
+
 // ─── Title map ────────────────────────────────────────────────────────────────
 
 const defaultTitleMap: Record<Variant, Record<"create" | "edit", string>> = {
   category: { create: "Add New Category", edit: "Edit Category" },
   color: { create: "Add New Color", edit: "Edit Color" },
+  product: { create: "Add New Product", edit: "Edit Product" },
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -275,6 +603,8 @@ const DynamicModal = ({
   isLoading,
   onSubmit,
   defaultValues,
+  options1,
+  options2,
 }: DynamicModalProps) => {
   const title = defaultTitleMap[variant][mode];
 
@@ -300,6 +630,19 @@ const DynamicModal = ({
             isLoading={isLoading}
             mode={mode}
             onCancel={() => onOpenChange(false)}
+          />
+        );
+
+      case "product":
+        return (
+          <ProductVariant
+            onSubmit={onSubmit}
+            defaultValues={defaultValues as Partial<ProductFormData>}
+            isLoading={isLoading}
+            mode={mode}
+            onCancel={() => onOpenChange(false)}
+            categories={options1 as ICategory[]}
+            colors={options2 as IColor[]}
           />
         );
 
