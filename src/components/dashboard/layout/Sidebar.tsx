@@ -27,6 +27,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/category", label: "Category", icon: Stethoscope },
   { href: "/dashboard/color", label: "Color", icon: Users },
+  { href: "/dashboard/product", label: "Product", icon: Users },
 ];
 
 export default function Sidebar() {

@@ -5,12 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  useDeleteDynamicMutation,
-  useGetDynamicQuery,
-  usePatchDynamicMutation,
-  usePostDynamicMutation,
-} from "@/src/redux/features/dynamic/dynamicApi";
+import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
 import { IErrorResponse } from "@/src/interface";
 import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
 import DataTable from "@/src/components/dashboard/shared/DataTable";
@@ -18,6 +13,12 @@ import Pagination from "@/src/components/dashboard/shared/Pagination";
 import ConfirmDialog from "@/src/components/dashboard/common/modal/ConfirmDialog";
 import DynamicModal from "@/src/components/dashboard/common/modal/DynamicModal";
 import { IProduct } from "@/src/interface/dashboard/product.interface";
+import {
+  useDeleteProductMutation,
+  useGetProductQuery,
+  usePatchProductMutation,
+  usePostProductMutation,
+} from "@/src/redux/features/product/productApi";
 
 export default function ProductPage() {
   const [page, setPage] = useState(1);
@@ -28,7 +29,7 @@ export default function ProductPage() {
 
   // ── Queries ──────────────────────────────────────────────────────────────
 
-  const { data, isLoading } = useGetDynamicQuery({
+  const { data, isLoading } = useGetProductQuery({
     url: "/product",
     params: { page, limit: 10 },
   });
@@ -43,14 +44,17 @@ export default function ProductPage() {
     params: { limit: 100 },
   });
 
-  const [createProduct, { isLoading: creating }] = usePostDynamicMutation();
-  const [updateProduct, { isLoading: updating }] = usePatchDynamicMutation();
-  const [deleteProduct, { isLoading: deleting }] = useDeleteDynamicMutation();
+  const [createProduct, { isLoading: creating }] = usePostProductMutation();
+  const [updateProduct, { isLoading: updating }] = usePatchProductMutation();
+  const [deleteProduct, { isLoading: deleting }] = useDeleteProductMutation();
 
   const products: IProduct[] = data?.data ?? [];
   const meta = data?.meta;
   const categories = categoryData?.data ?? [];
   const colors = colorData?.data ?? [];
+
+  console.log("categories", categories);
+  console.log("colors", colors);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 

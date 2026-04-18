@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus } from "lucide-react";
@@ -96,9 +96,8 @@ type DynamicModalProps = {
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   defaultValues?: unknown;
 
-  // Patient-specific
-  options1?: unknown;
-  options2?: unknown;
+  options1?: ICategory[];
+  options2?: IColor[];
 
   // Extensible: add more variant-specific props here as needed
 };
@@ -109,8 +108,6 @@ type VariantProps<T> = {
   isLoading?: boolean;
   mode?: "create" | "edit";
   onCancel: () => void;
-  categories?: { _id: string; name: string }[];
-  colors?: { _id: string; name: string; color: string }[];
 };
 
 // ─── Sub-forms ────────────────────────────────────────────────────────────────
@@ -292,7 +289,7 @@ function VariantBlock({
   watch: any;
   setValue: any;
   errors: any;
-  colors: { _id: string; name: string; color: string }[];
+  colors: IColor[];
   onRemove: () => void;
   canRemove: boolean;
 }) {
@@ -355,17 +352,25 @@ function VariantBlock({
 
       {/* Stock rows */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => appendStock({ size: 0, quantity: 1 })}
+              className="text-xs text-blue-600 cursor-pointer hover:text-blue-700"
+            >
+              + Add Size
+            </button>
+          </div>{" "}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
           <Label className="text-slate-700 dark:text-slate-300 text-xs">
             Stock
           </Label>
-          <button
-            type="button"
-            onClick={() => appendStock({ size: 0, quantity: 1 })}
-            className="text-xs text-blue-600 hover:text-blue-700"
-          >
-            + Add Size
-          </button>
+          <Label className="text-slate-700 dark:text-slate-300 text-xs">
+            Quantity
+          </Label>
         </div>
 
         {stockFields.map((stockField, sIdx) => (
@@ -407,8 +412,8 @@ function ProductVariant({
   categories = [],
   colors = [],
 }: VariantProps<ProductFormData> & {
-  categories?: ICategory[];
-  colors?: IColor[];
+  categories: ICategory[];
+  colors: IColor[];
 }) {
   const {
     register,
@@ -548,7 +553,7 @@ function ProductVariant({
             onClick={() =>
               appendVariant({ color: "", stock: [{ size: 0, quantity: 1 }] })
             }
-            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+            className="text-xs cursor-pointer text-blue-600 hover:text-blue-700 font-medium"
           >
             + Add Variant
           </button>
@@ -563,7 +568,7 @@ function ProductVariant({
             watch={watch}
             setValue={setValue}
             errors={errors}
-            colors={colors}
+            colors={colors as IColor[]}
             onRemove={() => removeVariant(vIdx)}
             canRemove={variantFields.length > 1}
           />
@@ -607,8 +612,6 @@ const DynamicModal = ({
   options2,
 }: DynamicModalProps) => {
   const title = defaultTitleMap[variant][mode];
-
-  console.log("open", open);
 
   const renderVariant = () => {
     switch (variant) {
