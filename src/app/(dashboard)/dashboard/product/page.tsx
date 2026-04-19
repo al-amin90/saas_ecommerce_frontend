@@ -19,6 +19,7 @@ import {
   usePatchProductMutation,
   usePostProductMutation,
 } from "@/src/redux/features/product/productApi";
+import { ProductFormData } from "@/src/validation";
 
 export default function ProductPage() {
   const [page, setPage] = useState(1);
@@ -60,6 +61,7 @@ export default function ProductPage() {
   const handleCreate = async (form: ProductFormData) => {
     try {
       const formData = new FormData();
+      console.log("form", form);
 
       formData.append("name", form.name);
       formData.append("sku", form.sku);
@@ -67,16 +69,26 @@ export default function ProductPage() {
       formData.append("discountPrice", String(form.discountPrice || 0));
       formData.append("categoryID", form.categoryID);
 
-      form.images.forEach((image) => {
+      form.images.forEach((image: File) => {
         formData.append("images", image);
       });
 
-      formData.append("variants", JSON.stringify(form.variant));
+      formData.append("variant", JSON.stringify(form.variant));
+
+      // Debug - কি পাঠাচ্ছি দেখুন
+      console.log("FormData entries:");
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(key, "File:", value.name);
+        } else {
+          console.log(key, "Value:", value);
+        }
+      }
 
       console.log("formData:", formData);
 
       await createProduct({ url: "product", data: formData }).unwrap();
-      await createProduct({ url: "product", data: form }).unwrap();
+
       toast.success("Product added successfully");
       setCreateOpen(false);
     } catch (err: unknown) {
