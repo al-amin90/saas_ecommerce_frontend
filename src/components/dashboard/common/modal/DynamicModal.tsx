@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Plus } from "lucide-react";
+
+import { Plus, Upload, X } from "lucide-react";
 
 import {
   Dialog,
@@ -26,43 +26,16 @@ import {
 } from "@/components/ui/select";
 import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
 import ModalFooter from "./ModalFooter";
+import {
+  CategoryFormData,
+  categorySchema,
+  ColorFormData,
+  colorSchema,
+  ProductFormData,
+  productSchema,
+} from "@/src/validation";
 
 // ─── Zod Schemas ──────────────────────────────────────────────────────────────
-
-const categorySchema = z.object({
-  name: z.string().min(1, "Name is required"),
-});
-
-const colorSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  color: z.string().min(1, "Color is required"),
-});
-
-const stockSchema = z.object({
-  size: z.number().min(1, "Size required"),
-  quantity: z.number().min(1, "Quantity required"),
-});
-
-const productSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  price: z.number().min(0, "Price required"),
-  discountPrice: z.number().min(0, "Discount price required"),
-  categoryID: z.string().min(1, "Category required"),
-  sku: z.string().min(1, "SKU required"),
-  variant: z
-    .array(
-      z.object({
-        color: z.string().min(1, "Color required"),
-        stock: z.array(stockSchema).min(1, "At least one size required"),
-      }),
-    )
-    .min(1, "At least one variant required"),
-});
-
-type ProductFormData = z.infer<typeof productSchema>;
-
-type CategoryFormData = z.infer<typeof categorySchema>;
-type ColorFormData = z.infer<typeof colorSchema>;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -434,6 +407,9 @@ function ProductVariant({
   categories: ICategory[];
   colors: IColor[];
 }) {
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
   const {
     register,
     handleSubmit,
@@ -446,17 +422,48 @@ function ProductVariant({
     resolver: zodResolver(productSchema),
     defaultValues: {
       variant: [{ color: "", stock: [{ size: 0, quantity: 1 }] }],
+      images: [],
       ...defaultValues,
     },
   });
 
-  useEffect(() => {
-    if (defaultValues)
-      reset({
-        variant: [{ color: "", stock: [{ size: 0, quantity: 1 }] }],
-        ...defaultValues,
-      });
-  }, [defaultValues]);
+  // Handle image uploads
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newFiles = [...images, ...files];
+
+    // Limit to 10 images
+    if (newFiles.length > 10) {
+      alert("Maximum 10 images allowed");
+      return;
+    }
+
+    setImages(newFiles);
+
+    // Create previews
+    const previews: string[] = [];
+    newFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        previews.push(reader.result as string);
+        if (previews.length === newFiles.length) {
+          setImagePreviews(previews);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Update form state with image files
+    setValue("images", newFiles);
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setImages(newImages);
+    setImagePreviews(newPreviews);
+    setValue("images", newImages);
+  };
 
   // variant field array
   const {
@@ -467,7 +474,7 @@ function ProductVariant({
 
   return (
     <form
-      onSubmit={handleSubmit((d) => onSubmit(d as Record<string, unknown>))}
+      onSubmit={handleSubmit(onSubmit)}
       className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-1"
     >
       {/* Name */}
@@ -561,6 +568,64 @@ function ProductVariant({
         )}
       </div>
 
+      {/* ── Images Upload ── */}
+      <div className="space-y-2">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm font-semibold">
+          Product Images
+        </Label>
+        <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+          <label className="cursor-pointer flex flex-col items-center gap-2">
+            <Upload size={24} className="text-slate-400" />
+            <div>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Click to upload or drag and drop
+              </p>
+              <p className="text-xs text-slate-500">
+                PNG, JPG, GIF up to 5MB (Max 10 images)
+              </p>
+            </div>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </label>
+        </div>
+
+        {/* Image Previews */}
+        {imagePreviews.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            {imagePreviews.map((preview, idx) => (
+              <div
+                key={idx}
+                className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700"
+              >
+                <img
+                  src={preview}
+                  alt={`Preview ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(idx)}
+                  className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="text-xs text-slate-500">
+          {images.length}/10 images uploaded
+        </p>
+        {errors.images && (
+          <p className="text-xs text-red-500">{errors.images.message}</p>
+        )}
+      </div>
+
       {/* ── Variants ── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -599,7 +664,7 @@ function ProductVariant({
         mode={mode}
         onCancel={onCancel}
         name="Product"
-      />
+      ></ModalFooter>
     </form>
   );
 }
@@ -631,6 +696,8 @@ const DynamicModal = ({
   options2,
 }: DynamicModalProps) => {
   const title = defaultTitleMap[variant][mode];
+
+  console.log("defaultValues", defaultValues);
 
   const renderVariant = () => {
     switch (variant) {

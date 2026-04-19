@@ -34,6 +34,8 @@ export default function ProductPage() {
     params: { page, limit: 10 },
   });
 
+  console.log("data", data);
+
   // categories & colors for selects inside the modal
   const { data: categoryData } = useGetDynamicQuery({
     url: "/category",
@@ -53,18 +55,32 @@ export default function ProductPage() {
   const categories = categoryData?.data ?? [];
   const colors = colorData?.data ?? [];
 
-  console.log("categories", categories);
-  console.log("colors", colors);
-
   // ── Handlers ─────────────────────────────────────────────────────────────
 
-  const handleCreate = async (form: Record<string, unknown>) => {
+  const handleCreate = async (form: ProductFormData) => {
     try {
-      console.log("form", form);
+      const formData = new FormData();
+
+      formData.append("name", form.name);
+      formData.append("sku", form.sku);
+      formData.append("price", String(form.price));
+      formData.append("discountPrice", String(form.discountPrice || 0));
+      formData.append("categoryID", form.categoryID);
+
+      form.images.forEach((image) => {
+        formData.append("images", image);
+      });
+
+      formData.append("variants", JSON.stringify(form.variant));
+
+      console.log("formData:", formData);
+
+      await createProduct({ url: "product", data: formData }).unwrap();
       await createProduct({ url: "product", data: form }).unwrap();
       toast.success("Product added successfully");
       setCreateOpen(false);
     } catch (err: unknown) {
+      console.log("err", err);
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Failed to add product");
     }
