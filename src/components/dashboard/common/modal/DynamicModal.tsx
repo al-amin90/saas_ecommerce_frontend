@@ -366,36 +366,55 @@ function VariantBlock({
 
         <div className="grid grid-cols-2 gap-3">
           <Label className="text-slate-700 dark:text-slate-300 text-xs">
-            Stock
+            Size
           </Label>
           <Label className="text-slate-700 dark:text-slate-300 text-xs">
             Quantity
           </Label>
         </div>
-
         {stockFields.map((stockField, sIdx) => (
-          <div key={stockField.id} className="flex items-center gap-2">
-            <Input
-              {...register(`variant.${vIdx}.stock.${sIdx}.size`)}
-              type="number"
-              placeholder="Size"
-              className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
-            />
-            <Input
-              {...register(`variant.${vIdx}.stock.${sIdx}.quantity`)}
-              type="number"
-              placeholder="Qty"
-              className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
-            />
-            {stockFields.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeStock(sIdx)}
-                className="text-red-400 hover:text-red-500 text-xs flex-shrink-0"
-              >
-                ✕
-              </button>
-            )}
+          <div key={stockField.id} className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <Input
+                  {...register(`variant.${vIdx}.stock.${sIdx}.size`, {
+                    valueAsNumber: true,
+                  })}
+                  type="number"
+                  placeholder="Size"
+                  className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+                />
+                {errors.variant?.[vIdx]?.stock?.[sIdx]?.size && (
+                  <p className="text-xs text-red-500 mt-0.5">
+                    {errors.variant[vIdx]?.stock?.[sIdx]?.size?.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex-1">
+                <Input
+                  {...register(`variant.${vIdx}.stock.${sIdx}.quantity`, {
+                    valueAsNumber: true,
+                  })}
+                  type="number"
+                  placeholder="Qty"
+                  className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+                />
+                {errors.variant?.[vIdx]?.stock?.[sIdx]?.quantity && (
+                  <p className="text-xs text-red-500 mt-0.5">
+                    {errors.variant[vIdx]?.stock?.[sIdx]?.quantity?.message}
+                  </p>
+                )}
+              </div>
+              {stockFields.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeStock(sIdx)}
+                  className="text-red-400 hover:text-red-500 text-xs flex-shrink-0"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -488,7 +507,7 @@ function ProductVariant({
             Price
           </Label>
           <Input
-            {...register("price")}
+            {...register("price", { valueAsNumber: true })}
             type="number"
             step="0.01"
             placeholder="0.00"
@@ -503,7 +522,7 @@ function ProductVariant({
             Discount Price
           </Label>
           <Input
-            {...register("discountPrice")}
+            {...register("discountPrice", { valueAsNumber: true })}
             type="number"
             step="0.01"
             placeholder="0.00"

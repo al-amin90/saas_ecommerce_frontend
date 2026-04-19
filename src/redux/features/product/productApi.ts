@@ -6,9 +6,9 @@ const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getProduct: builder.query<
       { success: boolean; message: string; data: any; meta?: any },
-      { url: string }
+      { url: string; params?: Record<string, any> }
     >({
-      query: ({ url }) => ({ url, method: "GET" }),
+      query: ({ url, params }) => ({ url, params, method: "GET" }),
       providesTags: ["products"],
     }),
 

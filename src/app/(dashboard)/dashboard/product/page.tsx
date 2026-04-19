@@ -60,6 +60,7 @@ export default function ProductPage() {
 
   const handleCreate = async (form: Record<string, unknown>) => {
     try {
+      console.log("form", form);
       await createProduct({ url: "product", data: form }).unwrap();
       toast.success("Product added successfully");
       setCreateOpen(false);
