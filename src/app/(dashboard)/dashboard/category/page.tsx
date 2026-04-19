@@ -179,7 +179,7 @@ export default function CategoryPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
-        defaultValues={editCategory ?? undefined}
+        variantSingleId={editCategory?._id ?? undefined}
         isLoading={updating}
         mode="edit"
       />

@@ -194,7 +194,7 @@ export default function ColorPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
-        defaultValues={editColor ?? undefined}
+        variantSingleId={editColor?._id ?? undefined}
         isLoading={updating}
         mode="edit"
         variant="color"

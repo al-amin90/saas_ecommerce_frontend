@@ -61,7 +61,6 @@ export default function ProductPage() {
   const handleCreate = async (form: ProductFormData) => {
     try {
       const formData = new FormData();
-      console.log("form", form);
 
       formData.append("name", form.name);
       formData.append("sku", form.sku);
@@ -75,18 +74,6 @@ export default function ProductPage() {
 
       formData.append("variant", JSON.stringify(form.variant));
 
-      // Debug - কি পাঠাচ্ছি দেখুন
-      console.log("FormData entries:");
-      for (let [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.log(key, "File:", value.name);
-        } else {
-          console.log(key, "Value:", value);
-        }
-      }
-
-      console.log("formData:", formData);
-
       await createProduct({ url: "product", data: formData }).unwrap();
 
       toast.success("Product added successfully");
@@ -98,13 +85,39 @@ export default function ProductPage() {
     }
   };
 
-  const handleUpdate = async (form: Record<string, unknown>) => {
+  const handleUpdate = async (form: ProductFormData) => {
     if (!editProduct) return;
     try {
-      await updateProduct({
-        url: `product/${editProduct._id}`,
-        data: form as Partial<IProduct>,
-      }).unwrap();
+      console.log("form", form);
+      const formData = new FormData();
+
+      // String fields
+      formData.append("name", form.name);
+      formData.append("sku", form.sku);
+      formData.append("categoryID", form.categoryID);
+      formData.append("description", form.description || "");
+
+      // Number fields
+      formData.append("price", String(form.price));
+      formData.append("discountPrice", String(form.discountPrice || 0));
+
+      // New images
+      form.images.forEach((image) => {
+        formData.append("images", image);
+      });
+
+      // Existing images to keep
+      if (form.existingImages.length > 0) {
+        formData.append("existingImages", JSON.stringify(form.existingImages));
+      }
+
+      // Variant
+      formData.append("variant", JSON.stringify(form.variant));
+
+      // await updateProduct({
+      //   url: `product/${editProduct._id}`,
+      //   data: formData as Partial<IProduct>,
+      // }).unwrap();
       toast.success("Product updated");
       setEditOpen(false);
     } catch (err: unknown) {
@@ -272,7 +285,7 @@ export default function ProductPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
-        defaultValues={editProduct ?? undefined}
+        variantSingleId={editProduct?._id ?? undefined}
         isLoading={updating}
         mode="edit"
         variant="product"
