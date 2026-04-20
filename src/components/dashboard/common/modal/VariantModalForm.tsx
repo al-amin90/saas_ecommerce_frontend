@@ -371,24 +371,34 @@ export function ProductVariant({
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      variant: [{ color: "", stock: [{ size: 0, quantity: 1 }] }],
-
       ...defaultValues,
-      existingImages: defaultValues?.images as [],
-      images: [],
-      categoryID: defaultValues.categoryID._id as string,
+      categoryID:
+        defaultValues &&
+        typeof defaultValues.categoryID === "object" &&
+        defaultValues.categoryID !== null &&
+        "_id" in defaultValues.categoryID
+          ? (defaultValues.categoryID as any)._id
+          : "",
+      variant:
+        defaultValues?.variant &&
+        defaultValues?.variant.map((v) => ({
+          color: typeof v.color === "object" ? (v.color as any)._id : "",
+          stock: v.stock,
+        })),
     },
   });
   console.log("errors", errors);
 
   useEffect(() => {
     if (defaultValues && mode === "edit") {
-      // ✅ Set existing images
-      if (defaultValues.images && Array.isArray(defaultValues.images)) {
-        setExistingImages(defaultValues.images);
+      if (
+        defaultValues.existingImages &&
+        Array.isArray(defaultValues.existingImages)
+      ) {
+        setExistingImages(defaultValues.existingImages);
       }
     }
-  }, [defaultValues, mode, reset]);
+  }, [defaultValues, mode]);
 
   // Handle image uploads
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {

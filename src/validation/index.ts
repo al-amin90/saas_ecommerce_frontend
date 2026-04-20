@@ -19,7 +19,7 @@ export const productSchema = z.object({
   price: z.number().min(0, "Price required"),
   discountPrice: z.number().min(0, "Discount price required").optional(),
   categoryID: z.string().min(1, "Category required"),
-  images: z.array(z.instanceof(File)).min(1, "At least one image is required"),
+  images: z.array(z.instanceof(File)).optional(),
   existingImages: z.array(z.string()).optional(),
   sku: z.string().min(1, "SKU required"),
   description: z.string().optional(),

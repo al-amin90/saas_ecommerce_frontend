@@ -107,7 +107,7 @@ export default function ProductPage() {
       });
 
       // Existing images to keep
-      if (form.existingImages.length > 0) {
+      if (form?.existingImages && form?.existingImages?.length > 0) {
         formData.append("existingImages", JSON.stringify(form.existingImages));
       }
 
