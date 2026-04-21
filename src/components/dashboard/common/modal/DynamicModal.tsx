@@ -29,6 +29,11 @@ import {
 
 type Variant = "category" | "color" | "product";
 
+type DynamicQueryHook = (
+  arg: { url: string },
+  options?: { skip?: boolean },
+) => { data: any; isLoading: boolean };
+
 type DynamicModalProps = {
   // Modal control
   open: boolean;
@@ -56,6 +61,7 @@ type DynamicModalProps = {
   isLoading?: boolean;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   variantSingleId?: string;
+  dynamicQuery?: DynamicQueryHook;
 
   options1?: ICategory[];
   options2?: IColor[];
@@ -86,18 +92,22 @@ const DynamicModal = ({
   isLoading,
   onSubmit,
   variantSingleId,
+  dynamicQuery,
   options1,
   options2,
 }: DynamicModalProps) => {
   const title = defaultTitleMap[variant][mode];
 
-  const { data, isLoading: singleLoading } = useGetDynamicQuery({
-    url: `${variant}/${variantSingleId}`,
-  });
-  const defaultValues = data?.data;
+  const queryResult = dynamicQuery?.(
+    { url: `${variant}/${variantSingleId}` },
+    { skip: !variantSingleId || !dynamicQuery },
+  );
+
+  const defaultValues = queryResult?.data?.data;
+  const singleLoading = queryResult?.isLoading ?? false;
 
   console.log("variantSingleId", variantSingleId);
-  console.log("data", data);
+  console.log("data", defaultValues);
 
   if (singleLoading) return <p> singleLoading..</p>;
 

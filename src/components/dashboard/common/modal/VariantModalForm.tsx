@@ -372,24 +372,28 @@ export function ProductVariant({
     resolver: zodResolver(productSchema),
     defaultValues: {
       ...defaultValues,
-      categoryID:
-        defaultValues &&
-        typeof defaultValues.categoryID === "object" &&
-        defaultValues.categoryID !== null &&
-        "_id" in defaultValues.categoryID
-          ? (defaultValues.categoryID as any)._id
-          : "",
-      variant:
-        defaultValues?.variant &&
-        defaultValues?.variant.map((v) => ({
-          color: typeof v.color === "object" ? (v.color as any)._id : "",
-          stock: v.stock,
-        })),
     },
   });
-  console.log("errors", errors);
 
   useEffect(() => {
+    if (defaultValues) {
+      reset({
+        ...defaultValues,
+        categoryID:
+          defaultValues &&
+          typeof defaultValues.categoryID === "object" &&
+          defaultValues.categoryID !== null &&
+          "_id" in defaultValues.categoryID
+            ? (defaultValues.categoryID as any)._id
+            : "",
+        variant: (defaultValues?.variant &&
+          defaultValues?.variant.map((v) => ({
+            color: typeof v.color === "object" ? (v.color as any)?._id : "",
+            stock: v.stock,
+          }))) || [{ color: "", stock: [{ size: 0, quantity: 1 }] }],
+      });
+    }
+
     if (defaultValues && mode === "edit") {
       if (
         defaultValues.existingImages &&
@@ -398,7 +402,10 @@ export function ProductVariant({
         setExistingImages(defaultValues.existingImages);
       }
     }
-  }, [defaultValues, mode]);
+  }, [defaultValues, reset, mode]);
+
+  console.log("errors", errors);
+  console.log("defaultValues", defaultValues);
 
   // Handle image uploads
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -459,9 +466,17 @@ export function ProductVariant({
     remove: removeVariant,
   } = useFieldArray({ control, name: "variant" });
 
+  const handleFormSubmit = async (form: ProductFormData) => {
+    if (mode === "edit") {
+      await onSubmit({ form, defaultValues });
+    } else {
+      await onSubmit(form);
+    }
+  };
+
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleFormSubmit)}
       className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-1"
     >
       {/* Name */}
@@ -544,7 +559,7 @@ export function ProductVariant({
           </SelectTrigger>
           <SelectContent className="bg-white dark:bg-slate-900">
             {categories.map((c) => (
-              <SelectItem key={c._id} value={c._id}>
+              <SelectItem key={c._id} value={c._id as string}>
                 {c.name}
               </SelectItem>
             ))}

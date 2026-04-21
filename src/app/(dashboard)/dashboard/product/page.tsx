@@ -35,7 +35,7 @@ export default function ProductPage() {
     params: { page, limit: 10 },
   });
 
-  console.log("data", data);
+  // console.log("data", data);
 
   // categories & colors for selects inside the modal
   const { data: categoryData } = useGetDynamicQuery({
@@ -68,9 +68,11 @@ export default function ProductPage() {
       formData.append("discountPrice", String(form.discountPrice || 0));
       formData.append("categoryID", form.categoryID);
 
-      form.images.forEach((image: File) => {
-        formData.append("images", image);
-      });
+      if (form.images) {
+        form.images.forEach((image: File) => {
+          formData.append("images", image);
+        });
+      }
 
       formData.append("variant", JSON.stringify(form.variant));
 
@@ -85,44 +87,65 @@ export default function ProductPage() {
     }
   };
 
-  const handleUpdate = async (form: ProductFormData) => {
+  const handleUpdate = async ({
+    form,
+    defaultValues,
+  }: {
+    form: ProductFormData;
+    defaultValues: Partial<ProductFormData>;
+  }) => {
     if (!editProduct) return;
     try {
       console.log("form", form);
+      console.log("defaultValues", defaultValues);
       const formData = new FormData();
 
       // String fields
-      formData.append("name", form.name);
-      formData.append("sku", form.sku);
-      formData.append("categoryID", form.categoryID);
-      formData.append("description", form.description || "");
 
-      // Number fields
-      formData.append("price", String(form.price));
-      formData.append("discountPrice", String(form.discountPrice || 0));
+      if (form.name !== defaultValues?.name) {
+        formData.append("name", form.name);
+      }
+      if (form.sku !== defaultValues?.sku) {
+        formData.append("sku", form.sku);
+      }
+      if (form.price !== defaultValues?.price) {
+        formData.append("price", String(form.price));
+      }
+      if (form.discountPrice !== defaultValues?.discountPrice) {
+        formData.append("discountPrice", String(form.discountPrice || 0));
+      }
+      if (form.categoryID !== defaultValues?.categoryID) {
+        formData.append("categoryID", form.categoryID);
+      }
+      if (form.description !== defaultValues?.description) {
+        formData.append("description", form.description || "");
+      }
 
       // New images
-      form.images.forEach((image) => {
-        formData.append("images", image);
-      });
+      if (form.images) {
+        form.images.forEach((image) => {
+          formData.append("images", image);
+        });
+      }
 
       // Existing images to keep
-      if (form?.existingImages && form?.existingImages?.length > 0) {
+      if (form?.existingImages) {
         formData.append("existingImages", JSON.stringify(form.existingImages));
       }
 
       // Variant
       formData.append("variant", JSON.stringify(form.variant));
 
-      // await updateProduct({
-      //   url: `product/${editProduct._id}`,
-      //   data: formData as Partial<IProduct>,
-      // }).unwrap();
+      await updateProduct({
+        url: `product/${editProduct._id}`,
+        data: formData as Partial<IProduct>,
+      }).unwrap();
       toast.success("Product updated");
       setEditOpen(false);
     } catch (err: unknown) {
-      const error = err as IErrorResponse;
-      toast.error(error?.message ?? "Failed to update");
+      const error = err as { data: IErrorResponse };
+      console.log("err", err);
+      toast.error(error?.data?.message ?? "Failed to update");
     }
   };
 
@@ -289,6 +312,7 @@ export default function ProductPage() {
         isLoading={updating}
         mode="edit"
         variant="product"
+        dynamicQuery={useGetDynamicQuery}
         options1={categories}
         options2={colors}
       />
