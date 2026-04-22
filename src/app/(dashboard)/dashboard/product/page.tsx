@@ -16,6 +16,7 @@ import { IProduct } from "@/src/interface/dashboard/product.interface";
 import {
   useDeleteProductMutation,
   useGetProductQuery,
+  useGetSingleProductQuery,
   usePatchProductMutation,
   usePostProductMutation,
 } from "@/src/redux/features/product/productApi";
@@ -35,7 +36,12 @@ export default function ProductPage() {
     params: { page, limit: 10 },
   });
 
-  // console.log("data", data);
+  const { data: singleData, isLoading: singleLoading } =
+    useGetSingleProductQuery?.(
+      { url: `product/${editProduct?._id}` },
+      { skip: !editProduct },
+    );
+  console.log("singleData", singleData);
 
   // categories & colors for selects inside the modal
   const { data: categoryData } = useGetDynamicQuery({
@@ -309,10 +315,10 @@ export default function ProductPage() {
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
         variantSingleId={editProduct?._id ?? undefined}
-        isLoading={updating}
+        isLoading={updating || singleLoading}
+        defaultValues={singleData}
         mode="edit"
         variant="product"
-        dynamicQuery={useGetDynamicQuery}
         options1={categories}
         options2={colors}
       />

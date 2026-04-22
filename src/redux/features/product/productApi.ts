@@ -22,7 +22,7 @@ const productApi = baseApi.injectEndpoints({
 
     postProduct: builder.mutation({
       query: ({ url, data }) => ({ url, method: "POST", body: data }),
-      invalidatesTags: ["products"],
+      invalidatesTags: ["products", "singleProduct"],
     }),
 
     patchProduct: builder.mutation({
@@ -37,7 +37,7 @@ const productApi = baseApi.injectEndpoints({
 
     deleteProduct: builder.mutation({
       query: ({ url }) => ({ url, method: "DELETE" }),
-      invalidatesTags: ["products"],
+      invalidatesTags: ["products", "singleProduct"],
     }),
   }),
   overrideExisting: false,
@@ -46,9 +46,8 @@ const productApi = baseApi.injectEndpoints({
 export const {
   useGetProductQuery,
   useGetSingleProductQuery,
-  useLazyGetProductQuery,
+  useDeleteProductMutation,
+  usePatchProductMutation,
   usePostProductMutation,
   usePutProductMutation,
-  usePatchProductMutation,
-  useDeleteProductMutation,
 } = productApi;

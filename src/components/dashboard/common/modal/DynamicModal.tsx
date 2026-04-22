@@ -12,8 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
-
-import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
 import {
   CategoryVariant,
   ColorVariant,
@@ -28,11 +26,6 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Variant = "category" | "color" | "product";
-
-type DynamicQueryHook = (
-  arg: { url: string },
-  options?: { skip?: boolean },
-) => { data: any; isLoading: boolean };
 
 type DynamicModalProps = {
   // Modal control
@@ -60,8 +53,7 @@ type DynamicModalProps = {
   mode?: "create" | "edit";
   isLoading?: boolean;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
-  variantSingleId?: string;
-  dynamicQuery?: DynamicQueryHook;
+  defaultValues?: Partial<ProductFormData>;
 
   options1?: ICategory[];
   options2?: IColor[];
@@ -91,25 +83,13 @@ const DynamicModal = ({
   mode = "create",
   isLoading,
   onSubmit,
-  variantSingleId,
-  dynamicQuery,
+  defaultValues,
   options1,
   options2,
 }: DynamicModalProps) => {
   const title = defaultTitleMap[variant][mode];
 
-  const queryResult = dynamicQuery?.(
-    { url: `${variant}/${variantSingleId}` },
-    { skip: !variantSingleId || !dynamicQuery },
-  );
-
-  const defaultValues = queryResult?.data?.data;
-  const singleLoading = queryResult?.isLoading ?? false;
-
-  console.log("variantSingleId", variantSingleId);
   console.log("data", defaultValues);
-
-  if (singleLoading) return <p> singleLoading..</p>;
 
   const renderVariant = () => {
     switch (variant) {
