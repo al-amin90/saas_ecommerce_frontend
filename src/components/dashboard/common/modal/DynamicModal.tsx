@@ -27,7 +27,11 @@ import {
 
 type Variant = "category" | "color" | "product";
 
-type DynamicModalProps = {
+type DynamicModalProps<
+  T = Record<string, unknown>,
+  O = Record<string, unknown>,
+  P = Record<string, unknown>,
+> = {
   // Modal control
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -53,10 +57,10 @@ type DynamicModalProps = {
   mode?: "create" | "edit";
   isLoading?: boolean;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
-  defaultValues?: Partial<ProductFormData>;
+  defaultValues?: Partial<T>;
 
-  options1?: ICategory[];
-  options2?: IColor[];
+  options1?: O[];
+  options2?: P[];
 
   // Extensible: add more variant-specific props here as needed
 };
@@ -71,7 +75,7 @@ const defaultTitleMap: Record<Variant, Record<"create" | "edit", string>> = {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const DynamicModal = ({
+const DynamicModal = <T, O, P>({
   open,
   onOpenChange,
   variant = "category",
@@ -86,7 +90,7 @@ const DynamicModal = ({
   defaultValues,
   options1,
   options2,
-}: DynamicModalProps) => {
+}: DynamicModalProps<T, O, P>) => {
   const title = defaultTitleMap[variant][mode];
 
   console.log("data", defaultValues);
@@ -122,8 +126,8 @@ const DynamicModal = ({
             isLoading={isLoading}
             mode={mode}
             onCancel={() => onOpenChange(false)}
-            categories={options1 as ICategory[]}
-            colors={options2 as IColor[]}
+            categories={options1 as O[]}
+            colors={options2 as P[]}
           />
         );
 

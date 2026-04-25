@@ -405,7 +405,6 @@ export function ProductVariant({
   }, [defaultValues, reset, mode]);
 
   console.log("errors", errors);
-  console.log("defaultValues", defaultValues);
 
   // Handle image uploads
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -449,14 +448,11 @@ export function ProductVariant({
     const updatedImages = existingImages.filter((_, i) => i !== index);
     setExistingImages(updatedImages);
 
-    // ✅ Store removed images for backend
-    const removedImage = existingImages[index];
-    const currentExisting = watch("existingImages") || [];
-
     // Update the form with remaining existing images
-    if (!currentExisting.includes(removedImage)) {
-      setValue("existingImages", [...currentExisting, removedImage]);
-    }
+    setValue("existingImages", updatedImages, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   // variant field array
@@ -518,7 +514,6 @@ export function ProductVariant({
           <Input
             {...register("price", { valueAsNumber: true })}
             type="number"
-            step="0.01"
             placeholder="0.00"
             className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
           />
@@ -533,7 +528,6 @@ export function ProductVariant({
           <Input
             {...register("discountPrice", { valueAsNumber: true })}
             type="number"
-            step="0.01"
             placeholder="0.00"
             className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
           />

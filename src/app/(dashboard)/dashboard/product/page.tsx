@@ -21,6 +21,7 @@ import {
   usePostProductMutation,
 } from "@/src/redux/features/product/productApi";
 import { ProductFormData } from "@/src/validation";
+import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
 
 export default function ProductPage() {
   const [page, setPage] = useState(1);
@@ -37,11 +38,12 @@ export default function ProductPage() {
   });
 
   const { data: singleData, isLoading: singleLoading } =
-    useGetSingleProductQuery?.(
+    useGetSingleProductQuery(
       { url: `product/${editProduct?._id}` },
       { skip: !editProduct },
     );
-  console.log("singleData", singleData);
+
+  console.log("singleData", singleData?.data);
 
   // categories & colors for selects inside the modal
   const { data: categoryData } = useGetDynamicQuery({
@@ -102,8 +104,7 @@ export default function ProductPage() {
   }) => {
     if (!editProduct) return;
     try {
-      console.log("form", form);
-      console.log("defaultValues", defaultValues);
+      console.log("form", form.existingImages);
       const formData = new FormData();
 
       // String fields
@@ -136,18 +137,19 @@ export default function ProductPage() {
 
       // Existing images to keep
       if (form?.existingImages) {
-        formData.append("existingImages", JSON.stringify(form.existingImages));
+        console.log("form?.existingImages", form?.existingImages);
+        formData.append("existingImages", JSON.stringify(form?.existingImages));
       }
 
       // Variant
       formData.append("variant", JSON.stringify(form.variant));
 
-      await updateProduct({
-        url: `product/${editProduct._id}`,
-        data: formData as Partial<IProduct>,
-      }).unwrap();
-      toast.success("Product updated");
-      setEditOpen(false);
+      // await updateProduct({
+      //   url: `product/${editProduct._id}`,
+      //   data: formData as Partial<IProduct>,
+      // }).unwrap();
+      // toast.success("Product updated");
+      // setEditOpen(false);
     } catch (err: unknown) {
       const error = err as { data: IErrorResponse };
       console.log("err", err);
@@ -310,13 +312,12 @@ export default function ProductPage() {
       />
 
       {/* Edit Modal */}
-      <DynamicModal
+      <DynamicModal<ProductFormData, ICategory, IColor>
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
-        variantSingleId={editProduct?._id ?? undefined}
         isLoading={updating || singleLoading}
-        defaultValues={singleData}
+        defaultValues={singleData?.data}
         mode="edit"
         variant="product"
         options1={categories}
