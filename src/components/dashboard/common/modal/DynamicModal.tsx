@@ -61,8 +61,6 @@ type DynamicModalProps<
 
   options1?: O[];
   options2?: P[];
-
-  // Extensible: add more variant-specific props here as needed
 };
 
 // ─── Title map ────────────────────────────────────────────────────────────────
@@ -126,8 +124,8 @@ const DynamicModal = <T, O, P>({
             isLoading={isLoading}
             mode={mode}
             onCancel={() => onOpenChange(false)}
-            categories={options1 as O[]}
-            colors={options2 as P[]}
+            categories={options1 as ICategory[]}
+            colors={options2 as IColor[]}
           />
         );
 

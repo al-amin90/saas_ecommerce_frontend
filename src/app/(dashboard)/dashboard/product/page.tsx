@@ -43,8 +43,6 @@ export default function ProductPage() {
       { skip: !editProduct },
     );
 
-  console.log("singleData", singleData?.data);
-
   // categories & colors for selects inside the modal
   const { data: categoryData } = useGetDynamicQuery({
     url: "/category",
@@ -104,7 +102,6 @@ export default function ProductPage() {
   }) => {
     if (!editProduct) return;
     try {
-      console.log("form", form.existingImages);
       const formData = new FormData();
 
       // String fields
@@ -144,12 +141,12 @@ export default function ProductPage() {
       // Variant
       formData.append("variant", JSON.stringify(form.variant));
 
-      // await updateProduct({
-      //   url: `product/${editProduct._id}`,
-      //   data: formData as Partial<IProduct>,
-      // }).unwrap();
-      // toast.success("Product updated");
-      // setEditOpen(false);
+      await updateProduct({
+        url: `product/${editProduct._id}`,
+        data: formData as Partial<IProduct>,
+      }).unwrap();
+      toast.success("Product updated");
+      setEditOpen(false);
     } catch (err: unknown) {
       const error = err as { data: IErrorResponse };
       console.log("err", err);

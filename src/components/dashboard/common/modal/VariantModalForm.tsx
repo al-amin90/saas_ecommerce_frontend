@@ -449,10 +449,7 @@ export function ProductVariant({
     setExistingImages(updatedImages);
 
     // Update the form with remaining existing images
-    setValue("existingImages", updatedImages, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
+    setValue("existingImages", updatedImages);
   };
 
   // variant field array
