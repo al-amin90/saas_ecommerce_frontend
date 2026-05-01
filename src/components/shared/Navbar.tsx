@@ -18,13 +18,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import Link from "next/link";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
 
 const categories = [
   { label: "Home", href: "/" },
-  { label: "All Products", href: "/" },
+  { label: "All Products", href: "/products" },
   { label: "Boishakhi Dhamaka Offer!", href: "/" },
   { label: "Samba Craze", href: "/" },
   { label: "Kids", href: "/" },
@@ -49,7 +50,7 @@ export default function Navbar({
     <>
       {/* ── Row 1: Logo / Search / Icons ─────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6 py-4 md:py-6">
             {/* Logo */}
             <div className="flex items-center gap-3 flex-shrink-0 mr-3">
@@ -97,7 +98,7 @@ export default function Navbar({
                   placeholder="Search in..."
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
-                  className="w-full pl-4 pr-14 py-3 text-base border border-[#DDDDDD] rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                  className="w-full pl-4 pr-14 py-3 text-sm border border-[#DDDDDD] rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
                   style={{ "--tw-ring-color": ACCENT } as React.CSSProperties}
                 />
                 <button
@@ -115,7 +116,7 @@ export default function Navbar({
             {/* Right icons */}
             <div className="flex items-center gap-2 md:gap-3 ml-auto">
               {/* Sign In */}
-              <a
+              <Link
                 href="/login"
                 className="hidden md:flex flex-col items-center cursor-pointer px-2 text-decoration-none transition-colors hover:opacity-80"
               >
@@ -129,7 +130,7 @@ export default function Navbar({
                 >
                   Sign In
                 </span>
-              </a>
+              </Link>
 
               {/* Wishlist */}
               <div className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80">
@@ -197,7 +198,7 @@ export default function Navbar({
           className="hidden md:block border-t"
           style={{ background: PRIMARY }}
         >
-          <div className="flex max-w-7xl mx-auto items-center gap-0">
+          <div className="flex max-w-[1440px] mx-auto items-center gap-0">
             {categories.map((cat) => (
               <div
                 key={cat.label}
@@ -205,9 +206,9 @@ export default function Navbar({
                 onMouseEnter={() => cat.children && setOpenDrop(cat.label)}
                 onMouseLeave={() => setOpenDrop(null)}
               >
-                <a
+                <Link
                   href={cat.href}
-                  className="flex items-center gap-1 px-5 py-4 text-white/90 text-base font-semibold tracking-wide whitespace-nowrap transition-colors hover:text-yellow-100"
+                  className="flex items-center gap-1 px-5 py-4 text-white/90 text-sm font-normal tracking-wide whitespace-nowrap transition-colors hover:text-yellow-100"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   {cat.label}
@@ -219,16 +220,16 @@ export default function Navbar({
                       }`}
                     />
                   )}
-                </a>
+                </Link>
 
                 {/* Dropdown */}
                 {cat.children && openDrop === cat.label && (
                   <div className="absolute top-full left-0 bg-white border border-gray-200 rounded-b-lg shadow-lg min-w-[200px] z-50 py-3 animate-in fade-in slide-in-from-top-2">
                     {cat.children.map((child) => (
-                      <a
+                      <Link
                         key={child}
                         href="#"
-                        className="block px-5 py-3 text-base text-gray-800 hover:bg-orange-50 transition-colors font-medium"
+                        className="block px-5 py-3 text-sm text-gray-800 hover:bg-orange-50 transition-colors font-medium"
                         style={{
                           fontFamily: "'DM Sans', sans-serif",
                         }}
@@ -240,7 +241,7 @@ export default function Navbar({
                         }}
                       >
                         {child}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -270,7 +271,7 @@ export default function Navbar({
             <Input
               type="text"
               placeholder="Search..."
-              className="w-full text-base h-11"
+              className="w-full text-sm h-11"
             />
           </div>
 
@@ -279,10 +280,10 @@ export default function Navbar({
           {/* Mobile nav */}
           <nav className="space-y-0 mb-8">
             {categories.map((cat) => (
-              <a
+              <Link
                 key={cat.label}
                 href={cat.href}
-                className="flex items-center justify-between py-4 px-0 border-b border-gray-200 text-base font-semibold transition-colors hover:text-orange-500"
+                className="flex items-center justify-between py-4 px-0 border-b border-gray-200 text-sm font-normal transition-colors hover:text-orange-500"
                 style={{
                   color: PRIMARY,
                   fontFamily: "'DM Sans', sans-serif",
@@ -292,7 +293,7 @@ export default function Navbar({
                 {cat.children && (
                   <ChevronDown size={20} className="text-gray-600" />
                 )}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -300,21 +301,21 @@ export default function Navbar({
           <div className="space-y-4 flex flex-col">
             <Button
               asChild
-              className="w-full uppercase font-bold tracking-wider text-white h-12 text-base"
+              className="w-full uppercase font-bold tracking-wider text-white h-12 text-sm"
               style={{ background: PRIMARY }}
             >
-              <a href="/login">Sign In</a>
+              <Link href="/login">Sign In</Link>
             </Button>
             <Button
               asChild
               variant="outline"
-              className="w-full uppercase font-bold tracking-wider h-12 text-base"
+              className="w-full uppercase font-bold tracking-wider h-12 text-sm"
               style={{
                 borderColor: PRIMARY,
                 color: PRIMARY,
               }}
             >
-              <a href="/signup">Create Account</a>
+              <Link href="/signup">Create Account</Link>
             </Button>
           </div>
         </SheetContent>

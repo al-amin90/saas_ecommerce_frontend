@@ -39,7 +39,9 @@ export default function ShopSection() {
   useEffect(() => {
     if (data?.data) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAllProducts((prev) => [...prev, ...data.data]);
+      setAllProducts((prev) =>
+        page === 1 ? data.data : [...prev, ...data.data],
+      );
     }
   }, [data]);
 
@@ -62,7 +64,7 @@ export default function ShopSection() {
 
   return (
     <section id="shop" className="py-20 md:py-32 bg-[#FAFAF8]">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-5">
         {/* Header */}
         <div className="text-center mb-12">
           <p
