@@ -24,6 +24,8 @@ import {
 } from "@/src/interface/dashboard/product.interface";
 import Link from "next/link";
 import { useGetSingleProductQuery } from "@/src/redux/features/product/productApi";
+import CartBadge from "@/src/components/shared/CartBadge";
+import CartBadgeHorizontal from "@/src/components/shared/CartBadge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
