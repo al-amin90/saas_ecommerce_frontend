@@ -134,23 +134,23 @@ const ProductDetailsPage = () => {
     typeof product.categoryID === "object" ? product.categoryID.name : "";
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen max-w-[1440px] mx-auto bg-white">
       {/* Back */}
-      <div className="max-w-6xl mx-auto px-6 pt-8">
+      <div className="  px-3 sm:px-6 pt-4 sm:pt-8">
         <Link
           href="/products"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-black transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 hover:text-black transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Products
+          <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+          Back
         </Link>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+      <div className="   px-3 sm:px-6 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 ">
         {/* ── Left: Images ── */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3 ">
           {/* Main image */}
-          <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-slate-100">
+          <div className="relative w-full aspect-square rounded-lg sm:rounded-2xl overflow-hidden bg-slate-100">
             {images.length > 0 ? (
               <Image
                 src={images[selectedImage]}
@@ -160,12 +160,12 @@ const ProductDetailsPage = () => {
                 priority
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-300 text-sm">
+              <div className="w-full h-full flex items-center justify-center text-slate-300 text-xs sm:text-sm">
                 No image
               </div>
             )}
             {discount > 0 && (
-              <span className="absolute top-4 left-4 bg-black text-white text-xs font-bold px-2.5 py-1 rounded-full">
+              <span className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black text-white text-xs font-bold px-2 sm:px-2.5 py-1 rounded-full">
                 -{discount}%
               </span>
             )}
@@ -173,12 +173,12 @@ const ProductDetailsPage = () => {
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
-                  className={`relative w-20 h-20 rounded-xl cursor-pointer overflow-hidden border-2 transition-all ${
+                  className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl cursor-pointer overflow-hidden border-2 transition-all ${
                     selectedImage === i
                       ? "border-black"
                       : "border-transparent hover:border-slate-300"
@@ -197,7 +197,7 @@ const ProductDetailsPage = () => {
         </div>
 
         {/* ── Right: Details ── */}
-        <div className="space-y-5">
+        <div className="space-y-3 sm:space-y-5">
           {/* Category */}
           {categoryName && (
             <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
@@ -206,41 +206,41 @@ const ProductDetailsPage = () => {
           )}
 
           {/* Name */}
-          <h1 className="text-2xl font-bold text-slate-900 leading-snug">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 leading-snug">
             {product.name}
           </h1>
 
           {/* Stock badge */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {inStock ? (
               <>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                <span className="text-sm text-emerald-600 font-medium">
+                <span className="text-xs sm:text-sm text-emerald-600 font-medium">
                   In stock
                 </span>
               </>
             ) : (
               <>
                 <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
-                <span className="text-sm text-red-500 font-medium">
+                <span className="text-xs sm:text-sm text-red-500 font-medium">
                   Out of stock
                 </span>
               </>
             )}
             {selectedStock && (
-              <span className="text-xs text-slate-400 ml-1">
+              <span className="text-xs text-slate-400">
                 ({selectedStock.quantity} left)
               </span>
             )}
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline gap-3">
-            <span className="text-2xl font-bold text-slate-900">
+          <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
+            <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
               Tk {product.discountPrice.toLocaleString()}.00
             </span>
             {discount > 0 && (
-              <span className="text-base text-slate-400 line-through">
+              <span className="text-sm sm:text-base text-slate-400 line-through">
                 Tk {product.price.toLocaleString()}.00
               </span>
             )}
@@ -248,8 +248,10 @@ const ProductDetailsPage = () => {
 
           {/* Color variants */}
           {product.variant?.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-slate-700">Color</p>
+            <div className="space-y-2 pt-1 sm:pt-0">
+              <p className="text-xs sm:text-sm font-semibold text-slate-700">
+                Color
+              </p>
               <div className="flex gap-2 flex-wrap">
                 {product.variant.map((v, i) => {
                   const colorObj = typeof v.color === "object" ? v.color : null;
@@ -261,7 +263,7 @@ const ProductDetailsPage = () => {
                         setSelectedSize(null);
                       }}
                       title={colorObj?.name ?? "Color"}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                      className={`w-6 h-6 sm:w-8 sm:h-8 cursor-pointer rounded-full border-2 transition-all ${
                         selectedVariantIdx === i
                           ? "border-black scale-110 shadow-md"
                           : "border-slate-200 hover:border-slate-400"
@@ -278,22 +280,24 @@ const ProductDetailsPage = () => {
 
           {/* Size */}
           {stockList.length > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-2 pt-1 sm:pt-0">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-slate-700">Size</p>
+                <p className="text-xs sm:text-sm font-semibold text-slate-700">
+                  Size
+                </p>
                 {selectedSize && (
                   <span className="text-xs text-slate-400">
                     Selected: {selectedSize}
                   </span>
                 )}
               </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-1.5 sm:gap-2 flex-wrap">
                 {stockList.map((s) => (
                   <button
                     key={s._id ?? s.size}
                     onClick={() => setSelectedSize(s.size)}
                     disabled={s.quantity === 0}
-                    className={`w-12 h-10 rounded-lg text-sm font-medium border transition-all ${
+                    className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all ${
                       selectedSize === s.size
                         ? "bg-black text-white border-black"
                         : s.quantity === 0
@@ -309,72 +313,78 @@ const ProductDetailsPage = () => {
           )}
 
           {/* SKU */}
-          <p className="text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-400">
             <span className="font-semibold text-slate-600">SKU:</span>{" "}
             {product.sku}
           </p>
 
           {/* Quantity */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-slate-700">Qty</span>
-            <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden">
-              <button
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="px-3 py-2 hover:bg-slate-100 transition-colors text-slate-600"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <span className="px-4 py-2 text-sm font-semibold min-w-[2.5rem] text-center">
-                {quantity}
+          <div className="flex gap-3 items-center justify-center  w-full mb-3 relative">
+            <div className="flex items-center gap-2 sm:gap-3 pt-1 sm:pt-0">
+              <span className="text-xs sm:text-sm font-semibold text-slate-700">
+                Qty
               </span>
-              <button
-                onClick={() => setQuantity((q) => q + 1)}
-                className="px-3 py-2 hover:bg-slate-100 transition-colors text-slate-600"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
+              <div className="flex items-center border border-slate-200 rounded-lg sm:rounded-xl overflow-hidden bg-slate-50">
+                <button
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="px-2 sm:px-3 py-2.5 sm:py-3 hover:bg-slate-100 transition-colors text-slate-600"
+                >
+                  <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                </button>
+                <span className="px-2 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold min-w-[2rem] sm:min-w-[2.5rem] text-center">
+                  {quantity}
+                </span>
+                <button
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="px-2 sm:px-3 py-2.5 sm:py-3 hover:bg-slate-100 transition-colors text-slate-600"
+                >
+                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                </button>
+              </div>
             </div>
+
+            <Button
+              disabled={!selectedSize || !inStock}
+              className="flex-1  h-10 sm:h-12 bg-black hover:bg-slate-800 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all"
+            >
+              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Add to cart</span>
+              <span className="sm:hidden">Add</span>
+            </Button>
           </div>
 
           {/* CTA Buttons */}
-          <div className="space-y-3 pt-1">
-            <Button
-              disabled={!selectedSize || !inStock}
-              className="w-full h-12 bg-black hover:bg-slate-800 text-white rounded-xl text-sm font-semibold gap-2 transition-all"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              Add to cart
-            </Button>
-            <Button
-              disabled={!selectedSize || !inStock}
-              variant="outline"
-              className="w-full h-12 border-black text-black hover:bg-black hover:text-white rounded-xl text-sm font-semibold gap-2 transition-all"
-            >
-              <Zap className="h-4 w-4" />
-              Buy it now
-            </Button>
-          </div>
+
+          <Button
+            disabled={!selectedSize || !inStock}
+            variant="outline"
+            className="w-full h-10 sm:h-12 border-black text-black hover:bg-black hover:text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all"
+          >
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Buy it now</span>
+            <span className="sm:hidden">Buy</span>
+          </Button>
 
           {/* Accordions */}
-          <div className="pt-2">
+          <div className="pt-2 sm:pt-4 space-y-2 sm:space-y-0">
             <Accordion title="Product Description">
-              <p>
+              <p className="text-xs sm:text-sm text-slate-600">
                 {product.name} — available in multiple sizes and colors. Part of
                 the {categoryName} collection.
               </p>
             </Accordion>
             <Accordion title="Shipping">
-              <ul className="space-y-1 text-slate-600">
+              <ul className="space-y-1 text-xs sm:text-sm text-slate-600">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 flex-shrink-0" />
                   Standard delivery: 3–5 business days
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 flex-shrink-0" />
                   Express delivery: 1–2 business days
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 flex-shrink-0" />
                   Free returns within 7 days
                 </li>
               </ul>
@@ -384,10 +394,20 @@ const ProductDetailsPage = () => {
       </div>
 
       {/* Size chart banner */}
-      <div className="mt-8 bg-slate-100 py-5 text-center">
-        <p className="text-sm font-bold tracking-widest uppercase text-slate-700">
-          Please Checkout Size Chart For Better Fit
+      <div className="mt-6 sm:mt-8 bg-slate-100 py-3 sm:py-5 text-center px-3">
+        <p className="text-xs sm:text-sm font-bold tracking-widest uppercase text-slate-700">
+          Please Check Size Chart For Better Fit
         </p>
+      </div>
+
+      <div className="relative w-full h-52 sm:h-96 md:h-[28rem] lg:h-[40rem]">
+        <Image
+          src={"/ladning/shoe-size.webp"}
+          alt={"product shoe size"}
+          fill
+          className="object-contain "
+          priority
+        />
       </div>
     </div>
   );
