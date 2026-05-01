@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Heart, Eye, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IProduct } from "@/src/interface/dashboard/product.interface";
+import Link from "next/link";
 
 const badgeStyles: Record<string, string> = {
   green: "bg-emerald-500 text-white",
@@ -27,9 +28,10 @@ export default function ProductCard({ product }: { product: IProduct }) {
   console.log(product);
 
   return (
-    <div
+    <Link
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      href={`/products/${product._id}`}
       className="group relative bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-2 cursor-pointer"
       style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
@@ -150,6 +152,6 @@ export default function ProductCard({ product }: { product: IProduct }) {
           </span>
         </Button>
       </div>
-    </div>
+    </Link>
   );
 }

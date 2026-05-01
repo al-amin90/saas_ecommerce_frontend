@@ -19,6 +19,7 @@ export interface IProduct {
   categoryID: string;
   variant: IVariant[];
   images?: string[];
+  existingImages?: string[];
   sku: string;
   isActive?: boolean;
   isDeleted?: boolean;

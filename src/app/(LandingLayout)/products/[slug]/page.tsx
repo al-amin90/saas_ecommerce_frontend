@@ -23,6 +23,7 @@ import {
   IStock,
 } from "@/src/interface/dashboard/product.interface";
 import Link from "next/link";
+import { useGetSingleProductQuery } from "@/src/redux/features/product/productApi";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,7 +31,7 @@ interface PopulatedVariant extends Omit<IVariant, "color"> {
   color: { _id: string; name: string; color: string } | string;
 }
 
-interface PopulatedProduct extends Omit<IProduct, "variant"> {
+interface PopulatedProduct extends Omit<IProduct, "variant" | "categoryID"> {
   variant: PopulatedVariant[];
   categoryID: { _id: string; name: string } | string;
 }
@@ -96,8 +97,12 @@ function Accordion({
 const ProductDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
 
-  const { data, isLoading } = useGetDynamicQuery({ url: `/product/${slug}` });
+  const { data, isLoading } = useGetSingleProductQuery({
+    url: `/product/${slug}`,
+  });
   const product = data?.data as PopulatedProduct | undefined;
+
+  console.log(product);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
@@ -112,7 +117,7 @@ const ProductDetailsPage = () => {
       </div>
     );
 
-  const images = product.images ?? [];
+  const images = product.existingImages ?? [];
   const activeVariant = product.variant?.[selectedVariantIdx] as
     | PopulatedVariant
     | undefined;
@@ -124,7 +129,7 @@ const ProductDetailsPage = () => {
       ? Math.round(
           ((product.price - product.discountPrice) / product.price) * 100,
         )
-      : 0;
+      : product.price;
   const categoryName =
     typeof product.categoryID === "object" ? product.categoryID.name : "";
 
@@ -173,7 +178,7 @@ const ProductDetailsPage = () => {
                 <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
-                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
+                  className={`relative w-20 h-20 rounded-xl cursor-pointer overflow-hidden border-2 transition-all ${
                     selectedImage === i
                       ? "border-black"
                       : "border-transparent hover:border-slate-300"

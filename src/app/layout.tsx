@@ -37,8 +37,6 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        {/* Navbar */}
-        <Navbar cartCount={2} wishlistCount={3} />
         <ReduxProvider>{children}</ReduxProvider>
         <Toaster richColors position="top-right" />
       </body>
