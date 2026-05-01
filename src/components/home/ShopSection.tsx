@@ -18,6 +18,13 @@ import { useGetProductQuery } from "@/src/redux/features/product/productApi";
 import { IProduct } from "@/src/interface/dashboard/product.interface";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductCardSkeleton from "./common/skeleton/ProductCardSkeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ShopSection() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -63,7 +70,7 @@ export default function ShopSection() {
   }, [hasMore, isFetching]);
 
   return (
-    <section id="shop" className="py-20 md:py-32 bg-[#FAFAF8]">
+    <section id="shop" className="py-20 md:pb-32 bg-[#FAFAF8]">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-5">
         {/* Header */}
         <div className="text-center mb-12">
@@ -73,16 +80,16 @@ export default function ShopSection() {
           >
             Our Collection
           </p>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
             Shop All Shoes
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg font-['DM_Sans']">
+          <p className="text-gray-600 max-w-2xl mx-auto text-base sm:text-lg font-['DM_Sans']">
             Premium footwear for every occasion, style, and stride.
           </p>
         </div>
 
         {/* Filter and Sort Bar */}
-        <div className="flex items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-8">
           {/* Filter Button */}
           <Button
             variant="outline"
@@ -95,17 +102,18 @@ export default function ShopSection() {
           </Button>
 
           {/* Sort Dropdown */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-2.5 border border-gray-300 rounded-lg text-base font-['DM_Sans'] focus:outline-none focus:ring-2 focus:ring-[#C8A97E] focus:border-transparent"
-          >
-            <option value="featured">Featured</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="rating">Top Rated</option>
-            <option value="new">New Arrivals</option>
-          </select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 rounded-lg text-sm sm:text-base font-['DM_Sans'] focus:ring-2 focus:ring-[#C8A97E]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-900">
+              <SelectItem value="featured">Featured</SelectItem>
+              <SelectItem value="price-asc">Price: Low to High</SelectItem>
+              <SelectItem value="price-desc">Price: High to Low</SelectItem>
+              <SelectItem value="rating">Top Rated</SelectItem>
+              <SelectItem value="new">New Arrivals</SelectItem>
+            </SelectContent>
+          </Select>
 
           {/* Active Filters Count */}
           {(selectedBrands.length > 0 ||
@@ -121,7 +129,7 @@ export default function ShopSection() {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-4 mb-12">
           {allProducts.map((product) => (
             <div key={product.slug}>
               <ProductCard product={product} />
@@ -146,7 +154,10 @@ export default function ShopSection() {
 
       {/* Filter Sheet */}
       <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
-        <SheetContent side="left" className="w-[320px] bg-white p-6">
+        <SheetContent
+          side="left"
+          className="w-full sm:w-[320px] bg-white p-4 sm:p-6"
+        >
           <SheetHeader className="mb-6">
             <SheetTitle className="text-2xl font-bold font-['Syne']">
               Filters
