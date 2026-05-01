@@ -4,7 +4,6 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import ReduxProvider from "../provider/ReduxProvider";
 import { Toaster } from "sonner";
-import Navbar from "../components/shared/Navbar";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
