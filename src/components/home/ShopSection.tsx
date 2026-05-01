@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { Filter, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Filter, SplineIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,8 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 
-import { products, categories, brands } from "@/src/data/products";
 import ProductCard from "../shared/ProductCard";
+import { useGetProductQuery } from "@/src/redux/features/product/productApi";
+import { IProduct } from "@/src/interface/dashboard/product.interface";
 
 export default function ShopSection() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -22,26 +23,27 @@ export default function ShopSection() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [page, setPage] = useState(1);
+  const [allProducts, setAllProducts] = useState<IProduct[]>([]);
+  const loaderRef = useRef<HTMLDivElement>(null);
 
-  const filteredProducts = products
-    .filter((p) => activeCategory === "all" || p.category === activeCategory)
-    .filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
-    .filter(
-      (p) => selectedBrands.length === 0 || selectedBrands.includes(p.brand),
-    )
-    .sort((a, b) => {
-      if (sortBy === "price-asc") return a.price - b.price;
-      if (sortBy === "price-desc") return b.price - a.price;
-      if (sortBy === "rating") return b.rating - a.rating;
-      if (sortBy === "new") return b.isNew - a.isNew;
-      return 0;
-    });
+  const { data, isLoading, isFetching } = useGetProductQuery({
+    url: `product`,
+    params: { page, limit: "10" },
+  });
 
-  const toggleBrand = (brand) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
-    );
-  };
+  console.log("products.data", data);
+
+  useEffect(() => {
+    if (data?.data) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAllProducts((prev) => [...prev, ...data.data]);
+    }
+  }, [data]);
+
+  if (isLoading) {
+    return <h1>loading............</h1>;
+  }
 
   return (
     <section id="shop" className="py-20 md:py-32 bg-[#FAFAF8]">
@@ -103,28 +105,27 @@ export default function ShopSection() {
 
         {/* Products Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12">
-          {filteredProducts.map((product) => (
-            <div key={product.id}>
+          {allProducts.map((product) => (
+            <div key={product.slug}>
               <ProductCard product={product} />
             </div>
           ))}
+
+          {/* এই div টা viewport এ আসলেই next page fetch হবে */}
+          <div ref={loaderRef} className="py-4 text-center">
+            {isFetching && <SplineIcon />}
+            {!hasMore && (
+              <p className="text-slate-400 text-sm">No more products</p>
+            )}
+          </div>
         </div>
 
         {/* No Results */}
-        {filteredProducts.length === 0 && (
+        {allProducts.length === 0 && (
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg font-['DM_Sans']">
               No products found. Try adjusting your filters.
             </p>
-          </div>
-        )}
-
-        {/* Load More */}
-        {filteredProducts.length > 0 && (
-          <div className="text-center">
-            <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
-              Load More
-            </Button>
           </div>
         )}
       </div>
@@ -162,7 +163,7 @@ export default function ShopSection() {
           <div className="border-t border-gray-200 my-6" />
 
           {/* Brands */}
-          <div className="mb-8">
+          {/* <div className="mb-8">
             <h3 className="font-['Syne'] font-bold text-sm tracking-[0.08em] uppercase mb-4">
               Brands
             </h3>
@@ -183,7 +184,7 @@ export default function ShopSection() {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Buttons */}
           <div className="border-t border-gray-200 pt-6 flex gap-3">

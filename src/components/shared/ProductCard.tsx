@@ -4,22 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Heart, Eye, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface Product {
-  id: number;
-  name: string;
-  brand?: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  badge?: string;
-  badgeColor?: "green" | "red" | "orange" | "dark";
-  colors?: string[];
-  rating?: number;
-  reviews?: number;
-  inStock?: boolean;
-  unit?: string;
-}
+import { IProduct } from "@/src/interface/dashboard/product.interface";
 
 const badgeStyles: Record<string, string> = {
   green: "bg-emerald-500 text-white",
@@ -28,38 +13,18 @@ const badgeStyles: Record<string, string> = {
   dark: "bg-gray-900 text-white",
 };
 
-function StarRating({ value, count }: { value: number; count?: number }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <svg key={i} className="w-4 h-4" viewBox="0 0 24 24">
-            <path
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"
-              fill={i <= Math.round(value) ? "#E07B1A" : "none"}
-              stroke={i <= Math.round(value) ? "#E07B1A" : "#D1D5DB"}
-              strokeWidth="1.5"
-            />
-          </svg>
-        ))}
-      </div>
-      {count !== undefined && (
-        <span className="text-sm text-gray-500">({count})</span>
-      )}
-    </div>
-  );
-}
-
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product }: { product: IProduct }) {
   const [wishlisted, setWishlisted] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const discount = product.originalPrice
+  const discount = product.discountPrice
     ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100,
+        ((product.price - product.discountPrice) / product.price) * 100,
       )
     : null;
+
+  console.log(product);
 
   return (
     <div
@@ -73,7 +38,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Product image */}
         <div className="relative w-full h-full rounded-lg">
           <Image
-            src={product.image}
+            src={product?.images?.[0] ?? ""}
             fill
             alt={product.name}
             className="w-full h-full object-cover p-3 transition-transform duration-500 rounded-2xl group-hover:scale-110"
@@ -81,13 +46,13 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Badge */}
-        {product.badge && (
+        {/* {product.badge && (
           <div
             className={`absolute top-3 left-3 px-3 py-1.5 rounded-full text-xs font-bold ${badgeStyles[product.badgeColor || "orange"]}`}
           >
             {product.badge}
           </div>
-        )}
+        )} */}
 
         {/* Out of stock overlay */}
         {product.inStock === false && (
@@ -144,12 +109,12 @@ export default function ProductCard({ product }: { product: Product }) {
                 fontFamily: "'Syne', system-ui, sans-serif",
               }}
             >
-              ৳{product.price.toLocaleString()}
+              ৳{product.discountPrice || product.price}
             </span>
-            {product.originalPrice && (
+            {discount && (
               <>
                 <span className="text-sm text-gray-400 line-through">
-                  ৳{product.originalPrice.toLocaleString()}
+                  ৳{product.price.toLocaleString()}
                 </span>
                 {discount && (
                   <span className="text-xs font-bold text-red-500 ml-1">
@@ -164,7 +129,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Add to cart button */}
         <Button
           disabled={product.inStock === false}
-          className="mt-3 w-full gap-2 text-base font-semibold py-3"
+          className="mt-2 w-full gap-2 text-base font-semibold py-3"
           variant={product.inStock === false ? "outline" : "default"}
           style={
             product.inStock !== false
