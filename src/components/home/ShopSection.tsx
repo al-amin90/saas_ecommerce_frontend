@@ -16,6 +16,8 @@ import { Slider } from "@/components/ui/slider";
 import ProductCard from "../shared/ProductCard";
 import { useGetProductQuery } from "@/src/redux/features/product/productApi";
 import { IProduct } from "@/src/interface/dashboard/product.interface";
+import { Skeleton } from "@/components/ui/skeleton";
+import ProductCardSkeleton from "./common/skeleton/ProductCardSkeleton";
 
 export default function ShopSection() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -29,7 +31,7 @@ export default function ShopSection() {
 
   const { data, isLoading, isFetching } = useGetProductQuery({
     url: `product`,
-    params: { page, limit: "10" },
+    params: { page, limit: "9" },
   });
 
   console.log("products.data", data);
@@ -41,9 +43,22 @@ export default function ShopSection() {
     }
   }, [data]);
 
-  if (isLoading) {
-    return <h1>loading............</h1>;
-  }
+  const meta = data?.meta;
+  const hasMore = page < (meta?.totalPage ?? 1);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetching) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 1 },
+    );
+
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, isFetching]);
 
   return (
     <section id="shop" className="py-20 md:py-32 bg-[#FAFAF8]">
@@ -113,10 +128,7 @@ export default function ShopSection() {
 
           {/* এই div টা viewport এ আসলেই next page fetch হবে */}
           <div ref={loaderRef} className="py-4 text-center">
-            {isFetching && <SplineIcon />}
-            {!hasMore && (
-              <p className="text-slate-400 text-sm">No more products</p>
-            )}
+            {isFetching && <ProductCardSkeleton />}
           </div>
         </div>
 
