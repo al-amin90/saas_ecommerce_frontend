@@ -13,4 +13,13 @@ export interface IAuthState {
   error: string | null;
 }
 
+export interface DecodedToken {
+  id: string | null;
+  role: string;
+  email: string;
+  subdomain: string;
+  iat: number;
+  exp: number;
+}
+
 export type TReduxQuery = { url: string; data?: unknown; params: unknown };

@@ -1,7 +1,14 @@
 "use client";
 import { useState } from "react";
-import { Search, Menu, ShoppingCart, User, ChevronDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import {
+  Search,
+  Menu,
+  ShoppingCart,
+  User,
+  ChevronDown,
+  LayoutDashboard,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +22,9 @@ import { useAppSelector } from "@/src/redux/store";
 import { selectCartItems } from "@/src/redux/features/cart/cartSlice";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { selectToken } from "@/src/redux/features/auth/authSlice";
+import { DecodedToken } from "@/src/redux/types";
+import { jwtDecode } from "jwt-decode";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
@@ -36,6 +46,11 @@ export default function Navbar() {
 
   const router = useRouter();
   const cartItems = useAppSelector(selectCartItems);
+  const accessToken = useAppSelector(selectToken);
+
+  const decoded = accessToken ? jwtDecode<DecodedToken>(accessToken) : null;
+  const isSuperAdmin = decoded?.role === "super_admin";
+
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -80,25 +95,70 @@ export default function Navbar() {
             {/* Right icons */}
             <div className="flex items-center gap-2 md:gap-3 ml-auto">
               {/* Sign In */}
-              <Link
-                href="/login"
-                className="flex flex-col items-center cursor-pointer px-1 sm:px-2 transition-colors hover:opacity-80"
-              >
-                <User
-                  size={20}
-                  className="sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
-                  style={{ color: PRIMARY }}
-                />
-                <span
-                  className="text-sm hidden lg:block font-medium mt-1"
-                  style={{
-                    color: PRIMARY,
-                    fontFamily: "'DM Sans', sans-serif",
-                  }}
+              {accessToken ? (
+                <div className="flex flex-col items-center gap-1">
+                  {isSuperAdmin && (
+                    <Link
+                      href="/dashboard"
+                      className="flex flex-col items-center cursor-pointer px-1 sm:px-2 transition-colors hover:opacity-80"
+                    >
+                      <LayoutDashboard
+                        size={20}
+                        className="sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
+                        style={{ color: PRIMARY }}
+                      />
+                      <span
+                        className="text-sm hidden lg:block font-medium mt-1"
+                        style={{
+                          color: PRIMARY,
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}
+                      >
+                        Dashboard
+                      </span>
+                    </Link>
+                  )}
+                  {/* <Link
+                    href="/profile"
+                    className="flex flex-col items-center cursor-pointer px-1 sm:px-2 transition-colors hover:opacity-80"
+                  >
+                    <User
+                      size={20}
+                      className="sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
+                      style={{ color: PRIMARY }}
+                    />
+                    <span
+                      className="text-sm hidden lg:block font-medium mt-1"
+                      style={{
+                        color: PRIMARY,
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}
+                    >
+                      Profile
+                    </span>
+                  </Link> */}
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex flex-col items-center cursor-pointer px-1 sm:px-2 transition-colors hover:opacity-80"
                 >
-                  Sign In
-                </span>
-              </Link>
+                  <User
+                    size={20}
+                    className="sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
+                    style={{ color: PRIMARY }}
+                  />
+                  <span
+                    className="text-sm hidden lg:block font-medium mt-1"
+                    style={{
+                      color: PRIMARY,
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Sign In
+                  </span>
+                </Link>
+              )}
 
               {/* Wishlist */}
               {/* <div className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80">
