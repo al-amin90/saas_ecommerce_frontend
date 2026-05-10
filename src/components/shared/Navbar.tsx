@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useAppSelector } from "@/src/redux/store";
 import { selectCartItems } from "@/src/redux/features/cart/cartSlice";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
@@ -41,44 +42,16 @@ export default function Navbar() {
     <>
       {/* ── Row 1: Logo / Search / Icons ─────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white ">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto pl-4 pr-0 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6 py-4 md:py-6">
             {/* Logo */}
-            <div className="flex items-center gap-3 flex-shrink-0 mr-3">
-              <div
-                className="w-14 h-14 rounded-[10px] flex items-center justify-center flex-shrink-0"
-                style={{ background: ACCENT }}
-              >
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M3 9.5L12 3l9 6.5V21H3V9.5z"
-                    stroke="#fff"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M9 21v-7h6v7"
-                    stroke="#fff"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="12" cy="10" r="1.5" fill="#fff" />
-                </svg>
-              </div>
-              <div className="hidden sm:block leading-none">
-                <h1
-                  className="font-black text-lg tracking-widest uppercase leading-tight"
-                  style={{ color: ACCENT, fontFamily: "'Syne', sans-serif" }}
-                >
-                  Ghorer
-                </h1>
-                <h1
-                  className="font-black text-lg tracking-widest uppercase leading-tight"
-                  style={{ color: ACCENT, fontFamily: "'Syne', sans-serif" }}
-                >
-                  Bazar
-                </h1>
-              </div>
+            <div className="relative rounded-full w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 flex-shrink-0 mr-3">
+              <Image
+                src="/logo.jpeg"
+                fill
+                className="object-contain rounded-full"
+                alt="Logo"
+              />
             </div>
 
             {/* Search bar */}
@@ -109,11 +82,15 @@ export default function Navbar() {
               {/* Sign In */}
               <Link
                 href="/login"
-                className="hidden md:flex flex-col items-center cursor-pointer px-2 text-decoration-none transition-colors hover:opacity-80"
+                className="flex flex-col items-center cursor-pointer px-1 sm:px-2 transition-colors hover:opacity-80"
               >
-                <User size={28} style={{ color: PRIMARY }} />
+                <User
+                  size={20}
+                  className="sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
+                  style={{ color: PRIMARY }}
+                />
                 <span
-                  className="text-sm font-medium mt-1"
+                  className="text-sm hidden lg:block font-medium mt-1"
                   style={{
                     color: PRIMARY,
                     fontFamily: "'DM Sans', sans-serif",
@@ -150,21 +127,25 @@ export default function Navbar() {
               {/* Cart */}
               <div
                 onClick={() => router.push("/cart")}
-                className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80"
+                className="flex flex-col items-center cursor-pointer px-1 sm:px-2 transition-colors hover:opacity-80"
               >
                 <div className="relative">
-                  <ShoppingCart size={28} style={{ color: PRIMARY }} />
+                  <ShoppingCart
+                    size={20}
+                    className="sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
+                    style={{ color: PRIMARY }}
+                  />
                   {itemCount > 0 && (
-                    <Badge
-                      className="absolute -top-3 -right-2 h-6 w-6 flex items-center justify-center text-xs font-bold"
+                    <div
+                      className="absolute -top-3 -right-2 h-4 w-4 sm:h-6 sm:w-6 flex items-center justify-center rounded-full text-[8px] sm:text-xs font-bold"
                       style={{ background: ACCENT, color: "white" }}
                     >
                       {itemCount ?? "0"}
-                    </Badge>
+                    </div>
                   )}
                 </div>
                 <span
-                  className="text-sm font-medium mt-1"
+                  className="text-xs hidden lg:block sm:text-sm font-medium mt-1"
                   style={{
                     color: PRIMARY,
                     fontFamily: "'DM Sans', sans-serif",
@@ -256,7 +237,7 @@ export default function Navbar() {
                 fontFamily: "'Syne', sans-serif",
               }}
             >
-              Ghorer Bazar
+              KidsHut BD
             </SheetTitle>
           </SheetHeader>
 
