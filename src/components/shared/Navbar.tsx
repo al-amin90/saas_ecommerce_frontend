@@ -125,8 +125,8 @@ export default function Navbar() {
               </div> */}
 
               {/* Cart */}
-              <div
-                onClick={() => router.push("/cart")}
+              <Link
+                href={"/cart"}
                 className="flex flex-col items-center cursor-pointer px-1 sm:px-2 transition-colors hover:opacity-80"
               >
                 <div className="relative">
@@ -153,7 +153,7 @@ export default function Navbar() {
                 >
                   Cart
                 </span>
-              </div>
+              </Link>
 
               {/* Mobile menu button */}
               <Button
