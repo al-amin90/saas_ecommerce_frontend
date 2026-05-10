@@ -36,6 +36,11 @@ export default function ColorPage() {
     params: { page, limit: 10 },
   });
 
+  const { data: singleData, isLoading: singleLoading } = useGetDynamicQuery(
+    { url: `color/${editColor?._id}` },
+    { skip: !editColor },
+  );
+
   const [createColor, { isLoading: creating }] = usePostDynamicMutation();
   const [updateColor, { isLoading: updating }] = usePatchDynamicMutation();
   const [deleteColor, { isLoading: deleting }] = useDeleteDynamicMutation();
@@ -194,8 +199,8 @@ export default function ColorPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
-        variantSingleId={editColor?._id ?? undefined}
-        isLoading={updating}
+        defaultValues={singleData?.data ?? undefined}
+        isLoading={updating || singleLoading}
         mode="edit"
         variant="color"
       />

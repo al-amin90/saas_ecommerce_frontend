@@ -45,6 +45,11 @@ export default function CategoryPage() {
     },
   });
 
+  const { data: singleData, isLoading: singleLoading } = useGetDynamicQuery(
+    { url: `category/${editCategory?._id}` },
+    { skip: !editCategory },
+  );
+
   console.log("data", data);
   console.log("editCategory", editCategory);
 
@@ -179,8 +184,8 @@ export default function CategoryPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
-        variantSingleId={editCategory?._id ?? undefined}
-        isLoading={updating}
+        defaultValues={singleData?.data ?? undefined}
+        isLoading={updating || singleLoading}
         mode="edit"
       />
       <ConfirmDialog

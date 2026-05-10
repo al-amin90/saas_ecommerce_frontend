@@ -48,7 +48,7 @@ export default function LoginPage() {
       router.replace("/dashboard");
     } catch (err: unknown) {
       console.log("errf", err);
-      const error = (err as IErrorResponse) || "Login failed";
+      const error = (err.data as IErrorResponse) || "Login failed";
       toast.error(error.message);
     }
   };

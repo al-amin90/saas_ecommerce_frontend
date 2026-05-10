@@ -56,6 +56,7 @@ export function CategoryVariant({
   });
 
   useEffect(() => {
+    console.log("defaultValues", defaultValues);
     if (defaultValues) reset({ ...defaultValues });
   }, [defaultValues]);
 
