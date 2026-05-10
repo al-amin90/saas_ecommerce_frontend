@@ -1,14 +1,6 @@
 "use client";
 import { useState } from "react";
-import {
-  Search,
-  Menu,
-  X,
-  Heart,
-  ShoppingCart,
-  User,
-  ChevronDown,
-} from "lucide-react";
+import { Search, Menu, ShoppingCart, User, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +11,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import Link from "next/link";
+import { useAppSelector } from "@/src/redux/store";
+import { selectCartItems } from "@/src/redux/features/cart/cartSlice";
+import { useRouter } from "next/navigation";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
@@ -33,18 +28,14 @@ const categories = [
   { label: "Sneakers", href: "/" },
 ];
 
-interface NavbarProps {
-  cartCount?: number;
-  wishlistCount?: number;
-}
-
-export default function Navbar({
-  cartCount = 3,
-  wishlistCount = 2,
-}: NavbarProps) {
+export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchVal, setSearchVal] = useState("");
   const [openDrop, setOpenDrop] = useState<string | null>(null);
+
+  const router = useRouter();
+  const cartItems = useAppSelector(selectCartItems);
+  const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <>
@@ -133,7 +124,7 @@ export default function Navbar({
               </Link>
 
               {/* Wishlist */}
-              <div className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80">
+              {/* <div className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80">
                 <div className="relative">
                   <Heart size={28} style={{ color: PRIMARY }} />
                   {wishlistCount > 0 && (
@@ -154,18 +145,21 @@ export default function Navbar({
                 >
                   Wishlist
                 </span>
-              </div>
+              </div> */}
 
               {/* Cart */}
-              <div className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80">
+              <div
+                onClick={() => router.push("/cart")}
+                className="flex flex-col items-center cursor-pointer px-2 transition-colors hover:opacity-80"
+              >
                 <div className="relative">
                   <ShoppingCart size={28} style={{ color: PRIMARY }} />
-                  {cartCount > 0 && (
+                  {itemCount > 0 && (
                     <Badge
                       className="absolute -top-3 -right-2 h-6 w-6 flex items-center justify-center text-xs font-bold"
                       style={{ background: ACCENT, color: "white" }}
                     >
-                      {cartCount}
+                      {itemCount ?? "0"}
                     </Badge>
                   )}
                 </div>

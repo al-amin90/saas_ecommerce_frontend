@@ -5,23 +5,30 @@ import {
 } from "@/src/redux/features/cart/cartSlice";
 import { useAppSelector } from "@/src/redux/store";
 import { ShoppingCart } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function CartBadge() {
-  const itemCount = useAppSelector(selectCartItems);
+  const totalItems = useAppSelector(selectCartItems);
   const totalPrice = useAppSelector(selectCartTotal);
+  const router = useRouter();
 
+  console.log("totalItems", totalItems);
+  const itemCount = totalItems.reduce((sum, item) => sum + item.quantity, 0);
   console.log("itemCount", itemCount);
 
   return (
     <div className="flex flex-col w-fit h-fit items-center  fixed right-1 z-50 top-1/2 -translate-y-1/2">
       {/* Orange Box - Exact sizing */}
-      <div className="relative w-14 sm:w-16 md:w-20 h-16 sm:h-20 md:h-24 bg-orange-500 rounded-md sm:rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex flex-col items-center justify-center gap-1 hover:shadow-[0_6px_16px_rgba(0,0,0,0.2)] transition-shadow">
+      <div
+        onClick={() => router.push("/cart")}
+        className="relative cursor-pointer w-14 sm:w-16 md:w-20 h-16 sm:h-20 md:h-24 bg-orange-500 rounded-md sm:rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] flex flex-col items-center justify-center gap-1 hover:shadow-[0_6px_16px_rgba(0,0,0,0.2)] transition-shadow"
+      >
         {/* Cart Icon */}
         <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white animate-bounce" />
 
         {/* Items Text */}
         <span className="text-xs sm:text-sm font-bold text-white leading-tight">
-          {itemCount?.length ?? 0} items
+          {itemCount ?? 0} items
         </span>
       </div>
 

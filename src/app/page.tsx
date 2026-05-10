@@ -18,7 +18,7 @@ export default function HomePage() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Navbar cartCount={2} wishlistCount={3} />
+      <Navbar />
       <CartBadge />
 
       {/* Hero Slider */}

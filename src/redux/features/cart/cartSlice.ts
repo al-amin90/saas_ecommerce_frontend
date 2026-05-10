@@ -6,7 +6,7 @@ export interface ICartItem {
   productImage: string;
   price: number;
   discountPrice: number;
-  color: string; // color _id
+  color: string;
   size: number;
   quantity: number;
   stock: number; // max available

@@ -143,23 +143,26 @@ const ProductDetailsPage = () => {
   // -----------) add to cart here
   const handleAddToCart = () => {
     if (!selectedSize) {
-      toast.error("Please select a size");
+      toast.warning("Please select a size");
       return;
     }
 
     const colorId =
       typeof activeVariant?.color === "object"
-        ? activeVariant.color._id
+        ? activeVariant.color.color
         : (activeVariant?.color ?? "");
 
     dispatch(
       addToCart({
         productId: product._id!,
         productName: product.name,
-        productImage: product.images?.[0] ?? "",
+        productImage: product.existingImages?.[0] ?? "",
         price: product.price,
         discountPrice: product.discountPrice,
-        color: colorId,
+        color:
+          typeof activeVariant?.color === "object"
+            ? activeVariant.color.color
+            : "",
         size: selectedSize,
         quantity,
         stock: selectedStock?.quantity ?? 0,
@@ -332,7 +335,7 @@ const ProductDetailsPage = () => {
                     key={s._id ?? s.size}
                     onClick={() => setSelectedSize(s.size)}
                     disabled={s.quantity === 0}
-                    className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all ${
+                    className={`px-2 sm:px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
                       selectedSize === s.size
                         ? "bg-black text-white border-black"
                         : s.quantity === 0
@@ -353,8 +356,8 @@ const ProductDetailsPage = () => {
             {product.sku}
           </p>
 
-          {/* Quantity */}
           <div className="flex gap-3 items-center justify-center  w-full mb-3 relative">
+            {/* Quantity */}
             <div className="flex items-center gap-2 sm:gap-3 pt-1 sm:pt-0">
               <span className="text-xs sm:text-sm font-semibold text-slate-700">
                 Qty

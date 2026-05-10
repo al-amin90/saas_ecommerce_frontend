@@ -4,8 +4,8 @@ import Navbar from "@/src/components/shared/Navbar";
 const LandingLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div>
-      <Navbar cartCount={2} wishlistCount={3} />
-      <CartBadge itemCount={0} totalPrice={0} />
+      <Navbar />
+      <CartBadge />
 
       <main> {children}</main>
     </div>
