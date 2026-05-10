@@ -21,12 +21,13 @@ import Image from "next/image";
 // ── Schema ────────────────────────────────────────────────────────────────────
 
 const checkoutSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  fullName: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email"),
   phone: z.string().min(1, "Phone is required"),
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
-  paymentMethod: z.enum(["cash_on_delivery", "online"], {
+  postalCode: z.string().min(1, "Postal code is required"),
+  paymentMethod: z.enum(["cash", "online"], {
     required_error: "Select payment method",
   }),
 });
@@ -50,7 +51,7 @@ export default function CheckoutPage() {
     formState: { errors },
   } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { paymentMethod: "cash_on_delivery" },
+    defaultValues: { paymentMethod: "cash" },
   });
 
   const selectedPayment = watch("paymentMethod");
@@ -67,22 +68,22 @@ export default function CheckoutPage() {
   }
 
   const onSubmit = async (form: CheckoutForm) => {
-    // Backend payload — service এর IOrder match করে
     const payload = {
       guestCheckout: true,
       guestEmail: form.email,
       guestInfo: {
-        name: form.name,
+        fullName: form.fullName,
         phone: form.phone,
         address: form.address,
         city: form.city,
+        postalCode: form.postalCode,
       },
       items: cartItems.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
         price: item.discountPrice,
-        color: item.color,
-        size: item.size,
+        selectedSize: String(item.size),
+        selectedColor: item.color,
       })),
       totalPrice,
       paymentMethod: form.paymentMethod,
@@ -92,12 +93,29 @@ export default function CheckoutPage() {
       const res = await createOrder({ url: "order", data: payload }).unwrap();
       dispatch(clearCart());
       toast.success("Order placed successfully!");
-      router.push(`/order-success?orderId=${res?.data?._id}`);
+      router.push(`/order-success?orderId=${(res as any)?.data?._id}`);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Failed to place order");
     }
   };
+
+  const formFields = [
+    {
+      name: "fullName" as const,
+      label: "Full Name",
+      placeholder: "আহমেদ হোসেন",
+    },
+    { name: "email" as const, label: "Email", placeholder: "you@example.com" },
+    { name: "phone" as const, label: "Phone", placeholder: "01XXXXXXXXX" },
+    {
+      name: "address" as const,
+      label: "Address",
+      placeholder: "House, Road, Area",
+    },
+    { name: "city" as const, label: "City", placeholder: "Kushtia" },
+    { name: "postalCode" as const, label: "Postal Code", placeholder: "1205" },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -114,29 +132,7 @@ export default function CheckoutPage() {
               Delivery Information
             </h2>
 
-            {[
-              {
-                name: "name" as const,
-                label: "Full Name",
-                placeholder: "Al Amin",
-              },
-              {
-                name: "email" as const,
-                label: "Email",
-                placeholder: "you@example.com",
-              },
-              {
-                name: "phone" as const,
-                label: "Phone",
-                placeholder: "01XXXXXXXXX",
-              },
-              {
-                name: "address" as const,
-                label: "Address",
-                placeholder: "House, Road, Area",
-              },
-              { name: "city" as const, label: "City", placeholder: "Kushtia" },
-            ].map((f) => (
+            {formFields.map((f) => (
               <div key={f.name} className="space-y-1">
                 <Label className="text-sm text-slate-600">{f.label}</Label>
                 <Input
@@ -157,7 +153,7 @@ export default function CheckoutPage() {
               <Label className="text-sm text-slate-600">Payment Method</Label>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: "cash_on_delivery", label: "Cash on Delivery" },
+                  { value: "cash", label: "Cash on Delivery" },
                   { value: "online", label: "Online Payment" },
                 ].map((opt) => (
                   <button
@@ -213,7 +209,8 @@ export default function CheckoutPage() {
                       {item.productName}
                     </p>
                     <p className="text-xs text-slate-400">
-                      Size: {item.size} · Qty: {item.quantity}
+                      Size: {item.size} · Color: {item.color} · Qty:{" "}
+                      {item.quantity}
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-slate-800 flex-shrink-0">

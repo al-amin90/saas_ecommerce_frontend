@@ -29,6 +29,7 @@ import CartBadgeHorizontal from "@/src/components/shared/CartBadge";
 import { useAppDispatch } from "@/src/redux/store";
 import { toast } from "sonner";
 import { addToCart } from "@/src/redux/features/cart/cartSlice";
+import BuyNowModal from "@/src/components/dashboard/common/modal/BuyNowModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -103,6 +104,7 @@ const ProductDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
 
   const dispatch = useAppDispatch();
+  const [buyNowOpen, setBuyNowOpen] = useState(false);
 
   const { data, isLoading } = useGetSingleProductQuery({
     url: `/product/${slug}`,
@@ -170,6 +172,14 @@ const ProductDetailsPage = () => {
     );
 
     toast.success("Added to cart!");
+  };
+
+  const handleBuyNow = () => {
+    if (!selectedSize) {
+      toast.error("Please select a size");
+      return;
+    }
+    setBuyNowOpen(true);
   };
 
   return (
@@ -397,6 +407,7 @@ const ProductDetailsPage = () => {
           <Button
             disabled={!selectedSize || !inStock}
             variant="outline"
+            onClick={handleBuyNow}
             className="w-full h-10 sm:h-12 border-black text-black hover:bg-black hover:text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all"
           >
             <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -447,6 +458,22 @@ const ProductDetailsPage = () => {
           priority
         />
       </div>
+
+      <BuyNowModal
+        open={buyNowOpen}
+        onOpenChange={setBuyNowOpen}
+        productId={product._id!}
+        productName={product.name}
+        price={product.price}
+        discountPrice={product.discountPrice}
+        selectedSize={selectedSize!}
+        selectedColor={
+          typeof activeVariant?.color === "object"
+            ? activeVariant.color.name
+            : ""
+        }
+        quantity={quantity}
+      />
     </div>
   );
 };
