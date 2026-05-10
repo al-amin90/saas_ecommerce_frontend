@@ -1,13 +1,17 @@
 "use client";
-
+import {
+  selectCartItems,
+  selectCartTotal,
+} from "@/src/redux/features/cart/cartSlice";
+import { useAppSelector } from "@/src/redux/store";
 import { ShoppingCart } from "lucide-react";
 
-interface CartBadgeProps {
-  itemCount: number;
-  totalPrice: number;
-}
+export default function CartBadge() {
+  const itemCount = useAppSelector(selectCartItems);
+  const totalPrice = useAppSelector(selectCartTotal);
 
-export default function CartBadge({ itemCount, totalPrice }: CartBadgeProps) {
+  console.log("itemCount", itemCount);
+
   return (
     <div className="flex flex-col w-fit h-fit items-center  fixed right-1 z-50 top-1/2 -translate-y-1/2">
       {/* Orange Box - Exact sizing */}
@@ -17,7 +21,7 @@ export default function CartBadge({ itemCount, totalPrice }: CartBadgeProps) {
 
         {/* Items Text */}
         <span className="text-xs sm:text-sm font-bold text-white leading-tight">
-          {itemCount} items
+          {itemCount?.length ?? 0} items
         </span>
       </div>
 

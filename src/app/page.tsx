@@ -19,7 +19,7 @@ export default function HomePage() {
       </Head>
 
       <Navbar cartCount={2} wishlistCount={3} />
-      <CartBadge itemCount={0} totalPrice={0} />
+      <CartBadge />
 
       {/* Hero Slider */}
       <ImageSlider />
