@@ -22,7 +22,7 @@ const baseQuery = fetchBaseQuery({
 
     if (!token) {
       try {
-        const raw = localStorage.getItem("persist:authInfo");
+        const raw = localStorage.getItem("persist:auth");
         if (raw) {
           const parsed = JSON.parse(raw);
           token = parsed.token ? JSON.parse(parsed.token) : null;
@@ -74,7 +74,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 
   if (result?.error?.status === 401) {
     localStorage.removeItem("token");
-    localStorage.removeItem("persist:authInfo");
+    localStorage.removeItem("persist:auth");
     window.location.href = "/login";
   }
 

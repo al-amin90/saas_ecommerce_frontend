@@ -26,6 +26,9 @@ import Link from "next/link";
 import { useGetSingleProductQuery } from "@/src/redux/features/product/productApi";
 import CartBadge from "@/src/components/shared/CartBadge";
 import CartBadgeHorizontal from "@/src/components/shared/CartBadge";
+import { useAppDispatch } from "@/src/redux/store";
+import { toast } from "sonner";
+import { addToCart } from "@/src/redux/features/cart/cartSlice";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -99,6 +102,8 @@ function Accordion({
 const ProductDetailsPage = () => {
   const { slug } = useParams<{ slug: string }>();
 
+  const dispatch = useAppDispatch();
+
   const { data, isLoading } = useGetSingleProductQuery({
     url: `/product/${slug}`,
   });
@@ -135,6 +140,35 @@ const ProductDetailsPage = () => {
   const categoryName =
     typeof product.categoryID === "object" ? product.categoryID.name : "";
 
+  // -----------) add to cart here
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      toast.error("Please select a size");
+      return;
+    }
+
+    const colorId =
+      typeof activeVariant?.color === "object"
+        ? activeVariant.color._id
+        : (activeVariant?.color ?? "");
+
+    dispatch(
+      addToCart({
+        productId: product._id!,
+        productName: product.name,
+        productImage: product.images?.[0] ?? "",
+        price: product.price,
+        discountPrice: product.discountPrice,
+        color: colorId,
+        size: selectedSize,
+        quantity,
+        stock: selectedStock?.quantity ?? 0,
+      }),
+    );
+
+    toast.success("Added to cart!");
+  };
+
   return (
     <div className="min-h-screen max-w-[1440px] mx-auto bg-white">
       {/* Back */}
@@ -147,7 +181,6 @@ const ProductDetailsPage = () => {
           Back
         </Link>
       </div>
-
       <div className="   px-3 sm:px-6 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 ">
         {/* ── Left: Images ── */}
         <div className="space-y-2 sm:space-y-3 ">
@@ -346,6 +379,7 @@ const ProductDetailsPage = () => {
             </div>
 
             <Button
+              onClick={handleAddToCart}
               disabled={!selectedSize || !inStock}
               className="flex-1  h-10 sm:h-12 bg-black hover:bg-slate-800 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all"
             >
@@ -401,7 +435,6 @@ const ProductDetailsPage = () => {
           Please Check Size Chart For Better Fit
         </p>
       </div>
-
       <div className="relative w-full h-52 sm:h-96 md:h-[28rem] lg:h-[40rem]">
         <Image
           src={"/ladning/shoe-size.webp"}
