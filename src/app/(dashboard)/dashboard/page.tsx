@@ -19,6 +19,7 @@ import DailyRegistrationChart from "@/src/components/dashboard/chart/DailyRegist
 import ConditionBreakdownChart from "@/src/components/dashboard/chart/ConditionBreakdownChart";
 
 import { useGetOrderStatsQuery } from "@/src/redux/features/order/orderApi";
+import Image from "next/image";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -142,7 +143,7 @@ export default function DashboardPage() {
         />
         <StatsCard
           title="Total Revenue"
-          value={`৳${(stats.totalRevenue / 100000).toFixed(1)}L`}
+          value={`৳${stats.totalRevenue}`}
           subtitle="All time revenue"
           icon={TrendingUp}
           color="violet"
@@ -225,9 +226,21 @@ export default function DashboardPage() {
         <div className="space-y-3">
           {stats.recentOrders.map((order) => (
             <div key={order._id} className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-                <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="h-9 w-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0 overflow-hidden">
+                {order.items[0]?.productId?.images?.[0] ? (
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={order.items[0].productId.images[0]}
+                      alt={order.items[0].productId.name || "Product"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                )}
               </div>
+
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
                   {order.guestInfo?.fullName ?? "Registered User"}

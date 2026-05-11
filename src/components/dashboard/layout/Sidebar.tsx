@@ -51,7 +51,8 @@ export default function Sidebar() {
     return (
       <div className="flex flex-col h-full">
         {/* Brand */}
-        <div
+        <Link
+          href={"/"}
           className={cn(
             "flex items-center gap-3 px-4 py-5 border-b border-white/10",
             collapsed && "justify-center px-2",
@@ -70,7 +71,7 @@ export default function Sidebar() {
               Shoes Bazar
             </span>
           )}
-        </div>
+        </Link>
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
