@@ -12,22 +12,23 @@ import {
   X,
   ChevronRight,
   Shovel,
+  Palette,
+  ChartBarStacked,
+  FolderKanban,
 } from "lucide-react";
 import { useState } from "react";
 
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 // import { logoutUser, selectUser } from "@/redux/features/auth/authSlice";
 // import { useAppDispatch, useAppSelector } from "@/redux/store";
 // import { useLogoutMutation } from "@/redux/features/auth/authApi";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/category", label: "Category", icon: Stethoscope },
-  { href: "/dashboard/color", label: "Color", icon: Users },
-  { href: "/dashboard/product", label: "Product", icon: Users },
+  { href: "/dashboard/category", label: "Category", icon: ChartBarStacked },
+  { href: "/dashboard/color", label: "Color", icon: Palette },
+  { href: "/dashboard/product", label: "Product", icon: FolderKanban },
 ];
 
 export default function Sidebar() {
@@ -56,8 +57,13 @@ export default function Sidebar() {
             collapsed && "justify-center px-2",
           )}
         >
-          <div className="bg-blue-500/30 rounded-xl p-2 shrink-0">
-            <Shovel className="h-5 w-5 text-blue-300" />
+          <div className="relative rounded-full w-5 h-5 md:w-8 md:h-8  flex-shrink-0">
+            <Image
+              src="/logo.jpeg"
+              fill
+              className="object-contain rounded-full"
+              alt="Logo"
+            />
           </div>
           {!collapsed && (
             <span className="text-white font-bold text-lg tracking-tight">

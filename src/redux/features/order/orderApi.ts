@@ -1,32 +1,89 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { baseApi } from "../../api/baseApi";
 
 const orderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    createOrder: builder.mutation<unknown, { url: string; data: unknown }>({
-      query: ({ url, data }) => ({
-        url,
+    // ── Create Order ──────────────────────────────────────────────────────
+    createOrder: builder.mutation({
+      query: (data) => ({
+        url: "order",
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["orders"],
     }),
-    // getProduct: builder.query<
-    //   { success: boolean; message: string; data: any; meta?: any },
-    //   { url: string; params?: Record<string, any> }
-    // >({
-    //   query: ({ url, params }) => ({ url, params, method: "GET" }),
-    //   providesTags: ["products"],
-    // }),
-    // getSingleProduct: builder.query({
-    //   query: ({ url }) => ({
-    //     url: url,
-    //     method: "GET",
-    //   }),
-    //   providesTags: ["singleProduct"],
-    // }),
+
+    // ── Get All Orders (admin) ────────────────────────────────────────────
+    getAllOrders: builder.query({
+      query: () => ({
+        url: "order",
+        method: "GET",
+      }),
+      providesTags: ["orders"],
+    }),
+
+    // ── Get Order By ID ───────────────────────────────────────────────────
+    getOrderById: builder.query({
+      query: (orderId: string) => ({
+        url: `order/${orderId}`,
+        method: "GET",
+      }),
+      providesTags: ["singleOrder"],
+    }),
+
+    // ── Get Guest Order ───────────────────────────────────────────────────
+    getGuestOrder: builder.query({
+      query: ({ email, orderId }: { email: string; orderId: string }) => ({
+        url: "order/guest",
+        method: "GET",
+        params: { email, orderId },
+      }),
+    }),
+
+    // ── Get Dashboard Stats ───────────────────────────────────────────────
+    getOrderStats: builder.query({
+      query: () => ({
+        url: "order/stats",
+        method: "GET",
+      }),
+      providesTags: ["orderStats"],
+    }),
+
+    // ── Update Order Status ───────────────────────────────────────────────
+    updateOrderStatus: builder.mutation({
+      query: ({
+        orderId,
+        orderStatus,
+        paymentStatus,
+      }: {
+        orderId: string;
+        orderStatus?: string;
+        paymentStatus?: string;
+      }) => ({
+        url: `order/${orderId}/status`,
+        method: "PATCH",
+        body: { orderStatus, paymentStatus },
+      }),
+      invalidatesTags: ["orders", "singleOrder", "orderStats"],
+    }),
+
+    // ── Cancel Order ──────────────────────────────────────────────────────
+    cancelOrder: builder.mutation({
+      query: (orderId: string) => ({
+        url: `order/${orderId}/cancel`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["orders", "singleOrder", "orderStats"],
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useCreateOrderMutation } = orderApi;
+export const {
+  useCreateOrderMutation,
+  useGetAllOrdersQuery,
+  useGetOrderByIdQuery,
+  useGetGuestOrderQuery,
+  useGetOrderStatsQuery,
+  useUpdateOrderStatusMutation,
+  useCancelOrderMutation,
+} = orderApi;
