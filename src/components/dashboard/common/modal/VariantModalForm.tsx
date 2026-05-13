@@ -6,6 +6,8 @@ import {
   categorySchema,
   ColorFormData,
   colorSchema,
+  DeliveryMethodFormData,
+  deliveryMethodSchema,
   ProductFormData,
   productSchema,
 } from "@/src/validation";
@@ -25,6 +27,9 @@ import ModalFooter from "./ModalFooter";
 import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
 
 import { Upload, X } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 type VariantProps<T> = {
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
@@ -471,7 +476,7 @@ export function ProductVariant({
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-1"
+      className="space-y-4 py-2  pr-1"
     >
       {/* Name */}
       <div className="space-y-1">
@@ -695,6 +700,252 @@ export function ProductVariant({
         onCancel={onCancel}
         name="Product"
       ></ModalFooter>
+    </form>
+  );
+}
+
+export type DeliveryMethodVariantProps = {
+  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  defaultValues?: Partial<DeliveryMethodFormData>;
+  isLoading?: boolean;
+  mode: "create" | "edit";
+  onCancel: () => void;
+};
+
+export function DeliveryMethodVariant({
+  onSubmit,
+  defaultValues,
+  isLoading,
+  mode,
+  onCancel,
+}: DeliveryMethodVariantProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    watch,
+    setValue,
+  } = useForm({
+    resolver: zodResolver(deliveryMethodSchema),
+    defaultValues: {
+      name: defaultValues?.name ?? "",
+      type: defaultValues?.type ?? "PATHAO",
+      accountPhone: defaultValues?.accountPhone ?? "",
+      clientId: defaultValues?.clientId ?? "",
+      clientSecret: defaultValues?.clientSecret ?? "",
+      clientEmail: defaultValues?.clientEmail ?? "",
+      clientPassword: defaultValues?.clientPassword ?? "",
+      clientStoreId: defaultValues?.clientStoreId ?? "",
+      defaultShippingNote: defaultValues?.defaultShippingNote ?? "",
+      isActive: defaultValues?.isActive ?? true,
+    },
+  });
+
+  useEffect(() => {
+    if (mode === "edit" && defaultValues) {
+      reset(defaultValues);
+    }
+  }, [mode, defaultValues, reset]);
+
+  const loading = isLoading || isSubmitting;
+  const isActive = watch("isActive");
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
+      {/* Remove the overflow-y-auto and pr-4 from here */}
+      {/* Delivery Method Name */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Delivery Method Name
+        </label>
+        <Input
+          placeholder="e.g., Pathao Express"
+          {...register("name")}
+          disabled={loading}
+        />
+        {errors.name && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.name?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* Delivery Type */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Delivery Type
+        </label>
+        <Select
+          onValueChange={(value) => setValue("type", value)}
+          defaultValue={watch("type")}
+          disabled={loading}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select delivery type" />
+          </SelectTrigger>
+          <SelectContent>
+            {["PATHAO", "REDX", "STEDFAST", "CARRYBEE", "OTHERS"].map(
+              (type) => (
+                <SelectItem key={type} value={type}>
+                  {type}
+                </SelectItem>
+              ),
+            )}
+          </SelectContent>
+        </Select>
+        {errors.type && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.type?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* Account Phone */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Account Phone Number
+        </label>
+        <Input
+          placeholder="+880123456789"
+          {...register("accountPhone")}
+          disabled={loading}
+        />
+        {errors.accountPhone && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.accountPhone?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* Client ID */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Client ID
+        </label>
+        <Input
+          placeholder="Enter client ID"
+          {...register("clientId")}
+          disabled={loading}
+        />
+        {errors.clientId && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.clientId?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* Client Secret */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Client Secret
+        </label>
+        <Input
+          placeholder="Enter client secret"
+          type="password"
+          {...register("clientSecret")}
+          disabled={loading}
+        />
+        {errors.clientSecret && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.clientSecret?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* Client Email */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Client Email
+        </label>
+        <Input
+          placeholder="admin@delivery.com"
+          type="email"
+          {...register("clientEmail")}
+          disabled={loading}
+        />
+        {errors.clientEmail && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.clientEmail?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* Client Password */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Client Password
+        </label>
+        <Input
+          placeholder="Enter client password"
+          type="password"
+          {...register("clientPassword")}
+          disabled={loading}
+        />
+        {errors.clientPassword && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.clientPassword?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* Client Store ID */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Client Store ID
+        </label>
+        <Input
+          placeholder="Enter store ID"
+          {...register("clientStoreId")}
+          disabled={loading}
+        />
+        {errors.clientStoreId && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.clientStoreId?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* Default Shipping Note */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Default Shipping Note
+        </label>
+        <Textarea
+          placeholder="Enter default shipping note"
+          {...register("defaultShippingNote")}
+          disabled={loading}
+          rows={3}
+        />
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          This note will be added to deliveries using this method.
+        </p>
+      </div>
+
+      {/* Active Toggle */}
+      <div className="flex items-center justify-between rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+        <div>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Active
+          </label>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            If you want to activate this delivery method, turn this on.
+          </p>
+        </div>
+        <Switch
+          checked={isActive}
+          onCheckedChange={(value) => setValue("isActive", value)}
+          disabled={loading}
+        />
+      </div>
+
+      <ModalFooter
+        isLoading={isLoading}
+        mode={mode}
+        onCancel={onCancel}
+        name="Delivery Method"
+      ></ModalFooter>
+      {/* Footer */}
     </form>
   );
 }

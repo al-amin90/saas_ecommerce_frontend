@@ -34,7 +34,23 @@ export const productSchema = z.object({
     .min(1, "At least one variant required"),
 });
 
+export const deliveryMethodSchema = z.object({
+  name: z.string().min(1, "Delivery method name is required"),
+  type: z.enum(["PATHAO", "REDX", "STEDFAST", "CARRYBEE", "OTHERS"], {
+    errorMap: () => ({ message: "Please select a delivery type" }),
+  }),
+  accountPhone: z.string().min(1, "Account phone number is required"),
+  clientId: z.string().min(1, "Client ID is required"),
+  clientSecret: z.string().min(1, "Client secret is required"),
+  clientEmail: z.string().email("Invalid email address"),
+  clientPassword: z.string().min(1, "Client password is required"),
+  clientStoreId: z.string().min(1, "Client store ID is required"),
+  defaultShippingNote: z.string().optional(),
+  isActive: z.boolean().default(true),
+});
+
 export type ProductFormData = z.infer<typeof productSchema>;
 
 export type CategoryFormData = z.infer<typeof categorySchema>;
 export type ColorFormData = z.infer<typeof colorSchema>;
+export type DeliveryMethodFormData = z.infer<typeof deliveryMethodSchema>;

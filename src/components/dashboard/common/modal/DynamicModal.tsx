@@ -16,16 +16,18 @@ import {
   CategoryVariant,
   ColorVariant,
   ProductVariant,
+  DeliveryMethodVariant,
 } from "./VariantModalForm";
 import {
   CategoryFormData,
   ColorFormData,
   ProductFormData,
+  DeliveryMethodFormData,
 } from "@/src/validation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Variant = "category" | "color" | "product";
+type Variant = "category" | "color" | "product" | "deliveryMethod";
 
 type DynamicModalProps<
   T = Record<string, unknown>,
@@ -69,6 +71,10 @@ const defaultTitleMap: Record<Variant, Record<"create" | "edit", string>> = {
   category: { create: "Add New Category", edit: "Edit Category" },
   color: { create: "Add New Color", edit: "Edit Color" },
   product: { create: "Add New Product", edit: "Edit Product" },
+  deliveryMethod: {
+    create: "Add New Delivery Method",
+    edit: "Edit Delivery Method",
+  },
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -129,6 +135,17 @@ const DynamicModal = <T, O, P>({
           />
         );
 
+      case "deliveryMethod":
+        return (
+          <DeliveryMethodVariant
+            onSubmit={onSubmit}
+            defaultValues={defaultValues}
+            isLoading={isLoading}
+            mode={mode}
+            onCancel={() => onOpenChange(false)}
+          />
+        );
+
       default:
         return null;
     }
@@ -148,7 +165,7 @@ const DynamicModal = <T, O, P>({
       )}
 
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           <DialogHeader>
             <DialogTitle className="text-slate-800 dark:text-white">
               {title}

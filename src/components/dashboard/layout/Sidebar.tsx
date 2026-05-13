@@ -54,21 +54,21 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    href: "/dashboard/orders",
+    href: "/dashboard/delivery-method",
     label: "Delivery Methods",
     icon: Truck,
-    children: [
-      {
-        href: "/dashboard/orders",
-        label: "Delivery Methods List",
-        icon: Package,
-      },
-      {
-        href: "/dashboard/orders/pending",
-        label: "Add Delivery Methods",
-        icon: Clock,
-      },
-    ],
+    // children: [
+    //   {
+    //     href: "/dashboard/delivery-method",
+    //     label: "Delivery Methods List",
+    //     icon: Package,
+    //   },
+    //   {
+    //     href: "/dashboard/delivery-method/add",
+    //     label: "Add Delivery Methods",
+    //     icon: Clock,
+    //   },
+    // ],
   },
 ];
 
