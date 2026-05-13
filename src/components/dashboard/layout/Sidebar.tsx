@@ -3,19 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import {
-  LayoutDashboard,
-  Stethoscope,
-  Users,
-  LogOut,
-  Menu,
-  X,
-  ChevronRight,
-  Shovel,
-  Palette,
-  ChartBarStacked,
-  FolderKanban,
-} from "lucide-react";
 import { useState } from "react";
 
 // import { logoutUser, selectUser } from "@/redux/features/auth/authSlice";
@@ -24,11 +11,65 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-const navItems = [
+import {
+  LayoutDashboard,
+  Palette,
+  ChartBarStacked,
+  FolderKanban,
+  ShoppingCart,
+  Package,
+  Clock,
+  ChevronDown,
+  ChevronRight,
+  Menu,
+  X,
+  Truck,
+} from "lucide-react";
+
+type NavChild = {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+};
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  children?: NavChild[];
+};
+
+const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/category", label: "Category", icon: ChartBarStacked },
   { href: "/dashboard/color", label: "Color", icon: Palette },
   { href: "/dashboard/product", label: "Product", icon: FolderKanban },
+  {
+    href: "/dashboard/orders",
+    label: "Orders",
+    icon: ShoppingCart,
+    children: [
+      { href: "/dashboard/orders", label: "All Orders", icon: Package },
+      { href: "/dashboard/orders/pending", label: "Pending", icon: Clock },
+    ],
+  },
+  {
+    href: "/dashboard/orders",
+    label: "Delivery Methods",
+    icon: Truck,
+    children: [
+      {
+        href: "/dashboard/orders",
+        label: "Delivery Methods List",
+        icon: Package,
+      },
+      {
+        href: "/dashboard/orders/pending",
+        label: "Add Delivery Methods",
+        icon: Clock,
+      },
+    ],
+  },
 ];
 
 export default function Sidebar() {
@@ -48,6 +89,33 @@ export default function Sidebar() {
   // };
 
   const SidebarContent = () => {
+    const [openMenus, setOpenMenus] = useState<string[]>(() => {
+      return navItems
+        .filter((item) =>
+          item.children?.some(
+            (c) => pathname === c.href || pathname.startsWith(c.href + "/"),
+          ),
+        )
+        .map((item) => item.href);
+    });
+
+    const toggleMenu = (href: string) => {
+      setOpenMenus((prev) =>
+        prev.includes(href) ? prev.filter((h) => h !== href) : [...prev, href],
+      );
+    };
+
+    // active parent check
+    const isParentActive = (item: NavItem) => {
+      if (pathname === item.href) return true;
+      if (
+        item.children?.some(
+          (c) => pathname === c.href || pathname.startsWith(c.href + "/"),
+        )
+      )
+        return true;
+      return false;
+    };
     return (
       <div className="flex flex-col h-full">
         {/* Brand */}
@@ -74,39 +142,116 @@ export default function Sidebar() {
         </Link>
 
         {/* Nav */}
+
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
+            const hasChildren = !!item.children?.length;
+
+            // শুধু exact match বা direct child active হলে parent active
+            const parentActive =
+              (!hasChildren && pathname === item.href) ||
+              (hasChildren &&
+                !!item.children?.some(
+                  (c) =>
+                    pathname === c.href || pathname.startsWith(c.href + "/"),
+                ));
+
+            // শুধু openMenus state দিয়ে control — parentActive দিয়ে না
+            const isOpen = openMenus.includes(item.href);
+
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",
-                  isActive
-                    ? "bg-blue-500/30 text-white shadow-sm border border-blue-400/20"
-                    : "text-blue-200/70 hover:bg-white/5 hover:text-white",
-                  collapsed && "justify-center px-2",
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "h-5 w-5 shrink-0",
-                    isActive ? "text-blue-300" : "",
-                  )}
-                />
-                {!collapsed && (
-                  <>
-                    <span className="flex-1">{item.label}</span>
-                    {isActive && (
-                      <ChevronRight className="h-3 w-3 text-blue-300" />
+              <div key={item.href}>
+                {hasChildren ? (
+                  <button
+                    onClick={() => toggleMenu(item.href)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                      parentActive
+                        ? "bg-blue-500/20 text-white border border-blue-400/20"
+                        : "text-blue-200/70 hover:bg-white/5 hover:text-white",
+                      collapsed && "justify-center px-2",
                     )}
-                  </>
+                  >
+                    <Icon
+                      className={cn(
+                        "h-5 w-5 shrink-0",
+                        parentActive ? "text-blue-300" : "text-blue-200/70",
+                      )}
+                    />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 text-left">{item.label}</span>
+                        <ChevronDown
+                          className={cn(
+                            "h-3.5 w-3.5 transition-transform duration-200",
+                            isOpen ? "rotate-0" : "-rotate-90",
+                            parentActive ? "text-blue-300" : "text-blue-200/40",
+                          )}
+                        />
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                      // exact match only — startsWith সরিয়ে দিলাম
+                      pathname === item.href
+                        ? "bg-blue-500/20 text-white border border-blue-400/20"
+                        : "text-blue-200/70 hover:bg-white/5 hover:text-white",
+                      collapsed && "justify-center px-2",
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "h-5 w-5 shrink-0",
+                        pathname === item.href
+                          ? "text-blue-300"
+                          : "text-blue-200/70",
+                      )}
+                    />
+                    {!collapsed && <span className="flex-1">{item.label}</span>}
+                  </Link>
                 )}
-              </Link>
+
+                {/* Children */}
+                {hasChildren && isOpen && !collapsed && (
+                  <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-3">
+                    {item.children!.map((child) => {
+                      const ChildIcon = child.icon;
+                      // child active — exact match only
+                      const childActive = pathname === child.href;
+
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={() => setMobileOpen(false)}
+                          className={cn(
+                            "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200",
+                            childActive
+                              ? "bg-blue-500/20 text-white border border-blue-400/10"
+                              : "text-blue-200/50 hover:bg-white/5 hover:text-white",
+                          )}
+                        >
+                          <ChildIcon
+                            className={cn(
+                              "h-3.5 w-3.5 shrink-0",
+                              childActive
+                                ? "text-blue-300"
+                                : "text-blue-200/50",
+                            )}
+                          />
+                          <span>{child.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
