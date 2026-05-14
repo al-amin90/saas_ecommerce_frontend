@@ -90,7 +90,11 @@ export default function CheckoutPage() {
     };
 
     try {
-      const res = await createOrder({ url: "order", data: payload }).unwrap();
+      const res = await createOrder({
+        url: "order",
+        data: payload,
+        invalidatesTags: [{ type: "singleProduct" }],
+      }).unwrap();
       dispatch(clearCart());
       toast.success("Order placed successfully!");
       router.push(`/order-success?orderId=${(res as any)?.data?._id}`);

@@ -26,11 +26,9 @@ const buyNowSchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   postalCode: z.string().min(1, "Postal code is required"),
-  paymentMethod: z
-    .enum(["cash", "online"])
-    .refine((val) => val === "cash", {
-      message: "Online payment is not available right now",
-    }),
+  paymentMethod: z.enum(["cash", "online"]).refine((val) => val === "cash", {
+    message: "Online payment is not available right now",
+  }),
 });
 
 type BuyNowForm = z.infer<typeof buyNowSchema>;
@@ -45,7 +43,7 @@ interface BuyNowModalProps {
   price: number;
   discountPrice: number;
   selectedSize: number;
-  selectedColor: string; // color name
+  selectedColor: string;
   quantity: number;
 }
 
@@ -104,7 +102,11 @@ export default function BuyNowModal({
     };
 
     try {
-      const res = await createOrder({ url: "order", data: payload }).unwrap();
+      const res = await createOrder({
+        url: "order",
+        data: payload,
+        invalidatesTags: [{ type: "singleProduct" }],
+      }).unwrap();
       toast.success("Order placed!");
       reset();
       onOpenChange(false);
@@ -186,36 +188,27 @@ export default function BuyNowModal({
             <Label className="text-sm text-slate-600 dark:text-slate-300">
               Payment Method
             </Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {[
                 { value: "cash", label: "Cash on Delivery" },
-                { value: "online", label: "Online Payment", disabled: true },
+                // { value: "online", label: "Online Payment", disabled: true },
               ].map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
-                  disabled={opt.disabled}
                   onClick={() =>
-                    !opt.disabled &&
                     setValue(
                       "paymentMethod",
                       opt.value as BuyNowForm["paymentMethod"],
                     )
                   }
                   className={`py-2.5 px-3 rounded-lg border text-xs font-semibold transition-all ${
-                    opt.disabled
-                      ? "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
-                      : selectedPayment === opt.value
-                        ? "border-black bg-black text-white"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
+                    selectedPayment === opt.value
+                      ? "border-black bg-black text-white"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
                   }`}
                 >
                   {opt.label}
-                  {opt.disabled && (
-                    <span className="block text-[10px] font-normal">
-                      Coming soon
-                    </span>
-                  )}
                 </button>
               ))}
             </div>

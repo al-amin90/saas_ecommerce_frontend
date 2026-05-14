@@ -15,7 +15,10 @@ const dynamicApi = baseApi.injectEndpoints({
 
     postDynamic: builder.mutation({
       query: ({ url, data }) => ({ url, method: "POST", body: data }),
-      invalidatesTags: dynamicTag,
+
+      invalidatesTags: (_result, _error, arg) => {
+        return arg.invalidatesTags || dynamicTag(_result, _error, arg);
+      },
     }),
 
     patchDynamic: builder.mutation({

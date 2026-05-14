@@ -469,7 +469,7 @@ const ProductDetailsPage = () => {
         selectedSize={selectedSize!}
         selectedColor={
           typeof activeVariant?.color === "object"
-            ? activeVariant.color.name
+            ? activeVariant.color.color
             : ""
         }
         quantity={quantity}

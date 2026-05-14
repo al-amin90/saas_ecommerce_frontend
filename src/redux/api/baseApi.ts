@@ -87,11 +87,11 @@ export const baseApi = createApi({
   tagTypes: [
     "auth",
     "category",
-    "product",
+    // "product",
     "color",
     "products",
     "singleProduct",
-    "orders",
+    "order",
     "singleOrder",
     "orderStats",
     "delivery-method",
