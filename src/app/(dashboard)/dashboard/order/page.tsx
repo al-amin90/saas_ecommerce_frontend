@@ -1,12 +1,15 @@
+// src/app/(dashboard)/dashboard/orders/page.tsx
+
 "use client";
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { Eye, ChevronDown, Search } from "lucide-react";
+import { Eye, ChevronDown, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -20,16 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  useGetDynamicQuery,
-  usePatchDynamicMutation,
-} from "@/src/redux/features/dynamic/dynamicApi";
 import DataTable from "@/src/components/dashboard/shared/DataTable";
 import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
 import Image from "next/image";
 import {
   useGetAllOrdersQuery,
   useUpdateOrderStatusMutation,
+  useSubmitBulkOrdersMutation,
+  useGetDeliveryMethodsQuery,
 } from "@/src/redux/features/order/orderApi";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -158,7 +159,7 @@ function OrderDetailModal({
           {/* Items */}
           <div className="space-y-2">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
-              Items
+              Items ({order.items.length})
             </p>
             {order.items.map((item, i) => (
               <div
@@ -182,13 +183,17 @@ function OrderDetailModal({
                     {item.productId?.name}
                   </p>
                   <p className="text-xs text-slate-400">
-                    Size: {item.selectedSize} · Color: {item.selectedColor} ·
-                    Qty: {item.quantity}
+                    Size: {item.selectedSize} · Color: {item.selectedColor}
                   </p>
                 </div>
-                <p className="text-sm font-bold text-slate-800 dark:text-white flex-shrink-0">
-                  ৳{(item.price * item.quantity).toLocaleString()}
-                </p>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    Qty: {item.quantity}
+                  </p>
+                  <p className="text-sm font-bold text-slate-800 dark:text-white">
+                    ৳{(item.price * item.quantity).toLocaleString()}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -271,10 +276,21 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
 
-  const { data, isLoading } = useGetAllOrdersQuery(undefined);
+  // ✅ Bulk selection
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [showDeliveryMethodSelect, setShowDeliveryMethodSelect] =
+    useState(false);
+  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState("");
 
+  const { data, isLoading } = useGetAllOrdersQuery(undefined);
   const [updateOrderStatus, { isLoading: isUpdating }] =
     useUpdateOrderStatusMutation();
+  const [submitBulkOrders, { isLoading: isSubmittingBulk }] =
+    useSubmitBulkOrdersMutation();
+
+  const { data: deliveryMethods } = useGetDeliveryMethodsQuery(undefined);
 
   console.log("data", data);
   const orders: IOrderRow[] = data?.data ?? [];
@@ -300,6 +316,26 @@ export default function OrdersPage() {
     return matchStatus && matchSearch;
   });
 
+  // ── Selection handlers ────────────────────────────────────────────────────
+
+  const handleSelectOrder = (orderId: string) => {
+    const newSelected = new Set(selectedOrderIds);
+    if (newSelected.has(orderId)) {
+      newSelected.delete(orderId);
+    } else {
+      newSelected.add(orderId);
+    }
+    setSelectedOrderIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedOrderIds.size === filteredOrders.length) {
+      setSelectedOrderIds(new Set());
+    } else {
+      setSelectedOrderIds(new Set(filteredOrders.map((o) => o._id)));
+    }
+  };
+
   // ── Status update handler ─────────────────────────────────────────────────
 
   const handleStatusUpdate = async (
@@ -317,9 +353,55 @@ export default function OrdersPage() {
     }
   };
 
+  // ✅ Submit bulk orders
+  const handleSubmitBulk = async () => {
+    if (selectedOrderIds.size === 0) {
+      toast.error("Select at least one order");
+      return;
+    }
+
+    if (!selectedDeliveryMethod) {
+      toast.error("Select a delivery method");
+      return;
+    }
+
+    try {
+      await submitBulkOrders({
+        orderIds: Array.from(selectedOrderIds),
+        deliveryMethodId: selectedDeliveryMethod,
+      }).unwrap();
+
+      toast.success(`${selectedOrderIds.size} order(s) submitted to courier`);
+      setSelectedOrderIds(new Set());
+      setShowDeliveryMethodSelect(false);
+      setSelectedDeliveryMethod("");
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message ?? "Failed to submit orders");
+    }
+  };
+
   // ── Columns ───────────────────────────────────────────────────────────────
 
   const columns = [
+    {
+      key: "checkbox",
+      label: (
+        <Checkbox
+          checked={selectedOrderIds.size === filteredOrders.length}
+          onCheckedChange={handleSelectAll}
+          className="rounded"
+        />
+      ),
+      render: (row: IOrderRow) => (
+        <Checkbox
+          checked={selectedOrderIds.has(row._id)}
+          onCheckedChange={() => handleSelectOrder(row._id)}
+          className="rounded"
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
+    },
     {
       key: "orderNumber",
       label: "Order",
@@ -343,13 +425,49 @@ export default function OrdersPage() {
         </div>
       ),
     },
+    // ✅ Products with images and quantities
     {
-      key: "items",
-      label: "Items",
+      key: "products",
+      label: "Products",
       render: (row: IOrderRow) => (
-        <span className="text-sm text-slate-500">
-          {row.items.length} item{row.items.length !== 1 ? "s" : ""}
-        </span>
+        <div className="flex gap-2 flex-wrap">
+          {row.items.map((item, i) => (
+            <div
+              key={i}
+              className="relative group"
+              title={`${item.productId?.name} - Qty: ${item.quantity}`}
+            >
+              {item.productId?.images?.[0] ? (
+                <div className="relative">
+                  <div className="relative w-8 h-8 rounded-md overflow-hidden bg-slate-200">
+                    <Image
+                      src={item.productId.images[0]}
+                      alt={item.productId.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  {/* Quantity badge */}
+                  <div className="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full text-[8px] w-4 h-4 flex items-center justify-center text-xs font-bold">
+                    {item.quantity}
+                  </div>
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded-md bg-slate-200 flex items-center justify-center text-xs">
+                  {item.quantity}
+                </div>
+              )}
+
+              {/* Hover tooltip */}
+              <div className="hidden group-hover:block absolute z-10 bg-slate-800 text-white p-2 rounded-lg whitespace-nowrap text-xs bottom-full mb-2 left-1/2 -translate-x-1/2">
+                <p className="font-semibold">{item.productId?.name}</p>
+                <p>Qty: {item.quantity}</p>
+                <p>Size: {item.selectedSize}</p>
+                <p>Color: {item.selectedColor}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       ),
     },
     {
@@ -426,6 +544,73 @@ export default function OrdersPage() {
           meta={{ total: filteredOrders.length }}
         />
       </div>
+
+      {/* ✅ Bulk Actions Bar */}
+      {selectedOrderIds.size > 0 && (
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+              {selectedOrderIds.size} order(s) selected
+            </span>
+          </div>
+
+          {showDeliveryMethodSelect ? (
+            <div className="flex gap-2">
+              <Select
+                value={selectedDeliveryMethod}
+                onValueChange={setSelectedDeliveryMethod}
+              >
+                <SelectTrigger className="h-9 w-48 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                  <SelectValue placeholder="Select delivery method" />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-900">
+                  {deliveryMethods?.data?.map((method: any) => (
+                    <SelectItem key={method._id} value={method._id}>
+                      {method.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                size="sm"
+                disabled={isSubmittingBulk || !selectedDeliveryMethod}
+                onClick={handleSubmitBulk}
+              >
+                {isSubmittingBulk ? "Submitting..." : "Submit to Courier"}
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setShowDeliveryMethodSelect(false);
+                  setSelectedDeliveryMethod("");
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                onClick={() => setShowDeliveryMethodSelect(true)}
+              >
+                Submit to Courier
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setSelectedOrderIds(new Set())}
+              >
+                Clear Selection
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">

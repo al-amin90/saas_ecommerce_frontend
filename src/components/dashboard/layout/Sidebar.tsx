@@ -45,13 +45,13 @@ const navItems: NavItem[] = [
   { href: "/dashboard/color", label: "Color", icon: Palette },
   { href: "/dashboard/product", label: "Product", icon: FolderKanban },
   {
-    href: "/dashboard/orders",
+    href: "/dashboard/order",
     label: "Orders",
     icon: ShoppingCart,
-    children: [
-      { href: "/dashboard/orders", label: "All Orders", icon: Package },
-      { href: "/dashboard/orders/pending", label: "Pending", icon: Clock },
-    ],
+    // children: [
+    //   { href: "/dashboard/orders", label: "All Orders", icon: Package },
+    //   { href: "/dashboard/orders/pending", label: "Pending", icon: Clock },
+    // ],
   },
   {
     href: "/dashboard/delivery-method",

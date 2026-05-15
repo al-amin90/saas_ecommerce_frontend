@@ -66,13 +66,22 @@ const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ["orders", "singleOrder", "orderStats"],
     }),
 
-    // ── Cancel Order ──────────────────────────────────────────────────────
-    cancelOrder: builder.mutation({
-      query: (orderId: string) => ({
-        url: `order/${orderId}/cancel`,
-        method: "PATCH",
+    getDeliveryMethods: builder.query({
+      query: () => ({
+        url: "/delivery-method",
+        method: "GET",
       }),
-      invalidatesTags: ["orders", "singleOrder", "orderStats"],
+      providesTags: ["deliveryMethod"],
+    }),
+
+    // ✅ Submit bulk orders
+    submitBulkOrders: builder.mutation({
+      query: ({ orderIds, deliveryMethodId }) => ({
+        url: "/order/submit-bulk",
+        method: "POST",
+        body: { orderIds, deliveryMethodId },
+      }),
+      invalidatesTags: ["orders"],
     }),
   }),
   overrideExisting: false,
@@ -85,5 +94,6 @@ export const {
   useGetGuestOrderQuery,
   useGetOrderStatsQuery,
   useUpdateOrderStatusMutation,
-  useCancelOrderMutation,
+  useGetDeliveryMethodsQuery,
+  useSubmitBulkOrdersMutation,
 } = orderApi;
