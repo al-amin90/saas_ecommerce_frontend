@@ -737,8 +737,9 @@ export function DeliveryMethodVariant({
       clientEmail: defaultValues?.clientEmail ?? "",
       clientPassword: defaultValues?.clientPassword ?? "",
       clientStoreId: defaultValues?.clientStoreId ?? "",
+      merchantId: defaultValues?.merchantId ?? "",
       defaultShippingNote: defaultValues?.defaultShippingNote ?? "",
-      isActive: defaultValues?.isActive ?? true,
+      isActive: defaultValues?.isActive ?? false,
     },
   });
 
@@ -902,6 +903,23 @@ export function DeliveryMethodVariant({
         {errors.clientStoreId && (
           <p className="text-red-500 text-xs mt-1">
             {String(errors.clientStoreId?.message)}
+          </p>
+        )}
+      </div>
+
+      {/* merchantId ID */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Merchant ID
+        </label>
+        <Input
+          placeholder="Enter merchant ID"
+          {...register("merchantId")}
+          disabled={loading}
+        />
+        {errors.merchantId && (
+          <p className="text-red-500 text-xs mt-1">
+            {String(errors.merchantId?.message)}
           </p>
         )}
       </div>

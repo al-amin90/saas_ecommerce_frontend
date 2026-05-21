@@ -280,9 +280,6 @@ export default function OrdersPage() {
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
     new Set(),
   );
-  const [showDeliveryMethodSelect, setShowDeliveryMethodSelect] =
-    useState(false);
-  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState("");
 
   const { data, isLoading } = useGetAllOrdersQuery(undefined);
   const [updateOrderStatus, { isLoading: isUpdating }] =
@@ -360,21 +357,13 @@ export default function OrdersPage() {
       return;
     }
 
-    if (!selectedDeliveryMethod) {
-      toast.error("Select a delivery method");
-      return;
-    }
-
     try {
       await submitBulkOrders({
         orderIds: Array.from(selectedOrderIds),
-        deliveryMethodId: selectedDeliveryMethod,
       }).unwrap();
 
       toast.success(`${selectedOrderIds.size} order(s) submitted to courier`);
       setSelectedOrderIds(new Set());
-      setShowDeliveryMethodSelect(false);
-      setSelectedDeliveryMethod("");
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message ?? "Failed to submit orders");
@@ -554,61 +543,19 @@ export default function OrdersPage() {
             </span>
           </div>
 
-          {showDeliveryMethodSelect ? (
-            <div className="flex gap-2">
-              <Select
-                value={selectedDeliveryMethod}
-                onValueChange={setSelectedDeliveryMethod}
-              >
-                <SelectTrigger className="h-9 w-48 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
-                  <SelectValue placeholder="Select delivery method" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-900">
-                  {deliveryMethods?.data?.map((method: any) => (
-                    <SelectItem key={method._id} value={method._id}>
-                      {method.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="flex gap-2">
+            <Button onClick={() => handleSubmitBulk()} size="sm">
+              Submit to Courier
+            </Button>
 
-              <Button
-                size="sm"
-                disabled={isSubmittingBulk || !selectedDeliveryMethod}
-                onClick={handleSubmitBulk}
-              >
-                {isSubmittingBulk ? "Submitting..." : "Submit to Courier"}
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setShowDeliveryMethodSelect(false);
-                  setSelectedDeliveryMethod("");
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={() => setShowDeliveryMethodSelect(true)}
-              >
-                Submit to Courier
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setSelectedOrderIds(new Set())}
-              >
-                Clear Selection
-              </Button>
-            </div>
-          )}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setSelectedOrderIds(new Set())}
+            >
+              Clear Selection
+            </Button>
+          </div>
         </div>
       )}
 
