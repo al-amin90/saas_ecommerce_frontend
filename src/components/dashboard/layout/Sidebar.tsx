@@ -45,11 +45,16 @@ const navItems: NavItem[] = [
   { href: "/dashboard/color", label: "Color", icon: Palette },
   { href: "/dashboard/product", label: "Product", icon: FolderKanban },
   {
+    href: "/dashboard/manual-order",
+    label: "Manual Order",
+    icon: ShoppingCart,
+  },
+  {
     href: "/dashboard/order",
     label: "Orders",
-    icon: ShoppingCart,
+    icon: Package,
     // children: [
-    //   { href: "/dashboard/orders", label: "All Orders", icon: Package },
+    //   { href: "/dashboard/orders", label: "All Orders", icon:  },
     //   { href: "/dashboard/orders/pending", label: "Pending", icon: Clock },
     // ],
   },
@@ -57,18 +62,6 @@ const navItems: NavItem[] = [
     href: "/dashboard/delivery-method",
     label: "Delivery Methods",
     icon: Truck,
-    // children: [
-    //   {
-    //     href: "/dashboard/delivery-method",
-    //     label: "Delivery Methods List",
-    //     icon: Package,
-    //   },
-    //   {
-    //     href: "/dashboard/delivery-method/add",
-    //     label: "Add Delivery Methods",
-    //     icon: Clock,
-    //   },
-    // ],
   },
 ];
 

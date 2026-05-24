@@ -198,11 +198,6 @@ export default function CheckoutPage() {
               </h2>
 
               {cartItems.map((item, i) => {
-                const totalDiscount = cartItems.reduce(
-                  (sum, item) => sum + item.discountPrice * item.quantity,
-                  0,
-                );
-
                 const discountedPrice =
                   item.price > (item.discountPrice || 0)
                     ? Math.round(item.price - (item.discountPrice || 0))
