@@ -21,6 +21,11 @@ import {
 } from "@/components/ui/select";
 import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
 import { useCreateOrderMutation } from "@/src/redux/features/order/orderApi";
+import {
+  BD_CITIES,
+  DHAKA_CHARGE,
+  OUTSIDE_DHAKA_CHARGE,
+} from "@/src/utils/delivaryCharge";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -236,6 +241,13 @@ export default function ManualOrderPage() {
   const [userSearch, setUserSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
+  //   delivary charge
+  const [citySearch, setCitySearch] = useState("");
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [deliveryCharge, setDeliveryCharge] = useState(OUTSIDE_DHAKA_CHARGE);
+  const [deliveryChargeEdited, setDeliveryChargeEdited] = useState(false);
+
   const [createOrder, { isLoading }] = useCreateOrderMutation();
 
   // ── Fetch products ────────────────────────────────────────────────────────
@@ -319,6 +331,26 @@ export default function ManualOrderPage() {
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
+  // ── Delivary charge ──────────────────────────────────────────────────────────────────
+
+  const handleCitySelect = (city: string) => {
+    setSelectedCity(city);
+    setCitySearch(city);
+    setCityDropdownOpen(false);
+    setValue("city", city, { shouldValidate: true }); // shouldValidate যোগ করো
+
+    if (!deliveryChargeEdited) {
+      setDeliveryCharge(
+        city.toLowerCase() === "dhaka" ? DHAKA_CHARGE : OUTSIDE_DHAKA_CHARGE,
+      );
+    }
+  };
+
+  const filteredCities = BD_CITIES.filter((c) =>
+    c.toLowerCase().includes(citySearch.toLowerCase()),
+  );
+
+  const grandTotal = selectedCity ? totalPrice + deliveryCharge : totalPrice;
 
   // ── Form ──────────────────────────────────────────────────────────────────
 
@@ -327,6 +359,7 @@ export default function ManualOrderPage() {
     handleSubmit,
     watch,
     setValue,
+    trigger,
     formState: { errors },
   } = useForm<CustomerForm>({
     resolver: zodResolver(customerSchema),
@@ -375,7 +408,7 @@ export default function ManualOrderPage() {
         selectedSize: item.selectedSize,
         colorId: item.colorId,
       })),
-      totalPrice,
+      totalPrice: grandTotal,
       paymentMethod: form.paymentMethod,
     };
 
@@ -567,13 +600,40 @@ export default function ManualOrderPage() {
                   ))}
 
                   {/* Total */}
-                  <div className="border-t border-slate-200 dark:border-slate-700 pt-3 flex justify-between items-center">
-                    <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                      Total
-                    </span>
-                    <span className="text-lg font-bold text-slate-800 dark:text-white">
-                      ৳{totalPrice.toLocaleString()}
-                    </span>
+                  <div className="border-t border-slate-200 dark:border-slate-700 pt-3 space-y-1.5">
+                    <div className="flex justify-between text-sm text-slate-500">
+                      <span>Subtotal</span>
+                      <span>৳{totalPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-slate-500">
+                      <span>
+                        Delivery
+                        {selectedCity && (
+                          <span className="ml-1 text-xs">
+                            (
+                            {selectedCity.toLowerCase() === "dhaka"
+                              ? "Inside"
+                              : "Outside"}{" "}
+                            Dhaka)
+                          </span>
+                        )}
+                      </span>
+                      <span
+                        className={
+                          deliveryChargeEdited ? "text-orange-500" : ""
+                        }
+                      >
+                        ৳ {selectedCity ? deliveryCharge : "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-1 border-t border-slate-100 dark:border-slate-700">
+                      <span className="text-sm font-bold text-slate-800 dark:text-white">
+                        Total
+                      </span>
+                      <span className="text-lg font-bold text-slate-800 dark:text-white">
+                        ৳{grandTotal.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -702,16 +762,148 @@ export default function ManualOrderPage() {
                   label: "Phone",
                   placeholder: "01XXXXXXXXX",
                 },
+              ].map((f) => (
+                <div key={f.name} className="space-y-1">
+                  <Label className="text-xs text-slate-600 dark:text-slate-400">
+                    {f.label}
+                  </Label>
+                  <Input
+                    {...register(f.name)}
+                    placeholder={f.placeholder}
+                    className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-black rounded-lg text-sm"
+                  />
+                  {errors[f.name] && (
+                    <p className="text-xs text-red-500">
+                      {errors[f.name]?.message}
+                    </p>
+                  )}
+                </div>
+              ))}
+
+              {/* City — Search Dropdown */}
+              <div className="space-y-1 relative">
+                <Label className="text-xs text-slate-600 dark:text-slate-400">
+                  City
+                </Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                  <input
+                    value={citySearch}
+                    onChange={(e) => {
+                      setCitySearch(e.target.value);
+                      setCityDropdownOpen(true);
+                      if (!e.target.value) {
+                        setSelectedCity("");
+                        setValue("city", "");
+                      }
+                    }}
+                    onFocus={() => setCityDropdownOpen(true)}
+                    onBlur={() =>
+                      setTimeout(() => setCityDropdownOpen(false), 150)
+                    }
+                    placeholder="Search city..."
+                    className="w-full h-9 pl-8 pr-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-black rounded-lg outline-none text-slate-800 dark:text-white"
+                  />
+                </div>
+
+                {/* Hidden RHF field */}
+                <input type="hidden" {...register("city")} />
+
+                {/* Dropdown */}
+                {cityDropdownOpen && filteredCities.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-44 overflow-y-auto">
+                    {filteredCities.map((city) => (
+                      <button
+                        key={city}
+                        type="button"
+                        onMouseDown={() => handleCitySelect(city)}
+                        className={`w-full text-left px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                          selectedCity === city
+                            ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 font-medium"
+                            : "text-slate-700 dark:text-slate-300"
+                        }`}
+                      >
+                        <span>{city}</span>
+                        {city.toLowerCase() === "dhaka" && (
+                          <span className="ml-2 text-xs text-emerald-600 font-medium">
+                            ৳{DHAKA_CHARGE} delivery
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {errors.city && (
+                  <p className="text-xs text-red-500">{errors.city.message}</p>
+                )}
+              </div>
+
+              {/* Delivery Charge */}
+              {selectedCity && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs text-slate-600 dark:text-slate-400">
+                      Delivery Charge
+                    </Label>
+                    {selectedCity && (
+                      <span className="text-xs text-slate-400">
+                        {selectedCity.toLowerCase() === "dhaka"
+                          ? "Inside Dhaka"
+                          : "Outside Dhaka"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                        ৳
+                      </span>
+                      <input
+                        type="number"
+                        value={deliveryCharge}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val) && val >= 0) {
+                            setDeliveryCharge(val);
+                            setDeliveryChargeEdited(true);
+                          }
+                        }}
+                        className="w-full h-9 pl-7 pr-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-black rounded-lg outline-none text-slate-800 dark:text-white"
+                      />
+                    </div>
+                    {deliveryChargeEdited && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const charge =
+                            selectedCity.toLowerCase() === "dhaka"
+                              ? DHAKA_CHARGE
+                              : OUTSIDE_DHAKA_CHARGE;
+                          setDeliveryCharge(charge);
+                          setDeliveryChargeEdited(false);
+                        }}
+                        className="text-xs text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                  {deliveryChargeEdited && (
+                    <p className="text-xs text-orange-500">
+                      ⚠ Custom delivery charge applied
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {[
                 {
                   name: "address" as const,
                   label: "Address",
                   placeholder: "House, Road, Area",
                 },
-                {
-                  name: "city" as const,
-                  label: "City",
-                  placeholder: "Kushtia",
-                },
+
                 {
                   name: "postalCode" as const,
                   label: "Postal Code",
@@ -771,7 +963,7 @@ export default function ManualOrderPage() {
               >
                 {isLoading
                   ? "Creating Order..."
-                  : `Create Order · ৳${totalPrice.toLocaleString()}`}
+                  : `Confirm Order · ৳${grandTotal.toLocaleString()}`}
               </Button>
             </div>
           </div>
