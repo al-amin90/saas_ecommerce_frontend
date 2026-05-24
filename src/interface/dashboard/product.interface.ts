@@ -16,6 +16,7 @@ export interface IProduct {
   slug?: string;
   price: number;
   discountPrice: number;
+  originalPrice: number;
   categoryID: string;
   variant: IVariant[];
   images?: string[];

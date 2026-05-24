@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePostDynamicMutation } from "@/src/redux/features/dynamic/dynamicApi";
 import Image from "next/image";
+import { IColor } from "@/src/interface/dashboard/dashboard";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ interface ITrackedOrder {
     quantity: number;
     price: number;
     selectedSize: string;
-    selectedColor: string;
+    colorId: IColor;
   }[];
 }
 
@@ -118,6 +119,7 @@ export default function TrackOrderPage() {
         url: "order/guest",
         data: { email: form.email, orderId: form.orderId },
       }).unwrap();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setOrder((res as any)?.data);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
@@ -325,7 +327,7 @@ export default function TrackOrderPage() {
                       {item.productId?.name}
                     </p>
                     <p className="text-xs text-slate-400">
-                      Size: {item.selectedSize} · Color: {item.selectedColor} ·
+                      Size: {item.selectedSize} · Color: {item.colorId.name} ·
                       Qty: {item.quantity}
                     </p>
                   </div>

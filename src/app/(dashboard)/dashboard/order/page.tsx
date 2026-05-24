@@ -32,6 +32,7 @@ import {
   useSubmitBulkOrdersMutation,
   useGetDeliveryMethodsQuery,
 } from "@/src/redux/features/order/orderApi";
+import { IColor } from "@/src/interface/dashboard/dashboard";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ interface IOrderItem {
   };
   quantity: number;
   selectedSize: string;
-  selectedColor: string;
+  colorId: IColor;
   price: number;
 }
 
@@ -183,7 +184,7 @@ function OrderDetailModal({
                     {item.productId?.name}
                   </p>
                   <p className="text-xs text-slate-400">
-                    Size: {item.selectedSize} · Color: {item.selectedColor}
+                    Size: {item.selectedSize} · Color: {item.colorId.name}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
@@ -452,7 +453,7 @@ export default function OrdersPage() {
                 <p className="font-semibold">{item.productId?.name}</p>
                 <p>Qty: {item.quantity}</p>
                 <p>Size: {item.selectedSize}</p>
-                <p>Color: {item.selectedColor}</p>
+                <p>Color: {item.colorId.name}</p>
               </div>
             </div>
           ))}

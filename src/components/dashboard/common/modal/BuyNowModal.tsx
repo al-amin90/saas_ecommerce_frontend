@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { usePostDynamicMutation } from "@/src/redux/features/dynamic/dynamicApi";
 import { toast } from "sonner";
+import { IColor } from "@/src/interface/dashboard/dashboard";
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 
@@ -43,7 +45,7 @@ interface BuyNowModalProps {
   price: number;
   discountPrice: number;
   selectedSize: number;
-  selectedColor: string;
+  selectedColor: IColor;
   quantity: number;
 }
 
@@ -92,14 +94,16 @@ export default function BuyNowModal({
         {
           productId,
           quantity,
-          price: discountPrice,
+          price: price,
           selectedSize: String(selectedSize),
-          selectedColor,
+          colorId: selectedColor._id,
         },
       ],
-      totalPrice: discountPrice * quantity,
+      totalPrice: price * quantity,
       paymentMethod: form.paymentMethod,
     };
+
+    console.log("payload", payload);
 
     try {
       const res = await createOrder({
@@ -113,6 +117,7 @@ export default function BuyNowModal({
       router.push(`/order-success?orderId=${(res as any)?.data?._id}`);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
+      console.log(err);
       toast.error(error?.data?.message || "Failed to place order");
     }
   };
@@ -150,17 +155,13 @@ export default function BuyNowModal({
             {productName}
           </p>
           <p className="text-xs text-slate-400">
-            Size: {selectedSize} · Color: {selectedColor} · Qty: {quantity}
+            Size: {selectedSize} · Color: {selectedColor?.name} · Qty:{" "}
+            {quantity}
           </p>
           <div className="flex items-baseline gap-2 pt-1">
             <span className="text-base font-bold text-slate-800 dark:text-white">
-              Tk {(discountPrice * quantity).toLocaleString()}
+              Tk {(price * quantity).toLocaleString()}
             </span>
-            {price > discountPrice && (
-              <span className="text-xs text-slate-400 line-through">
-                Tk {(price * quantity).toLocaleString()}
-              </span>
-            )}
           </div>
         </div>
 

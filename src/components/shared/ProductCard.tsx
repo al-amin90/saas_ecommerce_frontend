@@ -19,11 +19,10 @@ export default function ProductCard({ product }: { product: IProduct }) {
   const [hovered, setHovered] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const discount = product.discountPrice
-    ? Math.round(
-        ((product.price - product.discountPrice) / product.price) * 100,
-      )
-    : null;
+  const discount =
+    product.price > (product.discountPrice || 0)
+      ? Math.round(product.price - (product.discountPrice || 0))
+      : product.price;
 
   console.log(product);
 
@@ -57,13 +56,13 @@ export default function ProductCard({ product }: { product: IProduct }) {
         )} */}
 
         {/* Out of stock overlay */}
-        {product.inStock === false && (
+        {/* {product.inStock === false && (
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-20">
             <span className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white border border-white px-2 sm:px-4 py-1 sm:py-2 rounded-full">
               Out of Stock
             </span>
           </div>
-        )}
+        )} */}
 
         {/* Wishlist + Quick view — slide in from right */}
         <div
@@ -115,18 +114,18 @@ export default function ProductCard({ product }: { product: IProduct }) {
                 fontFamily: "'Syne', system-ui, sans-serif",
               }}
             >
-              ৳{product.discountPrice || product.price}
+              ৳{discount}
             </span>
-            {discount && (
+            {product?.discountPrice > 0 && (
               <>
                 <span className="text-xs sm:text-sm text-gray-400 line-through">
                   ৳{product.price.toLocaleString()}
                 </span>
-                {discount && (
+                {/* {discount && (
                   <span className="text-xs font-bold text-red-500">
                     -{discount}%
                   </span>
-                )}
+                )} */}
               </>
             )}
           </div>
@@ -134,21 +133,25 @@ export default function ProductCard({ product }: { product: IProduct }) {
 
         {/* Add to cart button */}
         <Button
-          disabled={product.inStock === false}
+          // disabled={product.inStock === false}
           className="mt-1.5 sm:mt-2 w-full gap-1 sm:gap-2 text-xs sm:text-sm md:text-base font-semibold py-2 sm:py-2.5 md:py-3 px-2 sm:px-3"
-          variant={product.inStock === false ? "outline" : "default"}
-          style={
-            product.inStock !== false
-              ? { background: "#E07B1A", color: "white" }
-              : {}
-          }
+          // variant={product.inStock === false ? "outline" : "default"}
+          variant={"default"}
+          style={{ background: "#E07B1A", color: "white" }}
+          // style={
+          //   product.inStock !== false
+          //     ? { background: "#E07B1A", color: "white" }
+          //     : {}
+          // }
         >
           <ShoppingCart size={14} className="sm:w-5 sm:h-5" />
           <span className="hidden sm:inline">
-            {product.inStock === false ? "Out of Stock" : "Add to Cart"}
+            {"Add to Cart"}
+            {/* {product.inStock === false ? "Out of Stock" : "Add to Cart"} */}
           </span>
           <span className="sm:hidden">
-            {product.inStock === false ? "Out" : "Add"}
+            {/* {product.inStock === false ? "Out" : "Add"} */}
+            {"Add"}
           </span>
         </Button>
       </div>

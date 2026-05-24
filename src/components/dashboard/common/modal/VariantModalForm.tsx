@@ -535,6 +535,32 @@ export function ProductVariant({
             </p>
           )}
         </div>
+
+        {/* Category */}
+        <div className="space-y-1">
+          <Label className="text-slate-700 dark:text-slate-300 text-sm">
+            Category
+          </Label>
+          <Select
+            value={watch("categoryID")}
+            onValueChange={(v) => setValue("categoryID", v)}
+          >
+            <SelectTrigger className="h-9 w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-900">
+              {categories.map((c) => (
+                <SelectItem key={c._id} value={c._id as string}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.categoryID && (
+            <p className="text-xs text-red-500">{errors.categoryID.message}</p>
+          )}
+        </div>
+
         <div className="space-y-1">
           <Label className="text-slate-700 dark:text-slate-300 text-sm">
             Discount Price
@@ -551,31 +577,6 @@ export function ProductVariant({
             </p>
           )}
         </div>
-      </div>
-
-      {/* Category */}
-      <div className="space-y-1">
-        <Label className="text-slate-700 dark:text-slate-300 text-sm">
-          Category
-        </Label>
-        <Select
-          value={watch("categoryID")}
-          onValueChange={(v) => setValue("categoryID", v)}
-        >
-          <SelectTrigger className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-slate-900">
-            {categories.map((c) => (
-              <SelectItem key={c._id} value={c._id as string}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.categoryID && (
-          <p className="text-xs text-red-500">{errors.categoryID.message}</p>
-        )}
       </div>
 
       {/* ── Images Upload ── */}

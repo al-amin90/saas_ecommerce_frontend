@@ -1,3 +1,4 @@
+import { IColor } from "@/src/interface/dashboard/dashboard";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface ICartItem {
@@ -6,7 +7,8 @@ export interface ICartItem {
   productImage: string;
   price: number;
   discountPrice: number;
-  color: string;
+  originalPrice: number;
+  colorId: IColor;
   size: number;
   quantity: number;
   stock: number; // max available
@@ -28,7 +30,7 @@ const cartSlice = createSlice({
       const existing = state.items.find(
         (i) =>
           i.productId === action.payload.productId &&
-          i.color === action.payload.color &&
+          i.colorId._id === action.payload.colorId._id &&
           i.size === action.payload.size,
       );
       if (existing) {
@@ -44,13 +46,17 @@ const cartSlice = createSlice({
 
     removeFromCart(
       state,
-      action: PayloadAction<{ productId: string; color: string; size: number }>,
+      action: PayloadAction<{
+        productId: string;
+        colorId: IColor;
+        size: number;
+      }>,
     ) {
       state.items = state.items.filter(
         (i) =>
           !(
             i.productId === action.payload.productId &&
-            i.color === action.payload.color &&
+            i.colorId._id === action.payload.colorId._id &&
             i.size === action.payload.size
           ),
       );
@@ -60,7 +66,7 @@ const cartSlice = createSlice({
       state,
       action: PayloadAction<{
         productId: string;
-        color: string;
+        colorId: IColor;
         size: number;
         quantity: number;
       }>,
@@ -68,7 +74,7 @@ const cartSlice = createSlice({
       const item = state.items.find(
         (i) =>
           i.productId === action.payload.productId &&
-          i.color === action.payload.color &&
+          i.colorId._id === action.payload.colorId._id &&
           i.size === action.payload.size,
       );
       if (item) {
@@ -95,10 +101,14 @@ export default cartSlice.reducer;
 export const selectCartItems = (state: { cart: CartState }) => state.cart.items;
 
 export const selectCartTotal = (state: { cart: CartState }) =>
-  state.cart.items.reduce(
-    (sum, item) => sum + item.discountPrice * item.quantity,
-    0,
-  );
+  state.cart.items.reduce((sum, item) => {
+    const price =
+      item.price > (item.discountPrice || 0)
+        ? Math.round(item.price - (item.discountPrice || 0))
+        : item.price;
+
+    return sum + price * item.quantity;
+  }, 0);
 
 export const selectCartCount = (state: { cart: CartState }) =>
   state.cart.items.reduce((sum, item) => sum + item.quantity, 0);

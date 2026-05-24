@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
 import { IErrorResponse } from "@/src/interface";
@@ -190,6 +190,25 @@ export default function ProductPage() {
 
   const columns = [
     {
+      key: "image",
+      label: "Image",
+      render: (row: IProduct) => (
+        <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
+          {row.images?.[0] ? (
+            <img
+              src={row.images[0]}
+              alt={row.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageIcon className="h-4 w-4 text-slate-400" />
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
       key: "name",
       label: "Product Name",
       render: (row: IProduct) => (
@@ -215,9 +234,9 @@ export default function ProductPage() {
           <span className="font-semibold text-slate-700 dark:text-slate-300">
             ${row.price}
           </span>
-          {row.discountPrice < row.price && (
+          {row.discountPrice && row.discountPrice < row.price && (
             <span className="text-xs text-green-600 dark:text-green-400">
-              ${row.discountPrice} sale
+              ${row.discountPrice} Discount
             </span>
           )}
         </div>

@@ -24,8 +24,7 @@ import {
 } from "@/src/interface/dashboard/product.interface";
 import Link from "next/link";
 import { useGetSingleProductQuery } from "@/src/redux/features/product/productApi";
-import CartBadge from "@/src/components/shared/CartBadge";
-import CartBadgeHorizontal from "@/src/components/shared/CartBadge";
+
 import { useAppDispatch } from "@/src/redux/store";
 import { toast } from "sonner";
 import { addToCart } from "@/src/redux/features/cart/cartSlice";
@@ -34,7 +33,7 @@ import BuyNowModal from "@/src/components/dashboard/common/modal/BuyNowModal";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PopulatedVariant extends Omit<IVariant, "color"> {
-  color: { _id: string; name: string; color: string } | string;
+  color: { _id: string; name: string; color: string };
 }
 
 interface PopulatedProduct extends Omit<IProduct, "variant" | "categoryID"> {
@@ -127,17 +126,16 @@ const ProductDetailsPage = () => {
     );
 
   const images = product.existingImages ?? [];
-  const activeVariant = product.variant?.[selectedVariantIdx] as
-    | PopulatedVariant
-    | undefined;
+  const activeVariant = product.variant?.[
+    selectedVariantIdx
+  ] as PopulatedVariant;
+
   const stockList: IStock[] = (activeVariant?.stock ?? []) as IStock[];
   const selectedStock = stockList.find((s) => s.size === selectedSize);
   const inStock = stockList.some((s) => s.quantity > 0);
   const discount =
-    product.price > product.discountPrice
-      ? Math.round(
-          ((product.price - product.discountPrice) / product.price) * 100,
-        )
+    product.price > (product.discountPrice || 0)
+      ? Math.round(product.price - (product.discountPrice || 0))
       : product.price;
   const categoryName =
     typeof product.categoryID === "object" ? product.categoryID.name : "";
@@ -149,10 +147,7 @@ const ProductDetailsPage = () => {
       return;
     }
 
-    const colorId =
-      typeof activeVariant?.color === "object"
-        ? activeVariant.color.color
-        : (activeVariant?.color ?? "");
+    console.log("activeVariant", activeVariant);
 
     dispatch(
       addToCart({
@@ -160,11 +155,9 @@ const ProductDetailsPage = () => {
         productName: product.name,
         productImage: product.existingImages?.[0] ?? "",
         price: product.price,
-        discountPrice: product.discountPrice,
-        color:
-          typeof activeVariant?.color === "object"
-            ? activeVariant.color.color
-            : "",
+        originalPrice: product.originalPrice,
+        discountPrice: product.discountPrice ?? 0,
+        colorId: activeVariant.color,
         size: selectedSize,
         quantity,
         stock: selectedStock?.quantity ?? 0,
@@ -212,11 +205,11 @@ const ProductDetailsPage = () => {
                 No image
               </div>
             )}
-            {discount > 0 && (
+            {/* {discount > 0 && (
               <span className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-black text-white text-xs font-bold px-2 sm:px-2.5 py-1 rounded-full">
                 -{discount}%
               </span>
-            )}
+            )} */}
           </div>
 
           {/* Thumbnails */}
@@ -285,11 +278,11 @@ const ProductDetailsPage = () => {
           {/* Price */}
           <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
             <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
-              Tk {product.discountPrice.toLocaleString()}.00
+              Tk {discount.toLocaleString()}
             </span>
-            {discount > 0 && (
+            {product?.discountPrice > 0 && (
               <span className="text-sm sm:text-base text-slate-400 line-through">
-                Tk {product.price.toLocaleString()}.00
+                Tk {product.price.toLocaleString()}
               </span>
             )}
           </div>
@@ -302,7 +295,8 @@ const ProductDetailsPage = () => {
               </p>
               <div className="flex gap-2 flex-wrap">
                 {product.variant.map((v, i) => {
-                  const colorObj = typeof v.color === "object" ? v.color : null;
+                  // const colorObj =
+                  //   typeof v.colorId === "object" ? v.colorId : null;
                   return (
                     <button
                       key={v._id ?? i}
@@ -310,14 +304,14 @@ const ProductDetailsPage = () => {
                         setSelectedVariantIdx(i);
                         setSelectedSize(null);
                       }}
-                      title={colorObj?.name ?? "Color"}
+                      title={v.color.name ?? "Color"}
                       className={`w-6 h-6 sm:w-8 sm:h-8 cursor-pointer rounded-full border-2 transition-all ${
                         selectedVariantIdx === i
                           ? "border-black scale-110 shadow-md"
                           : "border-slate-200 hover:border-slate-400"
                       }`}
                       style={{
-                        backgroundColor: colorObj?.color ?? "#ccc",
+                        backgroundColor: v.color.color ?? "#ccc",
                       }}
                     />
                   );
@@ -464,14 +458,10 @@ const ProductDetailsPage = () => {
         onOpenChange={setBuyNowOpen}
         productId={product._id!}
         productName={product.name}
-        price={product.price}
-        discountPrice={product.discountPrice}
+        price={discount}
+        discountPrice={product.discountPrice ?? 0}
         selectedSize={selectedSize!}
-        selectedColor={
-          typeof activeVariant?.color === "object"
-            ? activeVariant.color.color
-            : ""
-        }
+        selectedColor={activeVariant.color}
         quantity={quantity}
       />
     </div>
