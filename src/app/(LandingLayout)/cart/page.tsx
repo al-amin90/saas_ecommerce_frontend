@@ -234,7 +234,7 @@ export default function CartPage() {
               </div>
               <div className="flex justify-between text-slate-500">
                 <span>Shipping</span>
-                <span className="text-emerald-600">Free</span>
+                <span className="text-emerald-600">৳ -</span>
               </div>
               <div className="border-t border-slate-100 pt-2.5 flex justify-between font-bold text-slate-800 text-base">
                 <span>Total</span>

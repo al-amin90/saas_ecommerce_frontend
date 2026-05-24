@@ -18,6 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import {
+  BD_CITIES,
+  DHAKA_CHARGE,
+  OUTSIDE_DHAKA_CHARGE,
+} from "@/src/utils/delivaryCharge";
+import { Search } from "lucide-react";
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 
@@ -42,6 +48,13 @@ export default function CheckoutPage() {
   const totalPrice = useSelector(selectCartTotal);
   const [createOrder, { isLoading }] = usePostDynamicMutation();
 
+  //   delivary charge
+  const [citySearch, setCitySearch] = useState("");
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [deliveryCharge, setDeliveryCharge] = useState(OUTSIDE_DHAKA_CHARGE);
+  const [deliveryChargeEdited, setDeliveryChargeEdited] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -54,6 +67,25 @@ export default function CheckoutPage() {
   });
 
   const selectedPayment = watch("paymentMethod");
+
+  const handleCitySelect = (city: string) => {
+    setSelectedCity(city);
+    setValue("city", city);
+    setCitySearch(city);
+    setCityDropdownOpen(false);
+
+    // delivery charge auto-set — manually edited হলে touch করবো না
+    if (!deliveryChargeEdited) {
+      setDeliveryCharge(
+        city.toLowerCase() === "dhaka" ? DHAKA_CHARGE : OUTSIDE_DHAKA_CHARGE,
+      );
+    }
+  };
+  const filteredCities = BD_CITIES.filter((c) =>
+    c.toLowerCase().includes(citySearch.toLowerCase()),
+  );
+
+  const grandTotal = totalPrice + deliveryCharge;
 
   if (cartItems.length === 0) {
     return (
@@ -87,7 +119,7 @@ export default function CheckoutPage() {
         selectedSize: String(item.size),
         colorId: item.colorId._id,
       })),
-      totalPrice,
+      totalPrice: grandTotal,
       paymentMethod: form.paymentMethod,
     };
 
@@ -139,7 +171,110 @@ export default function CheckoutPage() {
               Delivery Information
             </h2>
 
-            {formFields.map((f) => (
+            {[
+              {
+                name: "fullName" as const,
+                label: "Full Name",
+                placeholder: "আহমেদ হোসেন",
+              },
+              {
+                name: "email" as const,
+                label: "Email",
+                placeholder: "you@example.com",
+              },
+              {
+                name: "phone" as const,
+                label: "Phone",
+                placeholder: "01XXXXXXXXX",
+              },
+            ].map((f) => (
+              <div key={f.name} className="space-y-1">
+                <Label className="text-sm text-slate-600">{f.label}</Label>
+                <Input
+                  {...register(f.name)}
+                  placeholder={f.placeholder}
+                  className="h-10 bg-slate-50 border-slate-200 rounded-xl focus:border-black"
+                />
+                {errors[f.name] && (
+                  <p className="text-xs text-red-500">
+                    {errors[f.name]?.message}
+                  </p>
+                )}
+              </div>
+            ))}
+
+            {/* City — Search Dropdown */}
+            <div className="space-y-1 relative">
+              <Label className="text-xs text-slate-600 dark:text-slate-400">
+                City
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                <input
+                  value={citySearch}
+                  onChange={(e) => {
+                    setCitySearch(e.target.value);
+                    setCityDropdownOpen(true);
+                    if (!e.target.value) {
+                      setSelectedCity("");
+                      setValue("city", "");
+                    }
+                  }}
+                  onFocus={() => setCityDropdownOpen(true)}
+                  onBlur={() =>
+                    setTimeout(() => setCityDropdownOpen(false), 150)
+                  }
+                  placeholder="Search city..."
+                  className="w-full h-9 pl-8 pr-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-black rounded-lg outline-none text-slate-800 dark:text-white"
+                />
+              </div>
+
+              {/* Hidden RHF field */}
+              <input type="hidden" {...register("city")} />
+
+              {/* Dropdown */}
+              {cityDropdownOpen && filteredCities.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-44 overflow-y-auto">
+                  {filteredCities.map((city) => (
+                    <button
+                      key={city}
+                      type="button"
+                      onMouseDown={() => handleCitySelect(city)}
+                      className={`w-full text-left px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                        selectedCity === city
+                          ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 font-medium"
+                          : "text-slate-700 dark:text-slate-300"
+                      }`}
+                    >
+                      <span>{city}</span>
+                      {city.toLowerCase() === "dhaka" && (
+                        <span className="ml-2 text-xs text-emerald-600 font-medium">
+                          ৳{DHAKA_CHARGE} delivery
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {errors.city && (
+                <p className="text-xs text-red-500">{errors.city.message}</p>
+              )}
+            </div>
+
+            {[
+              {
+                name: "address" as const,
+                label: "Address",
+                placeholder: "House, Road, Area",
+              },
+
+              {
+                name: "postalCode" as const,
+                label: "Postal Code",
+                placeholder: "1205",
+              },
+            ].map((f) => (
               <div key={f.name} className="space-y-1">
                 <Label className="text-sm text-slate-600">{f.label}</Label>
                 <Input
@@ -233,18 +368,42 @@ export default function CheckoutPage() {
                 );
               })}
 
-              <div className="border-t border-slate-100 pt-3 space-y-2">
+              {/* Total section — cartItems এর পরে */}
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-3 space-y-1.5">
                 <div className="flex justify-between text-sm text-slate-500">
                   <span>Subtotal</span>
-                  <span>Tk {totalPrice.toLocaleString()}</span>
+                  <span>৳{totalPrice.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm text-slate-500">
-                  <span>Shipping</span>
-                  <span className="text-emerald-600">Free</span>
+                  <span>
+                    Delivery
+                    {selectedCity && (
+                      <span className="ml-1 text-xs">
+                        (
+                        {selectedCity.toLowerCase() === "dhaka"
+                          ? "Inside"
+                          : "Outside"}{" "}
+                        Dhaka)
+                      </span>
+                    )}
+                  </span>
+                  <span
+                    className={
+                      deliveryChargeEdited
+                        ? "text-orange-500"
+                        : "text-emerald-600"
+                    }
+                  >
+                    ৳{deliveryCharge}
+                  </span>
                 </div>
-                <div className="flex justify-between text-base font-bold text-slate-800 pt-1">
-                  <span>Total</span>
-                  <span>Tk {totalPrice.toLocaleString()}</span>
+                <div className="flex justify-between items-center pt-1 border-t border-slate-100 dark:border-slate-700">
+                  <span className="text-sm font-bold text-slate-800 dark:text-white">
+                    Total
+                  </span>
+                  <span className="text-lg font-bold text-slate-800 dark:text-white">
+                    ৳{grandTotal.toLocaleString()}
+                  </span>
                 </div>
               </div>
             </div>
