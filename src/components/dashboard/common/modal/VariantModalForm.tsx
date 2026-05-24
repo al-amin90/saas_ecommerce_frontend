@@ -284,7 +284,7 @@ export function VariantBlock({
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={() => appendStock({ size: 0, quantity: 1 })}
+              onClick={() => appendStock({})}
               className="text-xs text-blue-600 cursor-pointer hover:text-blue-700"
             >
               + Add Size
@@ -386,17 +386,14 @@ export function ProductVariant({
       reset({
         ...defaultValues,
         categoryID:
-          defaultValues &&
-          typeof defaultValues.categoryID === "object" &&
-          defaultValues.categoryID !== null &&
-          "_id" in defaultValues.categoryID
+          typeof defaultValues.categoryID === "object"
             ? (defaultValues.categoryID as any)._id
             : "",
         variant: (defaultValues?.variant &&
           defaultValues?.variant.map((v) => ({
             color: typeof v.color === "object" ? (v.color as any)?._id : "",
             stock: v.stock,
-          }))) || [{ color: "", stock: [{ size: 0, quantity: 1 }] }],
+          }))) || [{ color: "", stock: [{}] }],
       });
     }
 
@@ -409,8 +406,6 @@ export function ProductVariant({
       }
     }
   }, [defaultValues, reset, mode]);
-
-  console.log("errors", errors);
 
   // Handle image uploads
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -517,11 +512,27 @@ export function ProductVariant({
           <Input
             {...register("price", { valueAsNumber: true })}
             type="number"
-            placeholder="0.00"
+            placeholder="00"
             className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
           />
           {errors.price && (
             <p className="text-xs text-red-500">{errors.price.message}</p>
+          )}
+        </div>
+        <div className="space-y-1">
+          <Label className="text-slate-700 dark:text-slate-300 text-sm">
+            Original Price
+          </Label>
+          <Input
+            {...register("originalPrice", { valueAsNumber: true })}
+            type="number"
+            placeholder="00"
+            className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+          />
+          {errors.originalPrice && (
+            <p className="text-xs text-red-500">
+              {errors.originalPrice.message}
+            </p>
           )}
         </div>
         <div className="space-y-1">
@@ -531,7 +542,7 @@ export function ProductVariant({
           <Input
             {...register("discountPrice", { valueAsNumber: true })}
             type="number"
-            placeholder="0.00"
+            placeholder="00"
             className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
           />
           {errors.discountPrice && (
@@ -661,6 +672,18 @@ export function ProductVariant({
         )}
       </div>
 
+      {/* Description */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          Description
+        </label>
+        <Textarea
+          placeholder="Enter Description"
+          {...register("description")}
+          rows={3}
+        />
+      </div>
+
       {/* ── Variants ── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -669,9 +692,7 @@ export function ProductVariant({
           </Label>
           <button
             type="button"
-            onClick={() =>
-              appendVariant({ color: "", stock: [{ size: 0, quantity: 1 }] })
-            }
+            onClick={() => appendVariant({ color: "", stock: [{}] })}
             className="text-xs cursor-pointer text-blue-600 hover:text-blue-700 font-medium"
           >
             + Add Variant

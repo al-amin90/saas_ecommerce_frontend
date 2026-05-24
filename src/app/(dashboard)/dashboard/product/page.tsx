@@ -69,9 +69,11 @@ export default function ProductPage() {
       const formData = new FormData();
 
       formData.append("name", form.name);
+      formData.append("description", form.description ?? "");
       formData.append("sku", form.sku);
       formData.append("price", String(form.price));
-      formData.append("discountPrice", String(form.discountPrice || 0));
+      formData.append("discountPrice", String(form.discountPrice));
+      formData.append("originalPrice", String(form.originalPrice));
       formData.append("categoryID", form.categoryID);
 
       if (form.images) {
@@ -101,50 +103,68 @@ export default function ProductPage() {
     defaultValues: Partial<ProductFormData>;
   }) => {
     if (!editProduct) return;
+
     try {
       const formData = new FormData();
 
-      // String fields
-
+      // ── String fields — changed হলেই শুধু append ──
       if (form.name !== defaultValues?.name) {
         formData.append("name", form.name);
       }
+
+      if (form.description !== defaultValues?.description) {
+        formData.append("description", form.description ?? "");
+      }
+
       if (form.sku !== defaultValues?.sku) {
         formData.append("sku", form.sku);
       }
+
       if (form.price !== defaultValues?.price) {
         formData.append("price", String(form.price));
       }
+
       if (form.discountPrice !== defaultValues?.discountPrice) {
         formData.append("discountPrice", String(form.discountPrice || 0));
       }
+
+      if (form.originalPrice !== defaultValues?.originalPrice) {
+        formData.append("originalPrice", String(form.originalPrice || 0));
+      }
+
       if (form.categoryID !== defaultValues?.categoryID) {
         formData.append("categoryID", form.categoryID);
       }
-      if (form.description !== defaultValues?.description) {
-        formData.append("description", form.description || "");
+
+      // ── Variant — changed হলে append ──
+      const variantChanged =
+        JSON.stringify(form.variant) !== JSON.stringify(defaultValues?.variant);
+
+      if (variantChanged) {
+        formData.append("variant", JSON.stringify(form.variant));
       }
 
-      // New images
-      if (form.images) {
+      // ── New image files ──
+      if (form.images?.length) {
         form.images.forEach((image) => {
           formData.append("images", image);
         });
       }
 
-      // Existing images to keep
-      if (form?.existingImages) {
-        console.log("form?.existingImages", form?.existingImages);
-        formData.append("existingImages", JSON.stringify(form?.existingImages));
+      // ── Existing images — আলাদা আলাদা append ──
+      if (form.existingImages?.length) {
+        form.existingImages.forEach((url) => {
+          formData.append("existingImages", url);
+        });
       }
 
-      // Variant
-      formData.append("variant", JSON.stringify(form.variant));
+      console.log(Object.fromEntries(formData));
 
       await updateProduct({
         url: `product/${editProduct._id}`,
         data: formData as Partial<IProduct>,
       }).unwrap();
+
       toast.success("Product updated");
       setEditOpen(false);
     } catch (err: unknown) {

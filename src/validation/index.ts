@@ -17,13 +17,15 @@ export const stockSchema = z.object({
 export const productSchema = z.object({
   _id: z.string().optional(),
   name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
   price: z.number().min(0, "Price required"),
-  discountPrice: z.number().min(0, "Discount price required").optional(),
+  discountPrice: z.number().optional(),
+  originalPrice: z.number().optional(),
   categoryID: z.string().min(1, "Category required"),
   images: z.array(z.instanceof(File)).optional(),
   existingImages: z.array(z.string()).optional(),
   sku: z.string().min(1, "SKU required"),
-  description: z.string().optional(),
+
   variant: z
     .array(
       z.object({

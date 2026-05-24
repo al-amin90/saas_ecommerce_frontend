@@ -58,7 +58,12 @@ type DynamicModalProps<
   // Form state
   mode?: "create" | "edit";
   isLoading?: boolean;
-  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  onSubmit:
+    | ((data: Record<string, unknown>) => Promise<void>)
+    | ((
+        data: Record<string, unknown>,
+        defaultValues: Record<string, unknown>,
+      ) => Promise<void>);
   defaultValues?: Partial<T>;
 
   options1?: O[];
@@ -97,7 +102,7 @@ const DynamicModal = <T, O, P>({
 }: DynamicModalProps<T, O, P>) => {
   const title = defaultTitleMap[variant][mode];
 
-  console.log("data", defaultValues);
+  console.log("defaultValues", defaultValues);
 
   const renderVariant = () => {
     switch (variant) {
