@@ -11,7 +11,7 @@ export const colorSchema = z.object({
 
 export const stockSchema = z.object({
   size: z.number().min(1, "Size required"),
-  quantity: z.number().min(1, "Quantity required"),
+  quantity: z.number(),
 });
 
 export const productSchema = z.object({
@@ -26,14 +26,12 @@ export const productSchema = z.object({
   existingImages: z.array(z.string()).optional(),
   sku: z.string().min(1, "SKU required"),
 
-  variant: z
-    .array(
-      z.object({
-        color: z.string().min(1, "Color required"),
-        stock: z.array(stockSchema).min(1, "At least one size required"),
-      }),
-    )
-    .min(1, "At least one variant required"),
+  variant: z.array(
+    z.object({
+      color: z.string(),
+      stock: z.array(stockSchema),
+    }),
+  ),
 });
 
 export const deliveryMethodSchema = z.object({

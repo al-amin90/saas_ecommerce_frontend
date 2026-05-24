@@ -43,7 +43,6 @@ interface BuyNowModalProps {
   productId: string;
   productName: string;
   price: number;
-  discountPrice: number;
   selectedSize: number;
   selectedColor: IColor;
   quantity: number;
@@ -57,7 +56,6 @@ export default function BuyNowModal({
   productId,
   productName,
   price,
-  discountPrice,
   selectedSize,
   selectedColor,
   quantity,

@@ -124,6 +124,8 @@ function OrderDetailModal({
     order.guestInfo?.fullName ?? order.userId?.name ?? "Unknown";
   const customerEmail = order.guestEmail ?? order.userId?.email ?? "—";
 
+  console.log("!order", order);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">

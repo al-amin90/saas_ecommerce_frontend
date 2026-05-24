@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -27,9 +28,7 @@ const checkoutSchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   postalCode: z.string().min(1, "Postal code is required"),
-  paymentMethod: z.enum(["cash", "online"], {
-    required_error: "Select payment method",
-  }),
+  paymentMethod: z.enum(["cash", "online"]).default("cash"),
 });
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
@@ -81,9 +80,12 @@ export default function CheckoutPage() {
       items: cartItems.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
-        price: item.discountPrice,
+        price:
+          item.price > (item?.discountPrice || 0)
+            ? Math.round(item.price - (item.discountPrice || 0))
+            : item.price,
         selectedSize: String(item.size),
-        selectedColor: item.color,
+        colorId: item.colorId._id,
       })),
       totalPrice,
       paymentMethod: form.paymentMethod,
@@ -100,6 +102,7 @@ export default function CheckoutPage() {
       router.push(`/order-success?orderId=${(res as any)?.data?._id}`);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
+      console.log("error", error);
       toast.error(error?.data?.message || "Failed to place order");
     }
   };
@@ -155,10 +158,10 @@ export default function CheckoutPage() {
             {/* Payment Method */}
             <div className="space-y-2">
               <Label className="text-sm text-slate-600">Payment Method</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 {[
                   { value: "cash", label: "Cash on Delivery" },
-                  { value: "online", label: "Online Payment" },
+                  // { value: "online", label: "Online Payment" },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -194,34 +197,46 @@ export default function CheckoutPage() {
                 Order Summary
               </h2>
 
-              {cartItems.map((item, i) => (
-                <div key={i} className="flex gap-3 items-center">
-                  {item.productImage ? (
-                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                      <Image
-                        src={item.productImage}
-                        alt={item.productName}
-                        fill
-                        className="object-cover"
-                      />
+              {cartItems.map((item, i) => {
+                const totalDiscount = cartItems.reduce(
+                  (sum, item) => sum + item.discountPrice * item.quantity,
+                  0,
+                );
+
+                const discountedPrice =
+                  item.price > (item.discountPrice || 0)
+                    ? Math.round(item.price - (item.discountPrice || 0))
+                    : item.price;
+
+                return (
+                  <div key={i} className="flex gap-3 items-center">
+                    {item.productImage ? (
+                      <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                        <Image
+                          src={item.productImage}
+                          alt={item.productName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-slate-100 flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800 truncate">
+                        {item.productName}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        Size: {item.size} · Color: {item.colorId.name} · Qty:{" "}
+                        {item.quantity}
+                      </p>
                     </div>
-                  ) : (
-                    <div className="w-14 h-14 rounded-xl bg-slate-100 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 truncate">
-                      {item.productName}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      Size: {item.size} · Color: {item.color} · Qty:{" "}
-                      {item.quantity}
+                    <p className="text-sm font-semibold text-slate-800 flex-shrink-0">
+                      Tk {(discountedPrice * item.quantity).toLocaleString()}
                     </p>
                   </div>
-                  <p className="text-sm font-semibold text-slate-800 flex-shrink-0">
-                    Tk {(item.discountPrice * item.quantity).toLocaleString()}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
 
               <div className="border-t border-slate-100 pt-3 space-y-2">
                 <div className="flex justify-between text-sm text-slate-500">
