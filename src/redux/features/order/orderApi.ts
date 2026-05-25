@@ -21,24 +21,6 @@ const orderApi = baseApi.injectEndpoints({
       providesTags: ["orders"],
     }),
 
-    // ── Get Order By ID ───────────────────────────────────────────────────
-    getOrderById: builder.query({
-      query: (orderId: string) => ({
-        url: `order/${orderId}`,
-        method: "GET",
-      }),
-      providesTags: ["singleOrder"],
-    }),
-
-    // ── Get Guest Order ───────────────────────────────────────────────────
-    getGuestOrder: builder.query({
-      query: ({ email, orderId }: { email: string; orderId: string }) => ({
-        url: "order/guest",
-        method: "GET",
-        params: { email, orderId },
-      }),
-    }),
-
     // ── Get Dashboard Stats ───────────────────────────────────────────────
     getOrderStats: builder.query({
       query: () => ({
@@ -66,14 +48,6 @@ const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ["orders", "singleOrder", "orderStats"],
     }),
 
-    getDeliveryMethods: builder.query({
-      query: () => ({
-        url: "/delivery-method",
-        method: "GET",
-      }),
-      providesTags: ["deliveryMethod"],
-    }),
-
     // ✅ Submit bulk orders
     submitBulkOrders: builder.mutation({
       query: ({ orderIds, deliveryMethodId }) => ({
@@ -83,6 +57,19 @@ const orderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["orders"],
     }),
+
+    getRevenueReport: builder.query({
+      query: (params: {
+        type: "monthly" | "yearly";
+        years?: string;
+        months?: string;
+      }) => ({
+        url: "order/report/revenue",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["orderStats"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -90,10 +77,8 @@ const orderApi = baseApi.injectEndpoints({
 export const {
   useCreateOrderMutation,
   useGetAllOrdersQuery,
-  useGetOrderByIdQuery,
-  useGetGuestOrderQuery,
   useGetOrderStatsQuery,
   useUpdateOrderStatusMutation,
-  useGetDeliveryMethodsQuery,
   useSubmitBulkOrdersMutation,
+  useGetRevenueReportQuery,
 } = orderApi;

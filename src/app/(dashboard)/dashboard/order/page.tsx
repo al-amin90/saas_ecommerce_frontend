@@ -30,7 +30,6 @@ import {
   useGetAllOrdersQuery,
   useUpdateOrderStatusMutation,
   useSubmitBulkOrdersMutation,
-  useGetDeliveryMethodsQuery,
 } from "@/src/redux/features/order/orderApi";
 import { IColor } from "@/src/interface/dashboard/dashboard";
 
@@ -289,8 +288,6 @@ export default function OrdersPage() {
     useUpdateOrderStatusMutation();
   const [submitBulkOrders, { isLoading: isSubmittingBulk }] =
     useSubmitBulkOrdersMutation();
-
-  const { data: deliveryMethods } = useGetDeliveryMethodsQuery(undefined);
 
   console.log("data", data);
   const orders: IOrderRow[] = data?.data ?? [];
