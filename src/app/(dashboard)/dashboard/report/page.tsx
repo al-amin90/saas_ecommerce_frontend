@@ -10,7 +10,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import {
   Printer,
@@ -19,10 +18,13 @@ import {
   ShoppingCart,
   ToggleLeft,
   ToggleRight,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useGetRevenueReportQuery } from "@/src/redux/features/order/orderApi";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -48,18 +50,30 @@ const MONTHS = [
 
 interface IReportRow {
   label: string | number;
+  displayLabel: string;
   revenue: number;
   profit: number;
   orders: number;
 }
 
 interface IReportData {
-  type: "monthly" | "yearly";
+  type: "monthly" | "yearly" | "daily";
   year?: number;
+  startDate?: string;
+  endDate?: string;
   data: IReportRow[];
   totalRevenue: number;
   totalProfit: number;
   totalOrders: number;
+}
+
+// query params type — search button press হলে এটা set হবে
+interface IQueryParams {
+  type: "monthly" | "yearly" | "daily";
+  years?: string;
+  months?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
@@ -97,15 +111,30 @@ function StatCard({
 export default function RevenueReportPage() {
   const printRef = useRef<HTMLDivElement>(null);
 
-  // ── Filter state ──────────────────────────────────────────────────────────
-  const [reportType, setReportType] = useState<"monthly" | "yearly">("monthly");
+  // ── Filter state (UI) ─────────────────────────────────────────────────────
+  const [reportType, setReportType] = useState<"monthly" | "yearly" | "daily">(
+    "monthly",
+  );
   const [selectedYears, setSelectedYears] = useState<number[]>([CURRENT_YEAR]);
   const [selectedMonths, setSelectedMonths] = useState<number[]>([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [showProfit, setShowProfit] = useState(false);
 
-  // monthly mode তে শুধু একটা year
+  // ── Committed query params — Search btn press হলে update হবে ─────────────
+  const [queryParams, setQueryParams] = useState<IQueryParams>({
+    type: "monthly",
+    years: String(CURRENT_YEAR),
+  });
+
+  // ── API ───────────────────────────────────────────────────────────────────
+  const { data, isLoading, isFetching } = useGetRevenueReportQuery(queryParams);
+  const report = data?.data as IReportData | undefined;
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
   const toggleYear = (year: number) => {
-    if (reportType === "monthly") {
+    if (reportType === "monthly" || reportType === "daily") {
       setSelectedYears([year]);
     } else {
       setSelectedYears((prev) =>
@@ -120,20 +149,41 @@ export default function RevenueReportPage() {
     );
   };
 
-  // ── API call ──────────────────────────────────────────────────────────────
-  const { data, isLoading } = useGetRevenueReportQuery({
-    type: reportType,
-    years: selectedYears.join(","),
-    months: selectedMonths.join(","),
-  });
+  // Search button — এই moment এ query fire হবে
+  const handleSearch = () => {
+    if (reportType === "daily") {
+      if (!startDate || !endDate) {
+        alert("Please select both start and end date");
+        return;
+      }
+      setQueryParams({ type: "daily", startDate, endDate });
+      return;
+    }
 
-  const report = data?.data as IReportData | undefined;
+    if (reportType === "monthly") {
+      setQueryParams({
+        type: "monthly",
+        years: selectedYears.join(","),
+        months: selectedMonths.join(","),
+      });
+      return;
+    }
+
+    if (reportType === "yearly") {
+      setQueryParams({
+        type: "yearly",
+        years: selectedYears.join(","),
+      });
+    }
+  };
 
   // ── Print ─────────────────────────────────────────────────────────────────
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-    documentTitle: `Revenue Report - ${reportType} - ${new Date().toLocaleDateString()}`,
+    documentTitle: `Revenue-Report-${reportType}-${new Date().toLocaleDateString()}`,
   });
+
+  const isQuerying = isLoading || isFetching;
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -165,15 +215,17 @@ export default function RevenueReportPage() {
           Filters
         </h2>
 
-        {/* Report type toggle */}
-        <div className="flex gap-2">
-          {(["monthly", "yearly"] as const).map((t) => (
+        {/* Report type */}
+        <div className="flex gap-2 flex-wrap">
+          {(["monthly", "yearly", "daily"] as const).map((t) => (
             <button
               key={t}
               onClick={() => {
                 setReportType(t);
                 setSelectedMonths([]);
-                if (t === "monthly") setSelectedYears([CURRENT_YEAR]);
+                setStartDate("");
+                setEndDate("");
+                if (t !== "yearly") setSelectedYears([CURRENT_YEAR]);
               }}
               className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all capitalize ${
                 reportType === t
@@ -186,36 +238,64 @@ export default function RevenueReportPage() {
           ))}
         </div>
 
-        {/* Year select */}
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-slate-500">
-            {reportType === "monthly"
-              ? "Select Year (one only)"
-              : "Select Years (multi)"}
-          </p>
-          <div className="flex gap-2 flex-wrap">
-            {YEARS.map((year) => (
-              <button
-                key={year}
-                onClick={() => toggleYear(year)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                  selectedYears.includes(year)
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400"
-                }`}
-              >
-                {year}
-              </button>
-            ))}
+        {/* Daily — date range */}
+        {reportType === "daily" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-500">Start Date</Label>
+              <Input
+                type="date"
+                value={startDate}
+                max={endDate || undefined}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-500">End Date</Label>
+              <Input
+                type="date"
+                value={endDate}
+                min={startDate || undefined}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Month select — only for monthly mode */}
+        {/* Monthly / Yearly — year select */}
+        {reportType !== "daily" && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-slate-500">
+              {reportType === "monthly"
+                ? "Year (one only)"
+                : "Years (multi select)"}
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              {YEARS.map((year) => (
+                <button
+                  key={year}
+                  onClick={() => toggleYear(year)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                    selectedYears.includes(year)
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-blue-400"
+                  }`}
+                >
+                  {year}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Monthly — month select */}
         {reportType === "monthly" && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium text-slate-500">
-                Select Months (optional — empty = all)
+                Months (optional — empty = all)
               </p>
               {selectedMonths.length > 0 && (
                 <button
@@ -243,24 +323,37 @@ export default function RevenueReportPage() {
             </div>
           </div>
         )}
+
+        {/* Search Button */}
+        <div className="pt-1">
+          <Button
+            onClick={handleSearch}
+            disabled={isQuerying}
+            className="bg-black hover:bg-slate-800 text-white rounded-xl px-6 h-10 text-sm font-semibold gap-2"
+          >
+            <Search className="h-4 w-4" />
+            {isQuerying ? "Searching..." : "Search"}
+          </Button>
+        </div>
       </div>
 
       {/* ── Printable section ── */}
       <div ref={printRef} className="space-y-5">
-        {/* Print header — only visible on print */}
+        {/* Print header */}
         <div className="hidden print:block mb-6">
-          <h1 className="text-2xl font-bold text-slate-800">Revenue Report</h1>
+          <h1 className="text-2xl font-bold">Revenue Report</h1>
           <p className="text-sm text-slate-500">
-            {reportType === "monthly"
-              ? `Monthly — ${report?.year}`
-              : "Yearly Comparison"}
-            {" · "}
-            Printed on {new Date().toLocaleDateString()}
+            {reportType === "daily"
+              ? `${startDate} to ${endDate}`
+              : reportType === "monthly"
+                ? `Monthly — ${report?.year}`
+                : "Yearly Comparison"}
+            {" · "}Printed on {new Date().toLocaleDateString()}
           </p>
         </div>
 
         {/* Stats */}
-        {isLoading ? (
+        {isQuerying ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <Skeleton key={i} className="h-24 rounded-2xl" />
@@ -290,16 +383,18 @@ export default function RevenueReportPage() {
         ) : null}
 
         {/* Chart + Table */}
-        {isLoading ? (
+        {isQuerying ? (
           <Skeleton className="h-72 rounded-2xl" />
         ) : report?.data?.length ? (
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-4">
             {/* Toggle */}
             <div className="flex items-center justify-between flex-wrap gap-3">
               <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                {reportType === "monthly"
-                  ? `Monthly Breakdown — ${report.year}`
-                  : "Yearly Breakdown"}
+                {reportType === "daily"
+                  ? `Daily — ${queryParams.startDate} to ${queryParams.endDate}`
+                  : reportType === "monthly"
+                    ? `Monthly — ${report.year}`
+                    : "Yearly Breakdown"}
               </h3>
               <button
                 onClick={() => setShowProfit((p) => !p)}
@@ -314,16 +409,20 @@ export default function RevenueReportPage() {
               </button>
             </div>
 
-            {/* Bar chart */}
+            {/* Chart */}
             <div className="h-64 print:h-48">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={report.data} barSize={32}>
+                <BarChart
+                  data={report.data}
+                  barSize={reportType === "daily" ? 16 : 32}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis
-                    dataKey="label"
+                    dataKey="displayLabel"
                     tick={{ fontSize: 11, fill: "#94a3b8" }}
                     axisLine={false}
                     tickLine={false}
+                    interval={reportType === "daily" ? "preserveStartEnd" : 0}
                   />
                   <YAxis
                     tick={{ fontSize: 11, fill: "#94a3b8" }}
@@ -356,21 +455,33 @@ export default function RevenueReportPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-slate-800">
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                      {reportType === "monthly" ? "Month" : "Year"}
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                      Orders
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                      Revenue
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                      Profit
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                      Margin
-                    </th>
+                    {[
+                      reportType === "daily"
+                        ? "Date"
+                        : reportType === "monthly"
+                          ? "Month"
+                          : "Year",
+                      "Orders",
+                      "Revenue",
+                      "Profit",
+                      "Margin",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className={`py-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wide ${
+                          h ===
+                          (reportType === "daily"
+                            ? "Date"
+                            : reportType === "monthly"
+                              ? "Month"
+                              : "Year")
+                            ? "text-left"
+                            : "text-right"
+                        }`}
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -385,7 +496,7 @@ export default function RevenueReportPage() {
                         className="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                       >
                         <td className="py-2.5 px-3 font-semibold text-slate-800 dark:text-white">
-                          {row.label}
+                          {row.displayLabel}
                         </td>
                         <td className="py-2.5 px-3 text-right text-slate-500">
                           {row.orders}
@@ -398,13 +509,13 @@ export default function RevenueReportPage() {
                         </td>
                         <td className="py-2.5 px-3 text-right">
                           <Badge
-                            className={`text-xs ${
+                            className={`text-xs hover:bg-opacity-100 ${
                               margin >= 30
                                 ? "bg-emerald-100 text-emerald-700"
                                 : margin >= 15
                                   ? "bg-yellow-100 text-yellow-700"
                                   : "bg-red-100 text-red-700"
-                            } hover:bg-opacity-100`}
+                            }`}
                           >
                             {margin}%
                           </Badge>
@@ -413,7 +524,6 @@ export default function RevenueReportPage() {
                     );
                   })}
                 </tbody>
-                {/* Total row */}
                 <tfoot>
                   <tr className="border-t-2 border-slate-200 dark:border-slate-700">
                     <td className="py-3 px-3 font-bold text-slate-800 dark:text-white">
@@ -443,11 +553,11 @@ export default function RevenueReportPage() {
               </table>
             </div>
           </div>
-        ) : (
+        ) : report ? (
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-10 text-center text-slate-400">
             No data found for selected filters
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

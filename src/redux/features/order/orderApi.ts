@@ -60,9 +60,11 @@ const orderApi = baseApi.injectEndpoints({
 
     getRevenueReport: builder.query({
       query: (params: {
-        type: "monthly" | "yearly";
+        type: "monthly" | "yearly" | "daily";
         years?: string;
         months?: string;
+        startDate?: string;
+        endDate?: string;
       }) => ({
         url: "order/report/revenue",
         method: "GET",
