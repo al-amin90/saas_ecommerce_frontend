@@ -8,6 +8,8 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../store";
+import { toast } from "sonner";
+import { logoutUser } from "../features/auth/authSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: `${process.env.NEXT_PUBLIC_Backend_SITE_URL}/api/v1`,
@@ -71,10 +73,19 @@ const baseQueryWithRefreshToken: BaseQueryFn<
   FetchBaseQueryError
 > = async (args: string | FetchArgs, api: any, extraOptions?: any) => {
   const result = await baseQuery(args, api, extraOptions);
+  console.log("result", result);
 
   if (result?.error?.status === 401) {
-    localStorage.removeItem("token");
+    toast.error(
+      result?.error?.data?.message ||
+        "Your session has expired. Please login again.",
+    );
+    // removeToken("access_token");
+    api.dispatch(logoutUser());
+
     localStorage.removeItem("persist:auth");
+    // document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
     window.location.href = "/login";
   }
 

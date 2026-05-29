@@ -25,7 +25,12 @@ import {
   X,
   Truck,
   TrendingUp,
+  LogOut,
 } from "lucide-react";
+import { toast } from "sonner";
+import { logoutUser } from "@/src/redux/features/auth/authSlice";
+import { useAppDispatch } from "@/src/redux/store";
+import { Button } from "@/components/ui/button";
 
 type NavChild = {
   href: string;
@@ -70,18 +75,18 @@ const navItems: NavItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   // const [logout] = useLogoutMutation();
   // const user = useAppSelector(selectUser);
 
-  // const handleLogout = async () => {
-  //   await logout({});
-  //   dispatch(logoutUser());
-  //   toast.success("Logged out");
-  //   router.push("/login");
-  // };
+  const handleLogout = async () => {
+    // await logout({});
+    dispatch(logoutUser());
+    toast.success("Logged out");
+    router.push("/login");
+  };
 
   const SidebarContent = () => {
     const [openMenus, setOpenMenus] = useState<string[]>(() => {
@@ -252,8 +257,8 @@ export default function Sidebar() {
         </nav>
 
         {/* User + Logout */}
-        {/* <div className="px-3 py-4 border-t border-white/10 space-y-2">
-        {!collapsed && user && (
+        <div className="px-3 py-4 border-t border-white/10 space-y-2">
+          {/* {!collapsed && user && (
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/5">
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarFallback className="bg-blue-500/30 text-blue-200 text-xs font-bold">
@@ -267,19 +272,19 @@ export default function Sidebar() {
               <p className="text-blue-300/60 text-xs truncate">{user.role}</p>
             </div>
           </div>
-        )}
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-          className={cn(
-            "w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors",
-            collapsed ? "px-2 justify-center" : "justify-start gap-3",
-          )}
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && <span>Logout</span>}
-        </Button>
-      </div> */}
+        )} */}
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className={cn(
+              "w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors",
+              collapsed ? "px-2 justify-center" : "justify-start gap-3",
+            )}
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!collapsed && <span>Logout</span>}
+          </Button>
+        </div>
       </div>
     );
   };
