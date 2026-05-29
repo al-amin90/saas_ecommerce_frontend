@@ -24,6 +24,7 @@ import {
   Menu,
   X,
   Truck,
+  TrendingUp,
 } from "lucide-react";
 
 type NavChild = {
@@ -63,6 +64,7 @@ const navItems: NavItem[] = [
     label: "Delivery Methods",
     icon: Truck,
   },
+  { href: "/dashboard/report", label: "Revenue Report", icon: TrendingUp },
 ];
 
 export default function Sidebar() {
