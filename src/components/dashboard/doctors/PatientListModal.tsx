@@ -12,18 +12,18 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { Plus, Trash2, Users } from "lucide-react";
-import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import PatientForm from "@/components/patients/PatientForm";
+import ConfirmDialog from "@/src/components/dashboard/common/modal/ConfirmDialog";
+import PatientForm from "@/src/components/patients/PatientForm";
 import { toast } from "sonner";
-import Pagination from "@/components/shared/Pagination";
-import SearchInput from "@/components/shared/SearchInput";
-import { IDoctor } from "@/modules/doctor/doctor.interface";
-import { IPatient } from "@/modules/patient/patient.interface";
+import Pagination from "@/src/components/dashboard/shared/Pagination";
+import SearchInput from "@/src/components/dashboard/shared/SearchInput";
+import { IDoctor } from "@/src/modules/doctor/doctor.interface";
+import { IPatient } from "@/src/modules/patient/patient.interface";
 import {
   useDeleteDynamicMutation,
   useGetDynamicQuery,
   usePostDynamicMutation,
-} from "@/redux/features/dynamic/dynamicApi";
+} from "@/src/redux/features/dynamic/dynamicApi";
 
 type Props = {
   doctor: IDoctor | null;
@@ -189,7 +189,7 @@ export default function PatientListModal({
 
       <ConfirmDialog
         open={!!deleteId}
-        onOpenChange={(v) => !v && setDeleteId(null)}
+        onOpenChange={(v: boolean) => !v && setDeleteId(null)}
         title="Remove Patient?"
         description="This will soft-delete the patient from this doctor's list."
         onConfirm={handleDelete}

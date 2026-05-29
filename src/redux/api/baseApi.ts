@@ -76,9 +76,9 @@ const baseQueryWithRefreshToken: BaseQueryFn<
   console.log("result", result);
 
   if (result?.error?.status === 401) {
+    const errorData = result?.error?.data as { message?: string } | undefined;
     toast.error(
-      result?.error?.data?.message ||
-        "Your session has expired. Please login again.",
+      errorData?.message || "Your session has expired. Please login again.",
     );
     // removeToken("access_token");
     api.dispatch(logoutUser());

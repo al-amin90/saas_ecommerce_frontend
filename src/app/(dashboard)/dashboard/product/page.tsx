@@ -95,13 +95,10 @@ export default function ProductPage() {
     }
   };
 
-  const handleUpdate = async ({
-    form,
-    defaultValues,
-  }: {
-    form: ProductFormData;
-    defaultValues: Partial<ProductFormData>;
-  }) => {
+  const handleUpdate = async (
+    form: ProductFormData,
+    defaultValues: Partial<ProductFormData> = {},
+  ) => {
     if (!editProduct) return;
 
     try {
@@ -336,7 +333,7 @@ export default function ProductPage() {
       )}
 
       {/* Create Modal */}
-      <DynamicModal
+      <DynamicModal<ProductFormData, ICategory, IColor>
         open={createOpen}
         onOpenChange={setCreateOpen}
         onSubmit={handleCreate}

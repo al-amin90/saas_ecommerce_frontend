@@ -58,12 +58,7 @@ type DynamicModalProps<
   // Form state
   mode?: "create" | "edit";
   isLoading?: boolean;
-  onSubmit:
-    | ((data: Record<string, unknown>) => Promise<void>)
-    | ((
-        data: Record<string, unknown>,
-        defaultValues: Record<string, unknown>,
-      ) => Promise<void>);
+  onSubmit: (data: T, defaultValues?: Partial<T>) => Promise<void>;
   defaultValues?: Partial<T>;
 
   options1?: O[];
@@ -109,7 +104,12 @@ const DynamicModal = <T, O, P>({
       case "category":
         return (
           <CategoryVariant
-            onSubmit={onSubmit}
+            onSubmit={
+              onSubmit as (
+                data: CategoryFormData,
+                defaultValues?: Partial<CategoryFormData>,
+              ) => Promise<void>
+            }
             defaultValues={defaultValues as Partial<CategoryFormData>}
             mode={mode}
             onCancel={() => onOpenChange(false)}
@@ -119,7 +119,12 @@ const DynamicModal = <T, O, P>({
       case "color":
         return (
           <ColorVariant
-            onSubmit={onSubmit}
+            onSubmit={
+              onSubmit as (
+                data: ColorFormData,
+                defaultValues?: Partial<ColorFormData>,
+              ) => Promise<void>
+            }
             defaultValues={defaultValues as Partial<ColorFormData>}
             isLoading={isLoading}
             mode={mode}
@@ -130,7 +135,12 @@ const DynamicModal = <T, O, P>({
       case "product":
         return (
           <ProductVariant
-            onSubmit={onSubmit}
+            onSubmit={
+              onSubmit as (
+                data: ProductFormData,
+                defaultValues?: Partial<ProductFormData>,
+              ) => Promise<void>
+            }
             defaultValues={defaultValues as Partial<ProductFormData>}
             isLoading={isLoading}
             mode={mode}
@@ -143,7 +153,12 @@ const DynamicModal = <T, O, P>({
       case "deliveryMethod":
         return (
           <DeliveryMethodVariant
-            onSubmit={onSubmit}
+            onSubmit={
+              onSubmit as (
+                data: DeliveryMethodFormData,
+                defaultValues?: Partial<DeliveryMethodFormData>,
+              ) => Promise<void>
+            }
             defaultValues={defaultValues}
             isLoading={isLoading}
             mode={mode}

@@ -179,7 +179,7 @@ export default function RevenueReportPage() {
 
   // ── Print ─────────────────────────────────────────────────────────────────
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: `Revenue-Report-${reportType}-${new Date().toLocaleDateString()}`,
   });
 
@@ -431,10 +431,15 @@ export default function RevenueReportPage() {
                     tickFormatter={(v) => `৳${v.toLocaleString()}`}
                   />
                   <Tooltip
-                    formatter={(value: number) => [
-                      `৳${value.toLocaleString()}`,
-                      showProfit ? "Profit" : "Revenue",
-                    ]}
+                    formatter={(value) => {
+                      if (typeof value !== "number") {
+                        return ["", showProfit ? "Profit" : "Revenue"];
+                      }
+                      return [
+                        `৳${value.toLocaleString()}`,
+                        showProfit ? "Profit" : "Revenue",
+                      ];
+                    }}
                     contentStyle={{
                       borderRadius: "12px",
                       border: "1px solid #e2e8f0",

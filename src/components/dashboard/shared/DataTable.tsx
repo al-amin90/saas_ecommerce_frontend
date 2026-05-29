@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 export type Column<T> = {
   key: string;
-  label: string;
+  label: React.ReactNode;
   headClassName?: string; // ClassTable এর মতো th-এ custom class
   className?: string; // td-এ custom class
   render?: (row: T, rowIndex: number) => React.ReactNode;

@@ -159,7 +159,7 @@ export default function CategoryPage() {
         data={categorys}
         columns={columns}
         isLoading={isLoading}
-        rowKey={(r) => r._id}
+        rowKey={(r) => String(r._id)}
         emptyMessage="No Categorys found."
       />
 

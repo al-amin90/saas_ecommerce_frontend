@@ -34,7 +34,7 @@ const checkoutSchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   postalCode: z.string().min(1, "Postal code is required"),
-  paymentMethod: z.enum(["cash", "online"]).default("cash"),
+  paymentMethod: z.enum(["cash", "online"]),
 });
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;

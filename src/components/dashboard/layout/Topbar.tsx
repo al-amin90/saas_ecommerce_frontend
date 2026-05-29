@@ -26,7 +26,7 @@ export default function Topbar() {
     <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between pr-6 pl-16 lg:pl-6 shrink-0 sticky top-0 z-30">
       <div className=" ">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
-          {"title" || "dfd"}
+          Dashboard
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           {new Date().toLocaleDateString("en-US", {

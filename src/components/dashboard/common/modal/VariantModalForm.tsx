@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 type VariantProps<T> = {
-  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  onSubmit: (data: T, defaultValues?: Partial<T>) => Promise<void>;
   defaultValues?: Partial<T>;
   isLoading?: boolean;
   mode?: "create" | "edit";
@@ -80,9 +80,7 @@ export function CategoryVariant({
 
   return (
     <form
-      onSubmit={handleSubmit((d) =>
-        onSubmit({ ...d } as Record<string, unknown>),
-      )}
+      onSubmit={handleSubmit((d) => onSubmit({ ...d } as CategoryFormData))}
       className="space-y-3 py-2"
     >
       {textFields.map((f) => (
@@ -142,7 +140,7 @@ export function ColorVariant({
 
   return (
     <form
-      onSubmit={handleSubmit((d) => onSubmit(d as Record<string, unknown>))}
+      onSubmit={handleSubmit((d) => onSubmit(d as ColorFormData))}
       className="space-y-3 py-2"
     >
       {/* Name */}
@@ -462,7 +460,7 @@ export function ProductVariant({
 
   const handleFormSubmit = async (form: ProductFormData) => {
     if (mode === "edit") {
-      await onSubmit({ form, defaultValues });
+      await onSubmit(form, defaultValues ?? {});
     } else {
       await onSubmit(form);
     }
@@ -693,7 +691,9 @@ export function ProductVariant({
           </Label>
           <button
             type="button"
-            onClick={() => appendVariant({ color: "", stock: [{}] })}
+            onClick={() =>
+              appendVariant({ color: "", stock: [{ size: 0, quantity: 0 }] })
+            }
             className="text-xs cursor-pointer text-blue-600 hover:text-blue-700 font-medium"
           >
             + Add Variant
@@ -727,7 +727,10 @@ export function ProductVariant({
 }
 
 export type DeliveryMethodVariantProps = {
-  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  onSubmit: (
+    data: DeliveryMethodFormData,
+    defaultValues?: Partial<DeliveryMethodFormData>,
+  ) => Promise<void>;
   defaultValues?: Partial<DeliveryMethodFormData>;
   isLoading?: boolean;
   mode: "create" | "edit";
@@ -774,8 +777,10 @@ export function DeliveryMethodVariant({
   const loading = isLoading || isSubmitting;
   const isActive = watch("isActive");
 
+  const submitForm = handleSubmit((data) => onSubmit(data, defaultValues));
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
+    <form onSubmit={submitForm} className="space-y-4 ">
       {/* Remove the overflow-y-auto and pr-4 from here */}
       {/* Delivery Method Name */}
       <div>
@@ -800,7 +805,12 @@ export function DeliveryMethodVariant({
           Delivery Type
         </label>
         <Select
-          onValueChange={(value) => setValue("type", value)}
+          onValueChange={(value) =>
+            setValue(
+              "type",
+              value as "PATHAO" | "REDX" | "STEDFAST" | "CARRYBEE" | "OTHERS",
+            )
+          }
           defaultValue={watch("type")}
           disabled={loading}
         >

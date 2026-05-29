@@ -48,7 +48,20 @@ export default function LoginPage() {
       router.replace("/dashboard");
     } catch (err: unknown) {
       console.log("errf", err);
-      const error = (err.data as IErrorResponse) || "Login failed";
+
+      const isErrorResponse = (
+        value: unknown,
+      ): value is { data: IErrorResponse } =>
+        typeof value === "object" &&
+        value !== null &&
+        "data" in value &&
+        typeof (value as { data: unknown }).data === "object" &&
+        (value as { data: { message?: string } }).data !== null;
+
+      const error = isErrorResponse(err)
+        ? err.data
+        : { success: false, message: "Login failed" };
+
       toast.error(error.message);
     }
   };

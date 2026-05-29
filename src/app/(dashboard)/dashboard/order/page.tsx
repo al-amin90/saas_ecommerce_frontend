@@ -185,7 +185,7 @@ function OrderDetailModal({
                     {item.productId?.name}
                   </p>
                   <p className="text-xs text-slate-400">
-                    Size: {item.selectedSize} · Color: {item.colorId.name}
+                    Size: {item?.selectedSize} · Color: {item?.colorId?.name}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
@@ -452,7 +452,7 @@ export default function OrdersPage() {
                 <p className="font-semibold">{item.productId?.name}</p>
                 <p>Qty: {item.quantity}</p>
                 <p>Size: {item.selectedSize}</p>
-                <p>Color: {item.colorId.name}</p>
+                <p>Color: {item.colorId?.name}</p>
               </div>
             </div>
           ))}

@@ -29,7 +29,13 @@ import { jwtDecode } from "jwt-decode";
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
 
-const categories = [
+type NavbarCategory = {
+  label: string;
+  href: string;
+  children?: string[];
+};
+
+const categories: NavbarCategory[] = [
   { label: "Home", href: "/" },
   { label: "All Products", href: "/products" },
   { label: "Boishakhi Dhamaka Offer!", href: "/" },

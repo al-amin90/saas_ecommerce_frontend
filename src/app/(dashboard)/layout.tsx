@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { useAppDispatch, useAppSelector } from "@/src/redux/store";
 import Sidebar from "@/src/components/dashboard/layout/Sidebar";
 import Topbar from "@/src/components/dashboard/layout/Topbar";
 

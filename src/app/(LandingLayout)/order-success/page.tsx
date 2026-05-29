@@ -1,13 +1,13 @@
-"use client";
+import Link from "next/link";
+import { CheckCircle2, Package, Home } from "lucide-react";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { CheckCircle2, Package, ArrowRight, Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
-
-export default function OrderSuccessPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const orderId = searchParams.get("orderId");
+export default function OrderSuccessPage({
+  searchParams,
+}: {
+  searchParams?: { orderId?: string | string[] };
+}) {
+  const rawOrderId = searchParams?.orderId;
+  const orderId = Array.isArray(rawOrderId) ? rawOrderId[0] : rawOrderId;
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
@@ -52,23 +52,21 @@ export default function OrderSuccessPage() {
         {/* Buttons */}
         <div className="space-y-3">
           {orderId && (
-            <Button
-              onClick={() => router.push(`/track-order?orderId=${orderId}`)}
-              className="w-full h-11 bg-black hover:bg-slate-800 text-white rounded-xl text-sm font-semibold gap-2"
+            <Link
+              href={`/track-order?orderId=${encodeURIComponent(orderId)}`}
+              className="inline-flex items-center justify-center w-full h-11 bg-black hover:bg-slate-800 text-white rounded-xl text-sm font-semibold gap-2"
             >
               <Package className="h-4 w-4" />
               Track Order
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+            </Link>
           )}
-          <Button
-            onClick={() => router.push("/")}
-            variant="outline"
-            className="w-full h-11 rounded-xl text-sm font-semibold border-slate-200 gap-2"
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center w-full h-11 rounded-xl text-sm font-semibold border border-slate-200 gap-2"
           >
             <Home className="h-4 w-4" />
             Back to Home
-          </Button>
+          </Link>
         </div>
       </div>
     </div>

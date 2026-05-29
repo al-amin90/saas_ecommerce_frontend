@@ -1,5 +1,5 @@
 import { TApiResponse, TDashboardStats } from "@/lib/types";
-import { baseApi } from "@/redux/api/baseApi";
+import { baseApi } from "@/src/redux/api/baseApi";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const dashboardApi = baseApi.injectEndpoints({

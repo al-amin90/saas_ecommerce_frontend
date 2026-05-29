@@ -49,6 +49,7 @@ interface BuyNowModalProps {
   productId: string;
   productName: string;
   price: number;
+  discountPrice: number;
   selectedSize: number;
   selectedColor: IColor;
   quantity: number;
@@ -83,7 +84,7 @@ export default function BuyNowModal({
     setValue,
     reset,
     formState: { errors },
-  } = useForm<BuyNowForm>({
+  } = useForm({
     resolver: zodResolver(buyNowSchema),
     defaultValues: { paymentMethod: "cash" },
   });
