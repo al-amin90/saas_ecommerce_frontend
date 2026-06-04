@@ -10,6 +10,7 @@ import {
 import { RootState } from "../store";
 import { toast } from "sonner";
 import { logoutUser } from "../features/auth/authSlice";
+import { removeToken } from "@/src/utils/auth";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: `${process.env.NEXT_PUBLIC_Backend_SITE_URL}/api/v1`,
@@ -80,7 +81,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
     toast.error(
       errorData?.message || "Your session has expired. Please login again.",
     );
-    // removeToken("access_token");
+    removeToken();
     api.dispatch(logoutUser());
 
     localStorage.removeItem("persist:auth");

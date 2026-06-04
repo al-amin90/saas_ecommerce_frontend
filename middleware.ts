@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "./src/utils/auth";
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("accessToken");
+  const token = request.cookies.get("access_token")?.value || getToken();
   //   const token = request.cookies.get("session-token"); // Replace with your auth check
 
   console.log("token", token);

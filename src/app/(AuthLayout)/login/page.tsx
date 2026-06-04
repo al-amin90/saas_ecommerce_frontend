@@ -10,6 +10,7 @@ import { useAppDispatch } from "@/src/redux/store";
 import { setUser } from "@/src/redux/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 import { IErrorResponse } from "@/src/interface";
+import { setToken } from "@/src/utils/auth";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
@@ -43,6 +44,7 @@ export default function LoginPage() {
           accessToken: res.data.accessToken,
         }),
       );
+      setToken(res.data.accessToken);
 
       toast.success("Welcome back!");
       router.replace("/dashboard");
