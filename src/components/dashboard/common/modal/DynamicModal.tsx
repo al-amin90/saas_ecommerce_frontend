@@ -17,17 +17,24 @@ import {
   ColorVariant,
   ProductVariant,
   DeliveryMethodVariant,
+  SizeChartVariant,
 } from "./VariantModalForm";
 import {
   CategoryFormData,
   ColorFormData,
   ProductFormData,
   DeliveryMethodFormData,
+  SizeChartFormData,
 } from "@/src/validation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Variant = "category" | "color" | "product" | "deliveryMethod";
+type Variant =
+  | "category"
+  | "color"
+  | "product"
+  | "deliveryMethod"
+  | "sizeChart";
 
 type DynamicModalProps<
   T = Record<string, unknown>,
@@ -52,6 +59,8 @@ type DynamicModalProps<
     | "link";
   hasEndIcon?: boolean;
   btnClassName?: string;
+  dialogClassName?: string;
+
   // Pass this if you want to control open/close via button inside component
   withTrigger?: boolean;
 
@@ -75,6 +84,7 @@ const defaultTitleMap: Record<Variant, Record<"create" | "edit", string>> = {
     create: "Add New Delivery Method",
     edit: "Edit Delivery Method",
   },
+  sizeChart: { create: "Create Size Chart", edit: "Edit Size Chart" },
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -87,6 +97,7 @@ const DynamicModal = <T, O, P>({
   btnVariant = "default",
   hasEndIcon = true,
   btnClassName,
+  dialogClassName = "sm:max-w-2xl",
   withTrigger = false,
   mode = "create",
   isLoading,
@@ -166,6 +177,22 @@ const DynamicModal = <T, O, P>({
           />
         );
 
+      case "sizeChart":
+        return (
+          <SizeChartVariant
+            onSubmit={
+              onSubmit as (
+                data: SizeChartFormData,
+                defaultValues?: Partial<SizeChartFormData>,
+              ) => Promise<void>
+            }
+            defaultValues={defaultValues as Partial<SizeChartFormData>}
+            isLoading={isLoading}
+            mode={mode}
+            onCancel={() => onOpenChange(false)}
+          />
+        );
+
       default:
         return null;
     }
@@ -185,7 +212,9 @@ const DynamicModal = <T, O, P>({
       )}
 
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+        <DialogContent
+          className={`sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800`}
+        >
           <DialogHeader>
             <DialogTitle className="text-slate-800 dark:text-white">
               {title}

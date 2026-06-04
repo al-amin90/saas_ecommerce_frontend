@@ -10,6 +10,8 @@ import {
   deliveryMethodSchema,
   ProductFormData,
   productSchema,
+  SizeChartFormData,
+  sizeChartSchema,
 } from "@/src/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
@@ -26,7 +28,7 @@ import {
 import ModalFooter from "./ModalFooter";
 import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
 
-import { Upload, X } from "lucide-react";
+import { Plus, Trash2, Upload, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -194,6 +196,185 @@ export function ColorVariant({
         onCancel={onCancel}
         name="Color"
       ></ModalFooter>
+    </form>
+  );
+}
+
+export function SizeChartVariant({
+  onSubmit,
+  defaultValues,
+  isLoading,
+  mode = "create",
+  onCancel,
+}: VariantProps<SizeChartFormData>) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    control,
+    formState: { errors },
+  } = useForm<SizeChartFormData>({
+    resolver: zodResolver(sizeChartSchema),
+    defaultValues: {
+      targetGroup: "unisex",
+      rows: [{ size: 0 }],
+      ...defaultValues,
+    },
+  });
+
+  useEffect(() => {
+    reset({ targetGroup: "unisex", rows: [{ size: 0 }], ...defaultValues });
+  }, [defaultValues]);
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "rows",
+  });
+
+  return (
+    <form
+      onSubmit={handleSubmit((d) => onSubmit(d as SizeChartFormData))}
+      className="space-y-4 py-2"
+    >
+      {/* Chart Name */}
+      <div className="space-y-1">
+        <Label className="text-sm text-slate-600 dark:text-slate-400">
+          Chart Name *
+        </Label>
+        <Input
+          {...register("chartName")}
+          placeholder="e.g. EU Kids Standard"
+          className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+        />
+        {errors.chartName && (
+          <p className="text-xs text-red-500">{errors.chartName.message}</p>
+        )}
+      </div>
+
+      {/* Brand + Region */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <Label className="text-sm text-slate-600 dark:text-slate-400">
+            Brand
+          </Label>
+          <Input
+            {...register("brand")}
+            placeholder="Nike, Adidas..."
+            className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+          />
+        </div>
+        {/* Target Group */}
+        <div className="space-y-1">
+          <Label className="text-sm text-slate-600 dark:text-slate-400">
+            Target Group
+          </Label>
+          <Select
+            value={watch("targetGroup")}
+            onValueChange={(v) =>
+              setValue("targetGroup", v as SizeChartFormData["targetGroup"])
+            }
+          >
+            <SelectTrigger className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-900">
+              {["kids", "men", "women", "unisex"].map((g) => (
+                <SelectItem key={g} value={g} className="capitalize">
+                  {g}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Rows */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm text-slate-600 dark:text-slate-400 font-semibold">
+            Chart Rows
+          </Label>
+          <button
+            type="button"
+            onClick={() => append({ size: 0 })}
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+          >
+            <Plus className="h-3 w-3" />
+            Add Row
+          </button>
+        </div>
+
+        {/* Column headers */}
+        <div className="grid grid-cols-6 gap-1.5 px-1">
+          {["Size*", "Inner", "Feet", "Age", "Note", ""].map((h) => (
+            <p key={h} className="text-xs text-slate-400 font-medium">
+              {h}
+            </p>
+          ))}
+        </div>
+
+        {/* Row inputs */}
+        <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+          {fields.map((field, idx) => (
+            <div
+              key={field.id}
+              className="grid grid-cols-6 gap-1.5 items-center"
+            >
+              <Input
+                {...register(`rows.${idx}.size`)}
+                type="number"
+                placeholder="38"
+                className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+              />
+              <Input
+                {...register(`rows.${idx}.innerLength`)}
+                type="number"
+                step="0.1"
+                placeholder="24.0"
+                className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+              />
+              <Input
+                {...register(`rows.${idx}.feetLength`)}
+                type="number"
+                step="0.1"
+                placeholder="23.5"
+                className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+              />
+              <Input
+                {...register(`rows.${idx}.ageRange`)}
+                placeholder="12-15m"
+                className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+              />
+              <Input
+                {...register(`rows.${idx}.note`)}
+                placeholder="..."
+                className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+              />
+              <button
+                type="button"
+                onClick={() => remove(idx)}
+                disabled={fields.length === 1}
+                className="flex justify-center text-red-400 hover:text-red-600 disabled:opacity-20"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {errors.rows && (
+          <p className="text-xs text-red-500">At least one row is required</p>
+        )}
+      </div>
+
+      <ModalFooter
+        isLoading={isLoading}
+        mode={mode}
+        onCancel={onCancel}
+        name="Chart"
+      />
     </form>
   );
 }

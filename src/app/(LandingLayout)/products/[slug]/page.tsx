@@ -305,7 +305,7 @@ const ProductDetailsPage = () => {
                       key={v._id ?? i}
                       onClick={() => {
                         setSelectedVariantIdx(i);
-                        setSelectedImage(i);
+                        setSelectedImage(v.imageIndex);
                         setSelectedSize(null);
                       }}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${

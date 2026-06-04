@@ -49,8 +49,26 @@ export const deliveryMethodSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+// ----------------size chart
+const chartRowSchema = z.object({
+  size: z.number().min(1, "Required"),
+  innerLength: z.number().optional(),
+  feetLength: z.number().optional(),
+  ageRange: z.string().optional(),
+  note: z.string().optional(),
+});
+
+export const sizeChartSchema = z.object({
+  chartName: z.string().min(1, "Chart name is required"),
+  brand: z.string().optional(),
+  region: z.string().optional(),
+  targetGroup: z.enum(["kids", "men", "women", "unisex"]),
+  rows: z.array(chartRowSchema).min(1, "At least one row required"),
+});
+
 export type ProductFormData = z.infer<typeof productSchema>;
 
 export type CategoryFormData = z.infer<typeof categorySchema>;
 export type ColorFormData = z.infer<typeof colorSchema>;
 export type DeliveryMethodFormData = z.infer<typeof deliveryMethodSchema>;
+export type SizeChartFormData = z.infer<typeof sizeChartSchema>;

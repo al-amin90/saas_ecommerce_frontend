@@ -136,7 +136,7 @@ export default function Sidebar() {
           </div>
           {!collapsed && (
             <span className="text-white font-bold text-lg tracking-tight">
-              Shoes Bazar
+              KidsHut BD
             </span>
           )}
         </Link>

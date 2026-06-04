@@ -103,6 +103,7 @@ export const baseApi = createApi({
     "color",
     "products",
     "singleProduct",
+    "sizeCharts",
     "orders",
     "singleOrder",
     "orderStats",
