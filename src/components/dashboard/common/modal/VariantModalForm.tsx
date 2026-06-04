@@ -206,8 +206,8 @@ export function VariantBlock({
   setValue,
   errors,
   colors,
-  images, // ← ADD: image previews
-  imagePreviews,
+  imagePreviews, // Local new image previews
+  existingImages,
   onRemove,
   canRemove,
 }: {
@@ -218,8 +218,8 @@ export function VariantBlock({
   setValue: any;
   errors: any;
   colors: IColor[];
-  images: File[]; // ← ADD
-  imagePreviews: string[];
+  imagePreviews: string[]; // New images
+  existingImages: string[];
   onRemove: () => void;
   canRemove: boolean;
 }) {
@@ -230,6 +230,16 @@ export function VariantBlock({
   } = useFieldArray({ control, name: `variant.${vIdx}.stock` });
 
   const selectedImageIndex = watch(`variant.${vIdx}.imageIndex`);
+
+  // Combine all images: existing + new
+  const allImages = [...(existingImages || []), ...imagePreviews];
+  const imageLabel = (index: number) => {
+    if (index < existingImages.length) {
+      return `Existing Image ${index + 1}`;
+    } else {
+      return `New Image ${index - existingImages.length + 1}`;
+    }
+  };
 
   return (
     <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-3 bg-slate-50/50 dark:bg-slate-800/30">
@@ -278,6 +288,51 @@ export function VariantBlock({
         {errors?.variant?.[vIdx]?.color && (
           <p className="text-xs text-red-500">
             {errors.variant[vIdx].color.message}
+          </p>
+        )}
+      </div>
+
+      {/* IMAGE SELECTION - SELECT INPUT */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-xs">
+          Product Image
+        </Label>
+        {allImages.length > 0 ? (
+          <Select
+            value={
+              selectedImageIndex !== undefined ? String(selectedImageIndex) : ""
+            }
+            onValueChange={(v) =>
+              setValue(`variant.${vIdx}.imageIndex`, parseInt(v))
+            }
+          >
+            <SelectTrigger className="h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+              <SelectValue placeholder="Select image" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-900">
+              {allImages.map((img, idx) => (
+                <SelectItem key={idx} value={String(idx)}>
+                  <div className="flex items-center gap-2">
+                    {/* Thumbnail preview */}
+                    <img
+                      src={img}
+                      alt={`${imageLabel(idx)}`}
+                      className="w-6 h-6 rounded object-cover"
+                    />
+                    <span className="text-sm">{imageLabel(idx)}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <p className="text-xs text-slate-400 italic">
+            Upload images first to select variant image
+          </p>
+        )}
+        {errors?.variant?.[vIdx]?.imageIndex && (
+          <p className="text-xs text-red-500">
+            {errors.variant[vIdx].imageIndex.message}
           </p>
         )}
       </div>
@@ -387,17 +442,20 @@ export function ProductVariant({
 
   useEffect(() => {
     if (defaultValues) {
+      const categoryId =
+        typeof defaultValues.categoryID === "object"
+          ? (defaultValues.categoryID as any)?._id
+          : defaultValues.categoryID;
+
       reset({
         ...defaultValues,
-        categoryID:
-          typeof defaultValues.categoryID === "object"
-            ? (defaultValues.categoryID as any)._id
-            : "",
+        categoryID: categoryId,
         variant: (defaultValues?.variant &&
           defaultValues?.variant.map((v) => ({
             color: typeof v.color === "object" ? (v.color as any)?._id : "",
+            imageIndex: v.imageIndex ?? 0, // ← Ensure imageIndex is set
             stock: v.stock,
-          }))) || [{ color: "", stock: [{}] }],
+          }))) || [{ color: "", imageIndex: 0, stock: [{}] }],
       });
     }
 
@@ -475,7 +533,7 @@ export function ProductVariant({
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="space-y-4 py-2  pr-1"
+      className="space-y-4 py-2 pr-1"
     >
       {/* Name */}
       <div className="space-y-1">
@@ -546,7 +604,7 @@ export function ProductVariant({
             Category
           </Label>
           <Select
-            value={watch("categoryID")}
+            value={watch("categoryID") || ""} // ← Ensure it always has a string value
             onValueChange={(v) => setValue("categoryID", v)}
           >
             <SelectTrigger className="h-9 w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
@@ -670,7 +728,7 @@ export function ProductVariant({
         )}
 
         <p className="text-xs text-slate-500">
-          Total: {existingImages.length + images.length}/10 images
+          Total: {existingImages.length + imagePreviews.length}/10 images
         </p>
         {errors.images && (
           <p className="text-xs text-red-500">{errors.images.message}</p>
@@ -698,7 +756,11 @@ export function ProductVariant({
           <button
             type="button"
             onClick={() =>
-              appendVariant({ color: "", stock: [{ size: 0, quantity: 0 }] })
+              appendVariant({
+                color: "",
+                imageIndex: 0, // ← Initialize with 0
+                stock: [{ size: 0, quantity: 0 }],
+              })
             }
             className="text-xs cursor-pointer text-blue-600 hover:text-blue-700 font-medium"
           >
@@ -716,6 +778,8 @@ export function ProductVariant({
             setValue={setValue}
             errors={errors}
             colors={colors as IColor[]}
+            imagePreviews={imagePreviews} // ← PASS new images
+            existingImages={existingImages} // ← PASS existing images
             onRemove={() => removeVariant(vIdx)}
             canRemove={variantFields.length > 1}
           />

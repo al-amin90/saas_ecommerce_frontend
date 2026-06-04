@@ -29,11 +29,10 @@ import {
 
 const buyNowSchema = z.object({
   fullName: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
+  email: z.string().optional(),
   phone: z.string().min(1, "Phone is required"),
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
-  postalCode: z.string().min(1, "Postal code is required"),
   paymentMethod: z.enum(["cash", "online"]).refine((val) => val === "cash", {
     message: "Online payment is not available right now",
   }),
@@ -120,7 +119,6 @@ export default function BuyNowModal({
         phone: form.phone,
         address: form.address,
         city: form.city,
-        postalCode: form.postalCode,
       },
       items: [
         {
@@ -148,28 +146,13 @@ export default function BuyNowModal({
       onOpenChange(false);
       router.push(`/order-success?orderId=${(res as any)?.data?._id}`);
     } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
+      const error = err as { data?: { errorSources: { message?: string }[] } };
       console.log(err);
-      toast.error(error?.data?.message || "Failed to place order");
+      toast.error(
+        error?.data?.errorSources[0]?.message || "Failed to place order",
+      );
     }
   };
-
-  const formFields = [
-    {
-      name: "fullName" as const,
-      label: "Full Name",
-      placeholder: "আহমেদ হোসেন",
-    },
-    { name: "email" as const, label: "Email", placeholder: "you@example.com" },
-    { name: "phone" as const, label: "Phone", placeholder: "01XXXXXXXXX" },
-    {
-      name: "address" as const,
-      label: "Address",
-      placeholder: "House, Road, Area",
-    },
-    { name: "city" as const, label: "City", placeholder: "Kushtia" },
-    { name: "postalCode" as const, label: "Postal Code", placeholder: "1205" },
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -356,12 +339,6 @@ export default function BuyNowModal({
               name: "address" as const,
               label: "Address",
               placeholder: "House, Road, Area",
-            },
-
-            {
-              name: "postalCode" as const,
-              label: "Postal Code",
-              placeholder: "1205",
             },
           ].map((f) => (
             <div key={f.name} className="space-y-1">

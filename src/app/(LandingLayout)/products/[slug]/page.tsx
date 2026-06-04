@@ -12,6 +12,7 @@ import {
   Plus,
   ArrowLeft,
   CheckCircle2,
+  ImageIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ import BuyNowModal from "@/src/components/dashboard/common/modal/BuyNowModal";
 
 interface PopulatedVariant extends Omit<IVariant, "color"> {
   color: { _id: string; name: string; color: string };
+  imageIndex: number;
 }
 
 interface PopulatedProduct extends Omit<IProduct, "variant" | "categoryID"> {
@@ -129,7 +131,6 @@ const ProductDetailsPage = () => {
   const activeVariant = product.variant?.[
     selectedVariantIdx
   ] as PopulatedVariant;
-  const displayImage = product.images[activeVariant.imageIndex] as number;
 
   const stockList: IStock[] = (activeVariant?.stock ?? []) as IStock[];
   const selectedStock = stockList.find((s) => s.size === selectedSize);
@@ -195,7 +196,7 @@ const ProductDetailsPage = () => {
           <div className="relative w-full aspect-square rounded-lg sm:rounded-2xl overflow-hidden bg-slate-100">
             {images.length > 0 ? (
               <Image
-                src={images[selectedImage]}
+                src={images[selectedImage] || images[0]}
                 alt={product.name}
                 fill
                 className="object-cover transition-opacity duration-300"
@@ -219,10 +220,10 @@ const ProductDetailsPage = () => {
               {images.map((img, i) => (
                 <button
                   key={i}
-                  onClick={() => setSelectedImage(i)}
+                  onMouseEnter={() => setSelectedImage(i)}
                   className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl cursor-pointer overflow-hidden border-2 transition-all ${
                     selectedImage === i
-                      ? "border-black"
+                      ? "border-[#E07B1A]"
                       : "border-transparent hover:border-slate-300"
                   }`}
                 >
@@ -296,25 +297,52 @@ const ProductDetailsPage = () => {
               </p>
               <div className="flex gap-2 flex-wrap">
                 {product.variant.map((v, i) => {
-                  // const colorObj =
-                  //   typeof v.colorId === "object" ? v.colorId : null;
+                  // Get the image for this variant
+                  const variantImage = images[v.imageIndex] || images[0];
+
                   return (
                     <button
                       key={v._id ?? i}
                       onClick={() => {
                         setSelectedVariantIdx(i);
+                        setSelectedImage(i);
                         setSelectedSize(null);
                       }}
-                      title={v.color.name ?? "Color"}
-                      className={`w-6 h-6 sm:w-8 sm:h-8 cursor-pointer rounded-full border-2 transition-all ${
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
                         selectedVariantIdx === i
-                          ? "border-black scale-110 shadow-md"
-                          : "border-slate-200 hover:border-slate-400"
+                          ? "border-[#E07B1A]  bg-white shadow-md"
+                          : "border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-white"
                       }`}
-                      style={{
-                        backgroundColor: v.color.color ?? "#ccc",
-                      }}
-                    />
+                    >
+                      {/* Variant Image Thumbnail */}
+                      <div className="relative w-12 h-12 rounded-md overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-100">
+                        {variantImage ? (
+                          <Image
+                            src={variantImage}
+                            alt={v.color.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <ImageIcon className="h-4 w-4" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Color name */}
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold text-slate-900">
+                          {v.color.name}
+                        </span>
+                        {/* Optional: Show color swatch */}
+                        <span
+                          className="w-4 h-4 rounded-full border border-slate-300 mt-0.5"
+                          style={{ backgroundColor: v.color.color }}
+                          title={v.color.color}
+                        />
+                      </div>
+                    </button>
                   );
                 })}
               </div>
@@ -342,10 +370,10 @@ const ProductDetailsPage = () => {
                     disabled={s.quantity === 0}
                     className={`px-2 sm:px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
                       selectedSize === s.size
-                        ? "bg-black text-white border-black"
+                        ? "bg-black text-white border-[#E07B1A] "
                         : s.quantity === 0
                           ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed line-through"
-                          : "bg-white text-slate-700 border-slate-200 hover:border-black"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-[#E07B1A] "
                     }`}
                   >
                     {s.size}

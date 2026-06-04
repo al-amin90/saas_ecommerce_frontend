@@ -28,7 +28,8 @@ export const productSchema = z.object({
 
   variant: z.array(
     z.object({
-      color: z.string(),
+      color: z.string().min(1, "Color is required"),
+      imageIndex: z.number().min(0, "Color Image is required"),
       stock: z.array(stockSchema),
     }),
   ),

@@ -60,7 +60,7 @@ export default function DailyRegistrationChart({ data }: Props) {
             fontSize: 13,
             boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
           }}
-          formatter={(v) => [v || 0, "Patients"]}
+          formatter={(v) => [v || 0, "Orders"]}
         />
 
         <Area
