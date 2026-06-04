@@ -27,6 +27,7 @@ import {
   TrendingUp,
   LogOut,
 } from "lucide-react";
+import { GiShoebillStork } from "react-icons/gi";
 import { toast } from "sonner";
 import { logoutUser } from "@/src/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/src/redux/store";
@@ -70,6 +71,11 @@ const navItems: NavItem[] = [
     icon: Truck,
   },
   { href: "/dashboard/report", label: "Revenue Report", icon: TrendingUp },
+  {
+    href: "/dashboard/size-chart",
+    label: "Shoe Size Chart",
+    icon: GiShoebillStork,
+  },
 ];
 
 export default function Sidebar() {

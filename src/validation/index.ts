@@ -63,7 +63,7 @@ export const sizeChartSchema = z.object({
   brand: z.string().optional(),
   region: z.string().optional(),
   targetGroup: z.enum(["kids", "men", "women", "unisex"]),
-  rows: z.array(chartRowSchema).min(1, "At least one row required"),
+  rows: z.array(chartRowSchema),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;

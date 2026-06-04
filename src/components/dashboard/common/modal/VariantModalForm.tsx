@@ -224,6 +224,8 @@ export function SizeChartVariant({
     },
   });
 
+  console.log("errors", errors);
+
   useEffect(() => {
     reset({ targetGroup: "unisex", rows: [{ size: 0 }], ...defaultValues });
   }, [defaultValues]);
@@ -323,20 +325,22 @@ export function SizeChartVariant({
               className="grid grid-cols-6 gap-1.5 items-center"
             >
               <Input
-                {...register(`rows.${idx}.size`)}
+                {...register(`rows.${idx}.size`, { valueAsNumber: true })}
                 type="number"
                 placeholder="38"
                 className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
               />
               <Input
-                {...register(`rows.${idx}.innerLength`)}
+                {...register(`rows.${idx}.innerLength`, {
+                  valueAsNumber: true,
+                })}
                 type="number"
                 step="0.1"
                 placeholder="24.0"
                 className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
               />
               <Input
-                {...register(`rows.${idx}.feetLength`)}
+                {...register(`rows.${idx}.feetLength`, { valueAsNumber: true })}
                 type="number"
                 step="0.1"
                 placeholder="23.5"
@@ -365,7 +369,7 @@ export function SizeChartVariant({
         </div>
 
         {errors.rows && (
-          <p className="text-xs text-red-500">At least one row is required</p>
+          <p className="text-xs text-red-500">{errors.rows.message}</p>
         )}
       </div>
 
