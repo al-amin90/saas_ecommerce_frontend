@@ -206,6 +206,8 @@ export function VariantBlock({
   setValue,
   errors,
   colors,
+  images, // ← ADD: image previews
+  imagePreviews,
   onRemove,
   canRemove,
 }: {
@@ -216,6 +218,8 @@ export function VariantBlock({
   setValue: any;
   errors: any;
   colors: IColor[];
+  images: File[]; // ← ADD
+  imagePreviews: string[];
   onRemove: () => void;
   canRemove: boolean;
 }) {
@@ -224,6 +228,8 @@ export function VariantBlock({
     append: appendStock,
     remove: removeStock,
   } = useFieldArray({ control, name: `variant.${vIdx}.stock` });
+
+  const selectedImageIndex = watch(`variant.${vIdx}.imageIndex`);
 
   return (
     <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-3 bg-slate-50/50 dark:bg-slate-800/30">

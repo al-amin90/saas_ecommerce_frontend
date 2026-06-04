@@ -66,14 +66,17 @@ export default function Navbar() {
         <div className="max-w-[1440px] mx-auto pl-4 pr-0 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6 py-4 md:py-6">
             {/* Logo */}
-            <div className="relative rounded-full w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 flex-shrink-0 mr-3">
+            <Link
+              href={"/"}
+              className="relative rounded-full w-11 h-11 md:w-12 md:h-12 lg:w-14 lg:h-14 flex-shrink-0 mr-3"
+            >
               <Image
                 src="/logo.jpeg"
                 fill
                 className="object-contain rounded-full"
                 alt="Logo"
               />
-            </div>
+            </Link>
 
             {/* Search bar */}
             <div className="hidden md:flex flex-1 items-center justify-center">

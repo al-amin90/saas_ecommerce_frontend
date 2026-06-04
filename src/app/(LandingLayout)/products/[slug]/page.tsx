@@ -129,6 +129,7 @@ const ProductDetailsPage = () => {
   const activeVariant = product.variant?.[
     selectedVariantIdx
   ] as PopulatedVariant;
+  const displayImage = product.images[activeVariant.imageIndex] as number;
 
   const stockList: IStock[] = (activeVariant?.stock ?? []) as IStock[];
   const selectedStock = stockList.find((s) => s.size === selectedSize);
