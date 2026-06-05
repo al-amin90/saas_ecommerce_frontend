@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
+import {
+  ICategory,
+  IColor,
+  ISizeChart,
+} from "@/src/interface/dashboard/dashboard";
 import {
   CategoryVariant,
   ColorVariant,
@@ -40,6 +44,7 @@ type DynamicModalProps<
   T = Record<string, unknown>,
   O = Record<string, unknown>,
   P = Record<string, unknown>,
+  Q = Record<string, unknown>,
 > = {
   // Modal control
   open: boolean;
@@ -72,6 +77,7 @@ type DynamicModalProps<
 
   options1?: O[];
   options2?: P[];
+  options3?: Q[];
 };
 
 // ─── Title map ────────────────────────────────────────────────────────────────
@@ -89,7 +95,7 @@ const defaultTitleMap: Record<Variant, Record<"create" | "edit", string>> = {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const DynamicModal = <T, O, P>({
+const DynamicModal = <T, O, P, Q>({
   open,
   onOpenChange,
   variant = "category",
@@ -105,7 +111,8 @@ const DynamicModal = <T, O, P>({
   defaultValues,
   options1,
   options2,
-}: DynamicModalProps<T, O, P>) => {
+  options3,
+}: DynamicModalProps<T, O, P, Q>) => {
   const title = defaultTitleMap[variant][mode];
 
   console.log("defaultValues", defaultValues);
@@ -158,6 +165,7 @@ const DynamicModal = <T, O, P>({
             onCancel={() => onOpenChange(false)}
             categories={options1 as ICategory[]}
             colors={options2 as IColor[]}
+            sizeCharts={options3 as ISizeChart[]}
           />
         );
 

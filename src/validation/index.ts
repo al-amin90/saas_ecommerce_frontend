@@ -14,17 +14,25 @@ export const stockSchema = z.object({
   quantity: z.number(),
 });
 
+const optionalNumber = z.preprocess((value) => {
+  if (value === "" || value === undefined || value === null) {
+    return undefined;
+  }
+  return Number(value);
+}, z.number().optional());
+
 export const productSchema = z.object({
   _id: z.string().optional(),
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   price: z.number().min(0, "Price required"),
-  discountPrice: z.number().optional(),
-  originalPrice: z.number().optional(),
+  discountPrice: optionalNumber,
+  originalPrice: optionalNumber,
   categoryID: z.string().min(1, "Category required"),
   images: z.array(z.instanceof(File)).optional(),
   existingImages: z.array(z.string()).optional(),
   sku: z.string().min(1, "SKU required"),
+  sizeChartId: z.string().min(1, "Size chart is required"),
 
   variant: z.array(
     z.object({

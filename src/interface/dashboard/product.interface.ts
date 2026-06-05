@@ -21,6 +21,7 @@ export interface IProduct {
   variant: IVariant[];
   images?: string[];
   existingImages?: string[];
+  sizeChartId?: string;
   sku: string;
   isActive?: boolean;
   isDeleted?: boolean;

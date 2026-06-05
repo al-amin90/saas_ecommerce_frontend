@@ -30,6 +30,7 @@ import { useAppDispatch } from "@/src/redux/store";
 import { toast } from "sonner";
 import { addToCart } from "@/src/redux/features/cart/cartSlice";
 import BuyNowModal from "@/src/components/dashboard/common/modal/BuyNowModal";
+import SizeChartSection from "@/src/components/home/common/product/SizeChartSection";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,8 +39,24 @@ interface PopulatedVariant extends Omit<IVariant, "color"> {
   imageIndex: number;
 }
 
-interface PopulatedProduct extends Omit<IProduct, "variant" | "categoryID"> {
+interface PopulatedProduct extends Omit<
+  IProduct,
+  "variant" | "categoryID" | "sizeChartId"
+> {
   variant: PopulatedVariant[];
+  sizeChartId: {
+    _id: string;
+    chartName: string;
+    brand?: string;
+    targetGroup?: string;
+    rows: {
+      size: number;
+      innerLength?: number;
+      feetLength?: number;
+      ageRange?: string;
+      note?: string;
+    }[];
+  };
   categoryID: { _id: string; name: string } | string;
 }
 
@@ -472,15 +489,17 @@ const ProductDetailsPage = () => {
           Please Check Size Chart For Better Fit
         </p>
       </div>
-      <div className="relative w-full h-52 sm:h-96 md:h-[28rem] lg:h-[40rem]">
-        <Image
-          src={"/ladning/shoe-size.webp"}
-          alt={"product shoe size"}
-          fill
-          className="object-contain "
-          priority
-        />
-      </div>
+      {/* Size chart section */}
+      {product?.sizeChartId ? (
+        <SizeChartSection sizeChart={product.sizeChartId} />
+      ) : (
+        // fallback — chart assign না থাকলে
+        <div className="mt-6 sm:mt-8 bg-slate-100 py-3 sm:py-5 text-center px-3 rounded-xl">
+          <p className="text-xs sm:text-sm font-bold tracking-widest uppercase text-slate-700">
+            Please Check Size Chart For Better Fit
+          </p>
+        </div>
+      )}
 
       <BuyNowModal
         open={buyNowOpen}

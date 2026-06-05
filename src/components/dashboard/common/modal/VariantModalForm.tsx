@@ -26,7 +26,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ModalFooter from "./ModalFooter";
-import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
+import {
+  ICategory,
+  IColor,
+  ISizeChart,
+} from "@/src/interface/dashboard/dashboard";
 
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -444,82 +448,86 @@ export function VariantBlock({
         )}
       </div>
 
-      {/* Color select */}
-      <div className="space-y-1">
-        <Label className="text-slate-700 dark:text-slate-300 text-xs">
-          Color
-        </Label>
-        <Select
-          value={watch(`variant.${vIdx}.color`)}
-          onValueChange={(v) => setValue(`variant.${vIdx}.color`, v)}
-        >
-          <SelectTrigger className="h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
-            <SelectValue placeholder="Select color" />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-slate-900">
-            {colors.map((c) => (
-              <SelectItem key={c._id} value={c._id as string}>
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-3 h-3 rounded-full border border-slate-200"
-                    style={{ backgroundColor: c.color }}
-                  />
-                  {c.name}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors?.variant?.[vIdx]?.color && (
-          <p className="text-xs text-red-500">
-            {errors.variant[vIdx].color.message}
-          </p>
-        )}
-      </div>
-
-      {/* IMAGE SELECTION - SELECT INPUT */}
-      <div className="space-y-1">
-        <Label className="text-slate-700 dark:text-slate-300 text-xs">
-          Product Image
-        </Label>
-        {allImages.length > 0 ? (
+      <div className="grid grid-cols-2 gap-4">
+        {/* Color select */}
+        <div className="space-y-1">
+          <Label className="text-slate-700 dark:text-slate-300 text-xs">
+            Color
+          </Label>
           <Select
-            value={
-              selectedImageIndex !== undefined ? String(selectedImageIndex) : ""
-            }
-            onValueChange={(v) =>
-              setValue(`variant.${vIdx}.imageIndex`, parseInt(v))
-            }
+            value={watch(`variant.${vIdx}.color`)}
+            onValueChange={(v) => setValue(`variant.${vIdx}.color`, v)}
           >
             <SelectTrigger className="h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
-              <SelectValue placeholder="Select image" />
+              <SelectValue placeholder="Select color" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-slate-900">
-              {allImages.map((img, idx) => (
-                <SelectItem key={idx} value={String(idx)}>
+              {colors.map((c) => (
+                <SelectItem key={c._id} value={c._id as string}>
                   <div className="flex items-center gap-2">
-                    {/* Thumbnail preview */}
-                    <img
-                      src={img}
-                      alt={`${imageLabel(idx)}`}
-                      className="w-6 h-6 rounded object-cover"
+                    <span
+                      className="w-3 h-3 rounded-full border border-slate-200"
+                      style={{ backgroundColor: c.color }}
                     />
-                    <span className="text-sm">{imageLabel(idx)}</span>
+                    {c.name}
                   </div>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        ) : (
-          <p className="text-xs text-slate-400 italic">
-            Upload images first to select variant image
-          </p>
-        )}
-        {errors?.variant?.[vIdx]?.imageIndex && (
-          <p className="text-xs text-red-500">
-            {errors.variant[vIdx].imageIndex.message}
-          </p>
-        )}
+          {errors?.variant?.[vIdx]?.color && (
+            <p className="text-xs text-red-500">
+              {errors.variant[vIdx].color.message}
+            </p>
+          )}
+        </div>
+
+        {/* IMAGE SELECTION - SELECT INPUT */}
+        <div className="space-y-1">
+          <Label className="text-slate-700 dark:text-slate-300 text-xs">
+            Product Image
+          </Label>
+          {allImages.length > 0 ? (
+            <Select
+              value={
+                selectedImageIndex !== undefined
+                  ? String(selectedImageIndex)
+                  : ""
+              }
+              onValueChange={(v) =>
+                setValue(`variant.${vIdx}.imageIndex`, parseInt(v))
+              }
+            >
+              <SelectTrigger className="h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                <SelectValue placeholder="Select image" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-slate-900">
+                {allImages.map((img, idx) => (
+                  <SelectItem key={idx} value={String(idx)}>
+                    <div className="flex items-center gap-2">
+                      {/* Thumbnail preview */}
+                      <img
+                        src={img}
+                        alt={`${imageLabel(idx)}`}
+                        className="w-6 h-6 rounded object-cover"
+                      />
+                      <span className="text-sm">{imageLabel(idx)}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <p className="text-xs text-slate-400 italic">
+              Upload images first to select variant image
+            </p>
+          )}
+          {errors?.variant?.[vIdx]?.imageIndex && (
+            <p className="text-xs text-red-500">
+              {errors.variant[vIdx].imageIndex.message}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Stock rows */}
@@ -602,9 +610,11 @@ export function ProductVariant({
   onCancel,
   categories = [],
   colors = [],
+  sizeCharts = [],
 }: VariantProps<ProductFormData> & {
   categories: ICategory[];
   colors: IColor[];
+  sizeCharts: ISizeChart[];
 }) {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -632,9 +642,15 @@ export function ProductVariant({
           ? (defaultValues.categoryID as any)?._id
           : defaultValues.categoryID;
 
+      const sizeChartId =
+        typeof defaultValues.sizeChartId === "object"
+          ? (defaultValues.sizeChartId as any)?._id
+          : defaultValues.sizeChartId;
+
       reset({
         ...defaultValues,
         categoryID: categoryId,
+        sizeChartId: sizeChartId,
         variant: (defaultValues?.variant &&
           defaultValues?.variant.map((v) => ({
             color: typeof v.color === "object" ? (v.color as any)?._id : "",
@@ -813,7 +829,7 @@ export function ProductVariant({
             Discount Price
           </Label>
           <Input
-            {...register("discountPrice", { valueAsNumber: true })}
+            {...register("discountPrice")}
             type="number"
             placeholder="00"
             className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
@@ -824,6 +840,31 @@ export function ProductVariant({
             </p>
           )}
         </div>
+      </div>
+
+      {/* Shoe size */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Select Shoe Chart
+        </Label>
+        <Select
+          value={watch("sizeChartId") || ""} // ← Ensure it always has a string value
+          onValueChange={(v) => setValue("sizeChartId", v)}
+        >
+          <SelectTrigger className="h-9 w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
+            <SelectValue placeholder="Select size chart" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-slate-900">
+            {sizeCharts.map((c) => (
+              <SelectItem key={c._id} value={c._id as string}>
+                {c.chartName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.sizeChartId && (
+          <p className="text-xs text-red-500">{errors.sizeChartId.message}</p>
+        )}
       </div>
 
       {/* ── Images Upload ── */}

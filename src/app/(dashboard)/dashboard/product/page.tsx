@@ -21,7 +21,12 @@ import {
   usePostProductMutation,
 } from "@/src/redux/features/product/productApi";
 import { ProductFormData } from "@/src/validation";
-import { ICategory, IColor } from "@/src/interface/dashboard/dashboard";
+import {
+  ICategory,
+  IColor,
+  ISizeChart,
+} from "@/src/interface/dashboard/dashboard";
+import { useGetAllSizeChartsQuery } from "@/src/redux/features/sizeChart/sizeChart";
 
 export default function ProductPage() {
   const [page, setPage] = useState(1);
@@ -52,6 +57,8 @@ export default function ProductPage() {
     url: "/color",
     params: { limit: 100 },
   });
+  const { data: sizeChartData, isLoading: sizeChartsLoading } =
+    useGetAllSizeChartsQuery(undefined);
 
   const [createProduct, { isLoading: creating }] = usePostProductMutation();
   const [updateProduct, { isLoading: updating }] = usePatchProductMutation();
@@ -75,6 +82,7 @@ export default function ProductPage() {
       formData.append("discountPrice", String(form.discountPrice));
       formData.append("originalPrice", String(form.originalPrice));
       formData.append("categoryID", form.categoryID);
+      formData.append("sizeChartId", String(form.sizeChartId));
 
       if (form.images) {
         form.images.forEach((image: File) => {
@@ -91,7 +99,14 @@ export default function ProductPage() {
     } catch (err: unknown) {
       console.log("err", err);
       const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Failed to add product");
+      const sourceError = err as {
+        data?: { errorSources: { message?: string }[] };
+      };
+      toast.error(
+        sourceError?.data?.errorSources?.[0]?.message ||
+          error?.data?.message ||
+          "Failed to add product",
+      );
     }
   };
 
@@ -131,6 +146,10 @@ export default function ProductPage() {
 
       if (form.categoryID !== defaultValues?.categoryID) {
         formData.append("categoryID", form.categoryID);
+      }
+
+      if (form.sizeChartId !== defaultValues?.sizeChartId) {
+        formData.append("sizeChartId", String(form.sizeChartId));
       }
 
       // ── Variant — changed হলে append ──
@@ -298,6 +317,8 @@ export default function ProductPage() {
     },
   ];
 
+  console.log("sizeChartData", sizeChartData);
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -318,7 +339,7 @@ export default function ProductPage() {
       <DataTable
         data={products}
         columns={columns}
-        isLoading={isLoading}
+        isLoading={isLoading || sizeChartsLoading}
         rowKey={(r) => r._id!}
         emptyMessage="No products found."
       />
@@ -333,7 +354,7 @@ export default function ProductPage() {
       )}
 
       {/* Create Modal */}
-      <DynamicModal<ProductFormData, ICategory, IColor>
+      <DynamicModal<ProductFormData, ICategory, IColor, ISizeChart>
         open={createOpen}
         onOpenChange={setCreateOpen}
         onSubmit={handleCreate}
@@ -342,10 +363,11 @@ export default function ProductPage() {
         variant="product"
         options1={categories}
         options2={colors}
+        options3={sizeChartData?.data}
       />
 
       {/* Edit Modal */}
-      <DynamicModal<ProductFormData, ICategory, IColor>
+      <DynamicModal<ProductFormData, ICategory, IColor, ISizeChart>
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
@@ -355,6 +377,7 @@ export default function ProductPage() {
         variant="product"
         options1={categories}
         options2={colors}
+        options3={sizeChartData?.data}
       />
 
       {/* Delete Confirm */}
