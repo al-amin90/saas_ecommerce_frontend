@@ -25,7 +25,7 @@ function SizeChartSection({
   const selectedRow = sizeChart.rows.find((r) => r.size === selectedSize);
 
   return (
-    <div className="mt-6 space-y-4">
+    <div className="mt-6 mb-32 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="h-px flex-1 bg-slate-200" />
@@ -69,8 +69,8 @@ function SizeChartSection({
               }
               className={`min-w-[44px] h-10 px-3 rounded-xl border-2 text-sm font-bold transition-all ${
                 selectedSize === row.size
-                  ? "border-black bg-black text-white scale-105 shadow-md"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-black"
+                  ? "border-[#e07b1a] bg-[#e07b1a] text-white scale-105 shadow-md"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-[#e07b1a]"
               }`}
             >
               {row.size}
@@ -80,7 +80,7 @@ function SizeChartSection({
 
         {/* Selected size detail card */}
         {selectedRow && (
-          <div className="bg-black text-white rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+          <div className="bg-[#e07b1a] text-white rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
             {[
               { label: "EU Size", value: selectedRow.size },
               {
@@ -141,7 +141,7 @@ function SizeChartSection({
                 }
                 className={`border-b border-slate-100 last:border-0 cursor-pointer transition-colors ${
                   selectedSize === row.size
-                    ? "bg-black text-white"
+                    ? "bg-[#e07b1a] text-white"
                     : "hover:bg-slate-50"
                 }`}
               >
