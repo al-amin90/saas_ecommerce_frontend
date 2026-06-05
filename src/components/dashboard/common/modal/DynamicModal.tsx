@@ -166,6 +166,7 @@ const DynamicModal = <T, O, P, Q>({
             categories={options1 as ICategory[]}
             colors={options2 as IColor[]}
             sizeCharts={options3 as ISizeChart[]}
+            open={open}
           />
         );
 
@@ -229,7 +230,10 @@ const DynamicModal = <T, O, P, Q>({
             </DialogTitle>
           </DialogHeader>
 
-          {renderVariant()}
+          {/* key দিলে modal open হওয়ার সাথে সাথে component fresh mount হবে */}
+          <div key={open ? JSON.stringify(defaultValues) : "closed"}>
+            {renderVariant()}
+          </div>
         </DialogContent>
       </Dialog>
     </>

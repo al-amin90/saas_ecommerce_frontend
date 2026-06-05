@@ -69,8 +69,8 @@ function SizeChartSection({
               }
               className={`min-w-[44px] h-10 px-3 rounded-xl border-2 text-sm font-bold transition-all ${
                 selectedSize === row.size
-                  ? "border-[#e07b1a] bg-[#e07b1a] text-white scale-105 shadow-md"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-[#e07b1a]"
+                  ? "border-#F48721 bg-#F48721 text-white scale-105 shadow-md"
+                  : "border-slate-200 bg-white text-slate-700 hover:border-#F48721"
               }`}
             >
               {row.size}
@@ -80,7 +80,7 @@ function SizeChartSection({
 
         {/* Selected size detail card */}
         {selectedRow && (
-          <div className="bg-[#e07b1a] text-white rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+          <div className="bg-#F48721 text-white rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
             {[
               { label: "EU Size", value: selectedRow.size },
               {
@@ -98,7 +98,7 @@ function SizeChartSection({
               { label: "Age Range", value: selectedRow.ageRange || "—" },
             ].map((item) => (
               <div key={item.label} className="text-center space-y-1">
-                <p className="text-xs text-slate-400 uppercase tracking-wide">
+                <p className="text-xs text-white uppercase tracking-wide">
                   {item.label}
                 </p>
                 <p className="text-base font-bold text-white">{item.value}</p>
@@ -141,7 +141,7 @@ function SizeChartSection({
                 }
                 className={`border-b border-slate-100 last:border-0 cursor-pointer transition-colors ${
                   selectedSize === row.size
-                    ? "bg-[#e07b1a] text-white"
+                    ? "bg-#F48721 text-white"
                     : "hover:bg-slate-50"
                 }`}
               >
@@ -151,17 +151,17 @@ function SizeChartSection({
                   {row.size}
                 </td>
                 <td
-                  className={`py-3 px-4 ${selectedSize === row.size ? "text-slate-300" : "text-slate-600"}`}
+                  className={`py-3 px-4 ${selectedSize === row.size ? "text-white" : "text-slate-600"}`}
                 >
                   {row.innerLength ?? "—"}
                 </td>
                 <td
-                  className={`py-3 px-4 ${selectedSize === row.size ? "text-slate-300" : "text-slate-600"}`}
+                  className={`py-3 px-4 ${selectedSize === row.size ? "text-white" : "text-slate-600"}`}
                 >
                   {row.feetLength ?? "—"}
                 </td>
                 <td
-                  className={`py-3 px-4 ${selectedSize === row.size ? "text-slate-300" : "text-slate-600"}`}
+                  className={`py-3 px-4 ${selectedSize === row.size ? "text-white" : "text-slate-600"}`}
                 >
                   {row.ageRange ?? "—"}
                 </td>

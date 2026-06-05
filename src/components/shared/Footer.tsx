@@ -109,7 +109,7 @@ export default function Footer() {
                   key={s.label}
                   target="_blank"
                   aria-label={s.label}
-                  className="bg-white/10 cursor-pointer text-white/70 hover:bg-[#E07B1A] hover:text-[#1A1A1A] transition-all duration-200 p-3 rounded-md"
+                  className="bg-white/10 cursor-pointer text-white/70 hover:bg-#F48721 hover:text-[#1A1A1A] transition-all duration-200 p-3 rounded-md"
                 >
                   {s.icon}
                 </Link>

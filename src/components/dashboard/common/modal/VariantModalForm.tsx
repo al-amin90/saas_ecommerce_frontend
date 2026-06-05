@@ -32,7 +32,7 @@ import {
   ISizeChart,
 } from "@/src/interface/dashboard/dashboard";
 
-import { Plus, Trash2, Upload, X } from "lucide-react";
+import { Loader, Plus, Trash2, Upload, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +43,7 @@ type VariantProps<T> = {
   isLoading?: boolean;
   mode?: "create" | "edit";
   onCancel: () => void;
+  open?: boolean;
 };
 
 export function CategoryVariant({
@@ -611,6 +612,7 @@ export function ProductVariant({
   categories = [],
   colors = [],
   sizeCharts = [],
+  open,
 }: VariantProps<ProductFormData> & {
   categories: ICategory[];
   colors: IColor[];
@@ -632,43 +634,52 @@ export function ProductVariant({
     resolver: zodResolver(productSchema),
     defaultValues: {
       ...defaultValues,
+      categoryID:
+        typeof defaultValues?.categoryID === "object"
+          ? (defaultValues.categoryID as any)?._id
+          : defaultValues?.categoryID,
+      sizeChartId:
+        typeof defaultValues?.sizeChartId === "object"
+          ? (defaultValues.sizeChartId as any)?._id
+          : defaultValues?.sizeChartId,
+      variant: defaultValues?.variant?.map((v) => ({
+        color: typeof v.color === "object" ? (v.color as any)?._id : "",
+        imageIndex: v.imageIndex ?? 0,
+        stock: v.stock,
+      })) || [{ color: "", imageIndex: 0, stock: [{}] }],
     },
   });
 
   useEffect(() => {
-    if (defaultValues) {
-      const categoryId =
-        typeof defaultValues.categoryID === "object"
-          ? (defaultValues.categoryID as any)?._id
-          : defaultValues.categoryID;
+    if (mode === "edit" && Array.isArray(defaultValues?.existingImages)) {
+      setExistingImages(defaultValues.existingImages);
+    }
+  }, [open, defaultValues, mode, reset]); // ← open যোগ করো
 
-      const sizeChartId =
-        typeof defaultValues.sizeChartId === "object"
-          ? (defaultValues.sizeChartId as any)?._id
-          : defaultValues.sizeChartId;
+  // categories আর sizeCharts load হলে re-trigger করো
+  useEffect(() => {
+    if (!defaultValues || mode !== "edit") return;
 
-      reset({
-        ...defaultValues,
-        categoryID: categoryId,
-        sizeChartId: sizeChartId,
-        variant: (defaultValues?.variant &&
-          defaultValues?.variant.map((v) => ({
-            color: typeof v.color === "object" ? (v.color as any)?._id : "",
-            imageIndex: v.imageIndex ?? 0, // ← Ensure imageIndex is set
-            stock: v.stock,
-          }))) || [{ color: "", imageIndex: 0, stock: [{}] }],
-      });
+    const categoryId =
+      typeof defaultValues.categoryID === "object"
+        ? (defaultValues.categoryID as any)?._id
+        : defaultValues.categoryID;
+
+    const sizeChartId =
+      typeof defaultValues.sizeChartId === "object"
+        ? (defaultValues.sizeChartId as any)?._id
+        : defaultValues.sizeChartId;
+
+    // categories load হলে set করো
+    if (categories.length > 0 && categoryId) {
+      setValue("categoryID", categoryId, { shouldValidate: false });
     }
 
-    if (defaultValues && mode === "edit") {
-      if (
-        defaultValues.existingImages &&
-        Array.isArray(defaultValues.existingImages)
-      ) {
-        setExistingImages(defaultValues.existingImages);
-      }
+    // sizeCharts load হলে set করো
+    if (sizeCharts.length > 0 && sizeChartId) {
+      setValue("sizeChartId", sizeChartId, { shouldValidate: false });
     }
-  }, [defaultValues, reset, mode]);
+  }, [categories, sizeCharts, defaultValues, mode, setValue]);
 
   // Handle image uploads
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -829,9 +840,10 @@ export function ProductVariant({
             Discount Price
           </Label>
           <Input
-            {...register("discountPrice")}
+            {...register("discountPrice", { valueAsNumber: true })}
             type="number"
             placeholder="00"
+            defaultValue={0}
             className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
           />
           {errors.discountPrice && (

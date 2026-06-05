@@ -240,7 +240,7 @@ const ProductDetailsPage = () => {
                   onMouseEnter={() => setSelectedImage(i)}
                   className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl cursor-pointer overflow-hidden border-2 transition-all ${
                     selectedImage === i
-                      ? "border-[#E07B1A]"
+                      ? "border-#F48721"
                       : "border-transparent hover:border-slate-300"
                   }`}
                 >
@@ -327,7 +327,7 @@ const ProductDetailsPage = () => {
                       }}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
                         selectedVariantIdx === i
-                          ? "border-[#E07B1A]  bg-white shadow-md"
+                          ? "border-#F48721  bg-white shadow-md"
                           : "border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-white"
                       }`}
                     >
@@ -387,10 +387,10 @@ const ProductDetailsPage = () => {
                     disabled={s.quantity === 0}
                     className={`px-2 sm:px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
                       selectedSize === s.size
-                        ? "bg-black text-white border-[#E07B1A] "
+                        ? "bg-black text-white border-#F48721 "
                         : s.quantity === 0
                           ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed line-through"
-                          : "bg-white text-slate-700 border-slate-200 hover:border-[#E07B1A] "
+                          : "bg-white text-slate-700 border-slate-200 hover:border-#F48721 "
                     }`}
                   >
                     {s.size}
@@ -494,11 +494,7 @@ const ProductDetailsPage = () => {
         <SizeChartSection sizeChart={product.sizeChartId} />
       ) : (
         // fallback — chart assign না থাকলে
-        <div className="mt-6 sm:mt-8 bg-slate-100 py-3 sm:py-5 text-center px-3 rounded-xl">
-          <p className="text-xs sm:text-sm font-bold tracking-widest uppercase text-slate-700">
-            Please Check Size Chart For Better Fit
-          </p>
-        </div>
+        <div></div>
       )}
 
       <BuyNowModal
