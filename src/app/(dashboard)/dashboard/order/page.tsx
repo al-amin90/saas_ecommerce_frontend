@@ -39,33 +39,44 @@ import Pagination from "@/src/components/dashboard/shared/Pagination";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface IOrderItem {
-  productId: { _id: string; name: string; images: string[]; price: number };
+export interface IOrderItem {
+  _id: string;
+  productId: {
+    _id: string;
+    name: string;
+    price: number;
+    images: string[];
+  };
+  colorId: {
+    _id: string;
+    name: string;
+    color: string;
+  };
   quantity: number;
-  selectedSize: string;
-  colorId: { _id: string; name: string; color: string };
   price: number;
+  selectedSize: string;
 }
 
-interface IOrderRow {
+export interface IOrderRow {
   _id: string;
   orderNumber: string;
   guestCheckout: boolean;
-  guestEmail?: string;
-  guestInfo?: {
+  guestEmail: string;
+  guestInfo: {
     fullName: string;
     phone: string;
     address: string;
     city: string;
-    postalCode?: string;
+    postalCode: string;
   };
-  userId?: { name: string; email: string };
+  userId: { name: string; email: string } | null;
   items: IOrderItem[];
-  totalPrice: number;
+  orderStatus: keyof typeof ORDER_STATUS_BADGE;
+  paymentStatus: keyof typeof PAYMENT_STATUS_BADGE;
   paymentMethod: string;
-  paymentStatus: "pending" | "completed" | "failed";
-  orderStatus: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  totalPrice: number;
   createdAt: string;
+  updatedAt: string;
 }
 
 interface IMeta {
@@ -402,50 +413,103 @@ export default function OrdersPage() {
   const columns = [
     {
       key: "orderNumber",
-      label: "Order",
+      label: "Order #",
       render: (row: IOrderRow) => (
-        <span className="font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold">
-          {row.orderNumber}
-        </span>
+        <div>
+          <span className="font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold block">
+            {row.orderNumber}
+          </span>
+          <span className="text-xs text-slate-400">
+            {format(new Date(row.createdAt), "MMM d, yyyy")}
+          </span>
+        </div>
       ),
     },
     {
       key: "customer",
       label: "Customer",
       render: (row: IOrderRow) => (
-        <div>
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+        <div className="min-w-[160px]">
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
             {row.guestInfo?.fullName ?? row.userId?.name ?? "Unknown"}
           </p>
-          <p className="text-xs text-slate-400">{row.guestInfo?.city ?? "—"}</p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {row.guestEmail || row.userId?.email || "—"}
+          </p>
+          <div className="flex items-center gap-1 mt-1">
+            <span className="text-xs text-slate-500">📍</span>
+            <span className="text-xs text-slate-500">
+              {[
+                row.guestInfo?.address,
+                row.guestInfo?.city,
+                row.guestInfo?.postalCode,
+              ]
+                .filter(Boolean)
+                .join(", ")}
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-0.5">
+            📞 {row.guestInfo?.phone ?? "—"}
+          </p>
         </div>
       ),
     },
     {
       key: "items",
-      label: "Items",
+      label: "Order Items",
       render: (row: IOrderRow) => (
-        <div className="flex items-center gap-1.5">
-          {row.items[0]?.productId?.images?.[0] && (
-            <div className="relative w-7 h-7 rounded-md overflow-hidden bg-slate-100 flex-shrink-0">
-              <Image
-                src={row.items[0].productId.images[0]}
-                alt=""
-                fill
-                className="object-cover"
-              />
+        <div className="flex flex-col gap-2 min-w-[260px] max-w-[320px]">
+          {row.items.map((item, i) => (
+            <div key={item._id ?? i} className="flex items-center gap-2">
+              {/* Product image */}
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200 dark:border-slate-700">
+                {item.productId?.images?.[0] ? (
+                  <Image
+                    src={item.productId.images[0]}
+                    alt={item.productId?.name ?? ""}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-300 text-lg">
+                    📦
+                  </div>
+                )}
+              </div>
+
+              {/* Product info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
+                  {item.productId?.name ?? "—"}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  {/* Color swatch */}
+                  {item.colorId?.color && (
+                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full border border-slate-300 inline-block flex-shrink-0"
+                        style={{ background: item.colorId.color }}
+                      />
+                      {item.colorId.name}
+                    </span>
+                  )}
+                  {/* Size */}
+                  {item.selectedSize && (
+                    <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded font-mono">
+                      {item.selectedSize}
+                    </span>
+                  )}
+                  {/* Qty × price */}
+                  <span className="text-xs text-slate-400">
+                    ×{item.quantity}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    ৳{(item.price * item.quantity).toLocaleString()}
+                  </span>
+                </div>
+              </div>
             </div>
-          )}
-          <div>
-            <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
-              {row.items[0]?.productId?.name}
-            </p>
-            {row.items.length > 1 && (
-              <p className="text-xs text-slate-400">
-                +{row.items.length - 1} more
-              </p>
-            )}
-          </div>
+          ))}
         </div>
       ),
     },
@@ -453,40 +517,32 @@ export default function OrdersPage() {
       key: "totalPrice",
       label: "Total",
       render: (row: IOrderRow) => (
-        <span className="text-sm font-bold text-slate-800 dark:text-white">
-          ৳{row.totalPrice.toLocaleString()}
-        </span>
+        <div className="min-w-[80px]">
+          <span className="text-sm font-bold text-slate-800 dark:text-white block">
+            ৳{row.totalPrice.toLocaleString()}
+          </span>
+          <span className="text-xs text-slate-400 capitalize">
+            {row.paymentMethod}
+          </span>
+        </div>
       ),
     },
     {
       key: "orderStatus",
       label: "Status",
       render: (row: IOrderRow) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${ORDER_STATUS_BADGE[row.orderStatus]}`}
-        >
-          {row.orderStatus}
-        </span>
-      ),
-    },
-    {
-      key: "paymentStatus",
-      label: "Payment",
-      render: (row: IOrderRow) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${PAYMENT_STATUS_BADGE[row.paymentStatus]}`}
-        >
-          {row.paymentStatus}
-        </span>
-      ),
-    },
-    {
-      key: "createdAt",
-      label: "Date",
-      render: (row: IOrderRow) => (
-        <span className="text-xs text-slate-400">
-          {format(new Date(row.createdAt), "MMM d, yyyy")}
-        </span>
+        <div className="flex flex-col gap-1.5 min-w-[100px]">
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize w-fit ${ORDER_STATUS_BADGE[row.orderStatus]}`}
+          >
+            {row.orderStatus}
+          </span>
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize w-fit ${PAYMENT_STATUS_BADGE[row.paymentStatus]}`}
+          >
+            {row.paymentStatus}
+          </span>
+        </div>
       ),
     },
     {
