@@ -248,11 +248,11 @@ export default function ProductPage() {
       render: (row: IProduct) => (
         <div className="flex flex-col">
           <span className="font-semibold text-slate-700 dark:text-slate-300">
-            ${row.price}
+            ৳{row.price}
           </span>
           {row.discountPrice && row.discountPrice < row.price && (
             <span className="text-xs text-green-600 dark:text-green-400">
-              ${row.discountPrice} Discount
+              ৳{row.discountPrice} Discount
             </span>
           )}
         </div>
