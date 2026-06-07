@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useState } from "react";
+import { MdOutlineInventory2 } from "react-icons/md";
 
 // import { logoutUser, selectUser } from "@/redux/features/auth/authSlice";
 // import { useAppDispatch, useAppSelector } from "@/redux/store";
@@ -50,7 +51,14 @@ const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/category", label: "Category", icon: ChartBarStacked },
   { href: "/dashboard/color", label: "Color", icon: Palette },
-  { href: "/dashboard/product", label: "Product", icon: FolderKanban },
+  {
+    href: "/dashboard/product",
+    label: "Inventory",
+    icon: MdOutlineInventory2,
+    children: [
+      { href: "/dashboard/product", label: "Product", icon: FolderKanban },
+    ],
+  },
   {
     href: "/dashboard/manual-order",
     label: "Manual Order",
@@ -60,10 +68,6 @@ const navItems: NavItem[] = [
     href: "/dashboard/order",
     label: "Orders",
     icon: Package,
-    // children: [
-    //   { href: "/dashboard/orders", label: "All Orders", icon:  },
-    //   { href: "/dashboard/orders/pending", label: "Pending", icon: Clock },
-    // ],
   },
   {
     href: "/dashboard/delivery-method",

@@ -222,7 +222,7 @@ const DynamicModal = <T, O, P, Q>({
 
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className={`sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800`}
+          className={`${dialogClassName} max-h-[90vh] overflow-y-auto bg-red-200 dark:bg-slate-900 border-slate-200 dark:border-slate-800`}
         >
           <DialogHeader>
             <DialogTitle className="text-slate-800 dark:text-white">

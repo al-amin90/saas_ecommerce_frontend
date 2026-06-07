@@ -359,6 +359,7 @@ export default function ProductPage() {
         onOpenChange={setCreateOpen}
         onSubmit={handleCreate}
         isLoading={creating}
+        dialogClassName="sm:max-w-4xl"
         mode="create"
         variant="product"
         options1={categories}
@@ -373,6 +374,7 @@ export default function ProductPage() {
         onSubmit={handleUpdate}
         isLoading={updating || singleLoading}
         defaultValues={singleData?.data}
+        dialogClassName="sm:max-w-4xl"
         mode="edit"
         variant="product"
         options1={categories}
