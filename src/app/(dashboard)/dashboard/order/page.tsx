@@ -345,10 +345,11 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<IOrderRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [limit, setLimit] = useState(10);
 
   const { data, isLoading } = useGetAllOrdersQuery({
     page,
-    limit: 10,
+    limit,
     orderStatus,
     paymentStatus,
     sortBy: "createdAt",
@@ -628,13 +629,17 @@ export default function OrdersPage() {
           setDetailOpen(true);
         }}
       />
-
-      {/* ── Pagination ── */}
-      {meta && meta.totalPage > 1 && (
+      {meta && meta.totalPage >= 1 && (
         <Pagination
           page={page}
           totalPage={meta.totalPage}
+          total={meta.total}
+          limit={limit}
           onPageChange={setPage}
+          onLimitChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
         />
       )}
 
