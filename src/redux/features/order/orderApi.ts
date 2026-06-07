@@ -14,9 +14,29 @@ const orderApi = baseApi.injectEndpoints({
 
     // ── Get All Orders (admin) ────────────────────────────────────────────
     getAllOrders: builder.query({
-      query: () => ({
+      query: (params: {
+        page?: number;
+        limit?: number;
+        orderStatus?: string;
+        paymentStatus?: string;
+        sortBy?: string;
+        sortOrder?: "asc" | "desc";
+      }) => ({
         url: "order",
         method: "GET",
+        // "all" হলে param পাঠাবো না
+        params: {
+          page: params.page,
+          limit: params.limit,
+          sortBy: params.sortBy,
+          sortOrder: params.sortOrder,
+          ...(params.orderStatus && params.orderStatus !== "all"
+            ? { orderStatus: params.orderStatus }
+            : {}),
+          ...(params.paymentStatus && params.paymentStatus !== "all"
+            ? { paymentStatus: params.paymentStatus }
+            : {}),
+        },
       }),
       providesTags: ["orders"],
     }),

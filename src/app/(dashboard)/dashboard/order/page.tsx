@@ -1,15 +1,20 @@
-// src/app/(dashboard)/dashboard/orders/page.tsx
-
 "use client";
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { Eye, ChevronDown, Search, Trash2 } from "lucide-react";
+import { Eye, Search, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
+import {
+  Clock,
+  Package,
+  Truck,
+  CheckCircle2,
+  XCircle,
+  LayoutList,
+} from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -23,28 +28,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import DataTable from "@/src/components/dashboard/shared/DataTable";
-import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
 import Image from "next/image";
 import {
   useGetAllOrdersQuery,
   useUpdateOrderStatusMutation,
-  useSubmitBulkOrdersMutation,
 } from "@/src/redux/features/order/orderApi";
-import { IColor } from "@/src/interface/dashboard/dashboard";
+import DataTable from "@/src/components/dashboard/shared/DataTable";
+import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
+import Pagination from "@/src/components/dashboard/shared/Pagination";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface IOrderItem {
-  productId: {
-    _id: string;
-    name: string;
-    images: string[];
-    price: number;
-  };
+  productId: { _id: string; name: string; images: string[]; price: number };
   quantity: number;
   selectedSize: string;
-  colorId: IColor;
+  colorId: { _id: string; name: string; color: string };
   price: number;
 }
 
@@ -69,34 +68,100 @@ interface IOrderRow {
   createdAt: string;
 }
 
+interface IMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPage: number;
+  pending: number;
+  processing: number;
+  shipped: number;
+  delivered: number;
+  cancelled: number;
+}
+
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const orderStatuses = [
+// ORDER_STATUSES config update করো — icon যোগ করো
+const ORDER_STATUSES = [
+  {
+    key: "pending",
+    label: "Pending",
+    icon: Clock,
+    dot: "bg-yellow-400",
+    bar: "bg-yellow-500",
+    text: "text-yellow-700",
+    activeBg: "bg-yellow-500",
+    activeText: "text-white",
+  },
+  {
+    key: "processing",
+    label: "Processing",
+    icon: Package,
+    dot: "bg-blue-400",
+    bar: "bg-blue-500",
+    text: "text-blue-700",
+    activeBg: "bg-blue-600",
+    activeText: "text-white",
+  },
+  {
+    key: "shipped",
+    label: "Shipped",
+    icon: Truck,
+    dot: "bg-purple-400",
+    bar: "bg-purple-500",
+    text: "text-purple-700",
+    activeBg: "bg-purple-600",
+    activeText: "text-white",
+  },
+  {
+    key: "delivered",
+    label: "Delivered",
+    icon: CheckCircle2,
+    dot: "bg-emerald-400",
+    bar: "bg-emerald-500",
+    text: "text-emerald-700",
+    activeBg: "bg-emerald-600",
+    activeText: "text-white",
+  },
+  {
+    key: "cancelled",
+    label: "Cancelled",
+    icon: XCircle,
+    dot: "bg-red-400",
+    bar: "bg-red-500",
+    text: "text-red-700",
+    activeBg: "bg-red-500",
+    activeText: "text-white",
+  },
+];
+
+const ORDER_STATUS_BADGE: Record<string, string> = {
+  pending:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
+  processing:
+    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
+  shipped:
+    "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400",
+  delivered:
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+  cancelled: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
+};
+
+const PAYMENT_STATUS_BADGE: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-700",
+  completed: "bg-emerald-100 text-emerald-700",
+  failed: "bg-red-100 text-red-700",
+};
+
+const ORDER_STATUSES_LIST = [
   "pending",
   "processing",
   "shipped",
   "delivered",
   "cancelled",
 ];
-const paymentStatuses = ["pending", "completed", "failed"];
-
-const orderStatusColor: Record<string, string> = {
-  pending:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-400",
-  processing:
-    "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400",
-  shipped:
-    "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-400",
-  delivered:
-    "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-400",
-  cancelled: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-400",
-};
-
-const paymentStatusColor: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  completed: "bg-emerald-100 text-emerald-700",
-  failed: "bg-red-100 text-red-700",
-};
+const PAYMENT_STATUSES_LIST = ["pending", "completed", "failed"];
 
 // ── Order Detail Modal ────────────────────────────────────────────────────────
 
@@ -123,22 +188,19 @@ function OrderDetailModal({
     order.guestInfo?.fullName ?? order.userId?.name ?? "Unknown";
   const customerEmail = order.guestEmail ?? order.userId?.email ?? "—";
 
-  console.log("!order", order);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-slate-800 dark:text-white text-sm">
-            Order —{" "}
-            <span className="font-mono text-blue-600">{order.orderNumber}</span>
+          <DialogTitle className="text-slate-800 dark:text-white text-sm font-mono">
+            {order.orderNumber}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Customer info */}
+          {/* Customer */}
           <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-1">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
               Customer
             </p>
             <p className="text-sm font-semibold text-slate-800 dark:text-white">
@@ -151,8 +213,9 @@ function OrderDetailModal({
                   {order.guestInfo.phone}
                 </p>
                 <p className="text-xs text-slate-400">
-                  {order.guestInfo.address}, {order.guestInfo.city}{" "}
-                  {order.guestInfo.postalCode}
+                  {order.guestInfo.address}, {order.guestInfo.city}
+                  {order.guestInfo.postalCode &&
+                    ` - ${order.guestInfo.postalCode}`}
                 </p>
               </>
             )}
@@ -168,34 +231,36 @@ function OrderDetailModal({
                 key={i}
                 className="flex gap-3 items-center bg-slate-50 dark:bg-slate-800 rounded-xl p-3"
               >
-                {item.productId?.images?.[0] ? (
-                  <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
+                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
+                  {item.productId?.images?.[0] ? (
                     <Image
                       src={item.productId.images[0]}
                       alt={item.productId.name}
                       fill
                       className="object-cover"
                     />
-                  </div>
-                ) : (
-                  <div className="w-12 h-12 rounded-lg bg-slate-200 flex-shrink-0" />
-                )}
+                  ) : (
+                    <div className="w-full h-full bg-slate-300" />
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-800 dark:text-white truncate">
                     {item.productId?.name}
                   </p>
-                  <p className="text-xs text-slate-400">
-                    Size: {item?.selectedSize} · Color: {item?.colorId?.name}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span
+                      className="w-3 h-3 rounded-full border border-slate-300 flex-shrink-0"
+                      style={{ backgroundColor: item.colorId?.color }}
+                    />
+                    <p className="text-xs text-slate-400">
+                      {item.colorId?.name} · Size {item.selectedSize} · Qty{" "}
+                      {item.quantity}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                    Qty: {item.quantity}
-                  </p>
-                  <p className="text-sm font-bold text-slate-800 dark:text-white">
-                    ৳{(item.price * item.quantity).toLocaleString()}
-                  </p>
-                </div>
+                <p className="text-sm font-bold text-slate-800 dark:text-white flex-shrink-0">
+                  ৳{(item.price * item.quantity).toLocaleString()}
+                </p>
               </div>
             ))}
           </div>
@@ -213,7 +278,7 @@ function OrderDetailModal({
           {/* Status Update */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-slate-500">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Order Status
               </p>
               <Select
@@ -225,7 +290,7 @@ function OrderDetailModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-900">
-                  {orderStatuses.map((s) => (
+                  {ORDER_STATUSES_LIST.map((s) => (
                     <SelectItem
                       key={s}
                       value={s}
@@ -239,7 +304,7 @@ function OrderDetailModal({
             </div>
 
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-slate-500">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 Payment Status
               </p>
               <Select
@@ -251,7 +316,7 @@ function OrderDetailModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-900">
-                  {paymentStatuses.map((s) => (
+                  {PAYMENT_STATUSES_LIST.map((s) => (
                     <SelectItem
                       key={s}
                       value={s}
@@ -273,129 +338,72 @@ function OrderDetailModal({
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
+  const [page, setPage] = useState(1);
+  const [orderStatus, setOrderStatus] = useState("pending");
+  const [paymentStatus, setPaymentStatus] = useState("all");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<IOrderRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [search, setSearch] = useState("");
 
-  // ✅ Bulk selection
-  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
-    new Set(),
-  );
-
-  const { data, isLoading } = useGetAllOrdersQuery(undefined);
-  const [updateOrderStatus, { isLoading: isUpdating }] =
-    useUpdateOrderStatusMutation();
-  const [submitBulkOrders, { isLoading: isSubmittingBulk }] =
-    useSubmitBulkOrdersMutation();
-
-  console.log("data", data);
-  const orders: IOrderRow[] = data?.data ?? [];
-
-  // ── Filter ────────────────────────────────────────────────────────────────
-
-  const filteredOrders = orders.filter((o) => {
-    const matchStatus =
-      statusFilter === "all" || o.orderStatus === statusFilter;
-
-    const searchLower = search.toLowerCase();
-    const customerName = (
-      o.guestInfo?.fullName ??
-      o.userId?.name ??
-      ""
-    ).toLowerCase();
-    const matchSearch =
-      !search ||
-      customerName.includes(searchLower) ||
-      o.orderNumber.toLowerCase().includes(searchLower) ||
-      (o.guestEmail ?? "").toLowerCase().includes(searchLower);
-
-    return matchStatus && matchSearch;
+  const { data, isLoading } = useGetAllOrdersQuery({
+    page,
+    limit: 10,
+    orderStatus,
+    paymentStatus,
+    sortBy: "createdAt",
+    sortOrder,
   });
 
-  // ── Selection handlers ────────────────────────────────────────────────────
+  const [updateOrderStatus, { isLoading: isUpdating }] =
+    useUpdateOrderStatusMutation();
 
-  const handleSelectOrder = (orderId: string) => {
-    const newSelected = new Set(selectedOrderIds);
-    if (newSelected.has(orderId)) {
-      newSelected.delete(orderId);
-    } else {
-      newSelected.add(orderId);
-    }
-    setSelectedOrderIds(newSelected);
+  const orders: IOrderRow[] = data?.data ?? [];
+  const meta = data?.meta as IMeta | undefined;
+
+  // ── Client-side search ────────────────────────────────────────────────────
+  const filteredOrders = orders.filter((o) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      o.orderNumber.toLowerCase().includes(q) ||
+      (o.guestInfo?.fullName ?? "").toLowerCase().includes(q) ||
+      (o.guestEmail ?? "").toLowerCase().includes(q) ||
+      (o.guestInfo?.phone ?? "").includes(q)
+    );
+  });
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  const handleStatusFilter = (key: string) => {
+    setOrderStatus(key);
+    setPage(1);
   };
-
-  const handleSelectAll = () => {
-    if (selectedOrderIds.size === filteredOrders.length) {
-      setSelectedOrderIds(new Set());
-    } else {
-      setSelectedOrderIds(new Set(filteredOrders.map((o) => o._id)));
-    }
-  };
-
-  // ── Status update handler ─────────────────────────────────────────────────
 
   const handleStatusUpdate = async (
     orderId: string,
-    orderStatus?: string,
-    paymentStatus?: string,
+    newOrderStatus?: string,
+    newPaymentStatus?: string,
   ) => {
     try {
-      await updateOrderStatus({ orderId, orderStatus, paymentStatus }).unwrap();
+      await updateOrderStatus({
+        orderId,
+        orderStatus: newOrderStatus,
+        paymentStatus: newPaymentStatus,
+      }).unwrap();
       toast.success("Status updated");
     } catch (err: unknown) {
-      console.log("err", err);
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message ?? "Failed to update");
     }
   };
 
-  // ✅ Submit bulk orders
-  const handleSubmitBulk = async () => {
-    if (selectedOrderIds.size === 0) {
-      toast.error("Select at least one order");
-      return;
-    }
-
-    try {
-      await submitBulkOrders({
-        orderIds: Array.from(selectedOrderIds),
-      }).unwrap();
-
-      toast.success(`${selectedOrderIds.size} order(s) submitted to courier`);
-      setSelectedOrderIds(new Set());
-    } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message ?? "Failed to submit orders");
-    }
-  };
-
   // ── Columns ───────────────────────────────────────────────────────────────
-
   const columns = [
-    {
-      key: "checkbox",
-      label: (
-        <Checkbox
-          checked={selectedOrderIds.size === filteredOrders.length}
-          onCheckedChange={handleSelectAll}
-          className="rounded"
-        />
-      ),
-      render: (row: IOrderRow) => (
-        <Checkbox
-          checked={selectedOrderIds.has(row._id)}
-          onCheckedChange={() => handleSelectOrder(row._id)}
-          className="rounded"
-          onClick={(e) => e.stopPropagation()}
-        />
-      ),
-    },
     {
       key: "orderNumber",
       label: "Order",
       render: (row: IOrderRow) => (
-        <span className="font-mono text-xs text-blue-600 dark:text-blue-400">
+        <span className="font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold">
           {row.orderNumber}
         </span>
       ),
@@ -408,54 +416,35 @@ export default function OrdersPage() {
           <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
             {row.guestInfo?.fullName ?? row.userId?.name ?? "Unknown"}
           </p>
-          <p className="text-xs text-slate-400">
-            {row.guestEmail ?? row.userId?.email ?? "—"}
-          </p>
+          <p className="text-xs text-slate-400">{row.guestInfo?.city ?? "—"}</p>
         </div>
       ),
     },
-    // ✅ Products with images and quantities
     {
-      key: "products",
-      label: "Products",
+      key: "items",
+      label: "Items",
       render: (row: IOrderRow) => (
-        <div className="flex gap-2 flex-wrap">
-          {row.items.map((item, i) => (
-            <div
-              key={i}
-              className="relative group"
-              title={`${item.productId?.name} - Qty: ${item.quantity}`}
-            >
-              {item.productId?.images?.[0] ? (
-                <div className="relative">
-                  <div className="relative w-8 h-8 rounded-md overflow-hidden bg-slate-200">
-                    <Image
-                      src={item.productId.images[0]}
-                      alt={item.productId.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  {/* Quantity badge */}
-                  <div className="absolute -top-2 -right-2 bg-blue-600 text-white rounded-full text-[8px] w-4 h-4 flex items-center justify-center text-xs font-bold">
-                    {item.quantity}
-                  </div>
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded-md bg-slate-200 flex items-center justify-center text-xs">
-                  {item.quantity}
-                </div>
-              )}
-
-              {/* Hover tooltip */}
-              <div className="hidden group-hover:block absolute z-10 bg-slate-800 text-white p-2 rounded-lg whitespace-nowrap text-xs bottom-full mb-2 left-1/2 -translate-x-1/2">
-                <p className="font-semibold">{item.productId?.name}</p>
-                <p>Qty: {item.quantity}</p>
-                <p>Size: {item.selectedSize}</p>
-                <p>Color: {item.colorId?.name}</p>
-              </div>
+        <div className="flex items-center gap-1.5">
+          {row.items[0]?.productId?.images?.[0] && (
+            <div className="relative w-7 h-7 rounded-md overflow-hidden bg-slate-100 flex-shrink-0">
+              <Image
+                src={row.items[0].productId.images[0]}
+                alt=""
+                fill
+                className="object-cover"
+              />
             </div>
-          ))}
+          )}
+          <div>
+            <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
+              {row.items[0]?.productId?.name}
+            </p>
+            {row.items.length > 1 && (
+              <p className="text-xs text-slate-400">
+                +{row.items.length - 1} more
+              </p>
+            )}
+          </div>
         </div>
       ),
     },
@@ -463,33 +452,31 @@ export default function OrdersPage() {
       key: "totalPrice",
       label: "Total",
       render: (row: IOrderRow) => (
-        <span className="text-sm font-semibold text-slate-800 dark:text-white">
+        <span className="text-sm font-bold text-slate-800 dark:text-white">
           ৳{row.totalPrice.toLocaleString()}
         </span>
       ),
     },
     {
       key: "orderStatus",
-      label: "Order Status",
+      label: "Status",
       render: (row: IOrderRow) => (
-        <Badge
-          variant="secondary"
-          className={`text-xs capitalize ${orderStatusColor[row.orderStatus]}`}
+        <span
+          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${ORDER_STATUS_BADGE[row.orderStatus]}`}
         >
           {row.orderStatus}
-        </Badge>
+        </span>
       ),
     },
     {
       key: "paymentStatus",
       label: "Payment",
       render: (row: IOrderRow) => (
-        <Badge
-          variant="secondary"
-          className={`text-xs capitalize ${paymentStatusColor[row.paymentStatus]}`}
+        <span
+          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${PAYMENT_STATUS_BADGE[row.paymentStatus]}`}
         >
           {row.paymentStatus}
-        </Badge>
+        </span>
       ),
     },
     {
@@ -507,88 +494,129 @@ export default function OrdersPage() {
       headClassName: "text-right",
       render: (row: IOrderRow) => (
         <div className="flex justify-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg"
+          <button
             onClick={(e) => {
               e.stopPropagation();
               setSelectedOrder(row);
               setDetailOpen(true);
             }}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
           >
             <Eye className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
       ),
     },
   ];
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <PageHeadingTitle
-          name="Orders"
-          meta={{ total: filteredOrders.length }}
-        />
+      <div className="flex items-center justify-between">
+        <PageHeadingTitle name="Orders" meta={{ total: meta?.total ?? 0 }} />
       </div>
 
-      {/* ✅ Bulk Actions Bar */}
-      {selectedOrderIds.size > 0 && (
-        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-lg p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-              {selectedOrderIds.size} order(s) selected
-            </span>
-          </div>
+      {/* ── Status Tab Navigation ── */}
+      {/* ── Status Navigation ── */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-1.5 flex gap-1 flex-wrap">
+        {ORDER_STATUSES.map((s) => {
+          const Icon = s.icon;
+          const count =
+            s.key === "all"
+              ? meta?.total
+              : (meta?.[s.key as keyof IMeta] as number | undefined);
+          const isActive = orderStatus === s.key;
 
-          <div className="flex gap-2">
-            <Button onClick={() => handleSubmitBulk()} size="sm">
-              Submit to Courier
-            </Button>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setSelectedOrderIds(new Set())}
+          return (
+            <button
+              key={s.key}
+              onClick={() => handleStatusFilter(s.key)}
+              className={`relative flex items-center cursor-pointer gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 flex-1 min-w-fit justify-center sm:justify-start ${
+                isActive
+                  ? `${s.activeBg} ${s.activeText} shadow-md shadow-black/10 scale-[1.02]`
+                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+              }`}
             >
-              Clear Selection
-            </Button>
-          </div>
-        </div>
-      )}
+              {/* Icon */}
+              <Icon
+                className={`h-3.5 w-3.5 flex-shrink-0 ${
+                  isActive ? s.activeText : s.text
+                }`}
+              />
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+              {/* Label */}
+              <span className="hidden sm:block capitalize whitespace-nowrap">
+                {s.label}
+              </span>
+
+              {/* Count badge */}
+              <span
+                className={`ml-auto flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-black flex items-center justify-center transition-all ${
+                  isActive
+                    ? "bg-white/25 text-white"
+                    : `bg-slate-100 dark:bg-slate-800 ${s.text}`
+                }`}
+              >
+                {count ?? 0}
+              </span>
+
+              {/* Active bottom bar */}
+              {isActive && (
+                <span
+                  className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 ${s.bar} rounded-full`}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Filters Row ── */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
         {/* Search */}
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, order #, email..."
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search name, order #, phone..."
             className="pl-9 h-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm"
           />
         </div>
 
-        {/* Status filter */}
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-9 w-44 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-slate-900">
-            <SelectItem value="all">All Status</SelectItem>
-            {orderStatuses.map((s) => (
-              <SelectItem key={s} value={s} className="capitalize">
-                {s}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Payment filter */}
+        <select
+          value={paymentStatus}
+          onChange={(e) => {
+            setPaymentStatus(e.target.value);
+            setPage(1);
+          }}
+          className="h-9 px-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none text-slate-700 dark:text-slate-300"
+        >
+          <option value="all">All Payment</option>
+          {PAYMENT_STATUSES_LIST.map((s) => (
+            <option key={s} value={s} className="capitalize">
+              {s.charAt(0).toUpperCase() + s.slice(1)}
+            </option>
+          ))}
+        </select>
+
+        {/* Sort toggle */}
+        <button
+          onClick={() => setSortOrder((p) => (p === "desc" ? "asc" : "desc"))}
+          className="h-9 px-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 flex items-center gap-1.5 hover:border-slate-400 transition-colors"
+        >
+          <ArrowUpDown className="h-3.5 w-3.5" />
+          {sortOrder === "desc" ? "Newest" : "Oldest"}
+        </button>
       </div>
 
-      {/* Table */}
+      {/* ── Table ── */}
       <DataTable
         data={filteredOrders}
         columns={columns}
@@ -601,7 +629,16 @@ export default function OrdersPage() {
         }}
       />
 
-      {/* Detail Modal */}
+      {/* ── Pagination ── */}
+      {meta && meta.totalPage > 1 && (
+        <Pagination
+          page={page}
+          totalPage={meta.totalPage}
+          onPageChange={setPage}
+        />
+      )}
+
+      {/* ── Detail Modal ── */}
       <OrderDetailModal
         order={selectedOrder}
         open={detailOpen}
