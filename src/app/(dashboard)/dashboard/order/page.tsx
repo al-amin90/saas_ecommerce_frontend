@@ -6,6 +6,8 @@ import { Eye, Search, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   Clock,
   Package,
@@ -32,6 +34,7 @@ import Image from "next/image";
 import {
   useGetAllOrdersQuery,
   useUpdateOrderStatusMutation,
+  useSubmitBulkOrdersMutation,
 } from "@/src/redux/features/order/orderApi";
 import DataTable from "@/src/components/dashboard/shared/DataTable";
 import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
@@ -358,6 +361,10 @@ export default function OrdersPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [limit, setLimit] = useState(10);
 
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
+    new Set(),
+  );
+
   const { data, isLoading } = useGetAllOrdersQuery({
     page,
     limit,
@@ -369,6 +376,9 @@ export default function OrdersPage() {
 
   const [updateOrderStatus, { isLoading: isUpdating }] =
     useUpdateOrderStatusMutation();
+
+  const [submitBulkOrders, { isLoading: isSubmittingBulk }] =
+    useSubmitBulkOrdersMutation();
 
   const orders: IOrderRow[] = data?.data ?? [];
   const meta = data?.meta as IMeta | undefined;
@@ -409,8 +419,70 @@ export default function OrdersPage() {
     }
   };
 
+  const handleSelectOrder = (orderId: string) => {
+    const newSelected = new Set(selectedOrderIds);
+
+    if (newSelected.has(orderId)) {
+      newSelected.delete(orderId);
+    } else {
+      newSelected.add(orderId);
+    }
+
+    setSelectedOrderIds(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedOrderIds.size === filteredOrders.length) {
+      setSelectedOrderIds(new Set());
+    } else {
+      setSelectedOrderIds(new Set(filteredOrders.map((order) => order._id)));
+    }
+  };
+
+  const handleSubmitBulk = async () => {
+    if (selectedOrderIds.size === 0) {
+      toast.error("Select at least one order");
+      return;
+    }
+
+    try {
+      await submitBulkOrders({
+        orderIds: Array.from(selectedOrderIds),
+      }).unwrap();
+
+      toast.success(`${selectedOrderIds.size} order(s) submitted to courier`);
+
+      setSelectedOrderIds(new Set());
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+
+      toast.error(error?.data?.message ?? "Failed to submit orders");
+    }
+  };
+
   // ── Columns ───────────────────────────────────────────────────────────────
   const columns = [
+    {
+      key: "checkbox",
+      label: (
+        <Checkbox
+          checked={
+            filteredOrders.length > 0 &&
+            selectedOrderIds.size === filteredOrders.length
+          }
+          onCheckedChange={handleSelectAll}
+          className="rounded"
+        />
+      ),
+      render: (row: IOrderRow) => (
+        <Checkbox
+          checked={selectedOrderIds.has(row._id)}
+          onCheckedChange={() => handleSelectOrder(row._id)}
+          className="rounded"
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
+    },
     {
       key: "orderNumber",
       label: "Order #",
@@ -574,6 +646,44 @@ export default function OrdersPage() {
       <div className="flex items-center justify-between">
         <PageHeadingTitle name="Orders" meta={{ total: meta?.total ?? 0 }} />
       </div>
+
+      {selectedOrderIds.size > 0 && (
+        <div className="sticky top-4 z-20">
+          <div className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl px-4 py-3 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                📦
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                  {selectedOrderIds.size} Orders Selected
+                </p>
+                <p className="text-xs text-slate-500">
+                  Ready to submit to courier
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelectedOrderIds(new Set())}
+                className="h-9 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-sm"
+              >
+                Clear
+              </button>
+
+              <button
+                onClick={handleSubmitBulk}
+                disabled={isSubmittingBulk}
+                className="h-9 px-4 rounded-lg bg-blue-600 text-white text-sm font-medium"
+              >
+                {isSubmittingBulk ? "Submitting..." : "Submit Orders"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Status Tab Navigation ── */}
       {/* ── Status Navigation ── */}
