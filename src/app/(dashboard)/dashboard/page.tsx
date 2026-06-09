@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ShoppingCart,
   Users,
@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Truck,
   XCircle,
+  Calendar,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -24,18 +25,34 @@ import Image from "next/image";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface IDashboardStats {
-  totalOrders: number;
-  totalRevenue: number;
-  totalCustomers: number;
-  avgOrderValue: number;
-  statusBreakdown: {
-    pending: number;
-    processing: number;
-    shipped: number;
-    delivered: number;
-    cancelled: number;
+  dateRange: string;
+  dateRangeDisplay: string;
+  summary: {
+    totalOrders: number;
+    totalRevenue: number;
+    totalCustomers: number;
+    avgOrderValue: number;
   };
-  dailyOrders: { date: string; orders: number; revenue: number }[];
+  breakdown: {
+    status: {
+      pending: number;
+      processing: number;
+      shipped: number;
+      delivered: number;
+      cancelled: number;
+    };
+    paymentMethod: Record<string, number>;
+    topProducts: Array<{
+      productId: string;
+      name: string;
+      image: string;
+      quantity: number;
+      revenue: number;
+    }>;
+  };
+  charts: {
+    dailyOrders: { date: string; orders: number; revenue: number }[];
+  };
   recentOrders: {
     _id: string;
     orderNumber: string;
@@ -79,11 +96,28 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   },
 };
 
+// ── Date Range Options ────────────────────────────────────────────────────────
+
+const dateRangeOptions = [
+  { value: "today", label: "Today" },
+  { value: "yesterday", label: "Yesterday" },
+  { value: "last7days", label: "Last 7 Days" },
+  { value: "last15days", label: "Last 15 Days" },
+  { value: "last30days", label: "Last 30 Days" },
+  { value: "lastMonth", label: "Last Month" },
+  { value: "thisYear", label: "This Year" },
+  { value: "lastYear", label: "Last Year" },
+  { value: "lifetime", label: "Lifetime" },
+];
+
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Skeleton className="h-10 w-48 rounded-lg" />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Skeleton key={i} className="h-32 rounded-2xl" />
@@ -97,26 +131,62 @@ function DashboardSkeleton() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Date Range Selector ───────────────────────────────────────────────────────
+
+function DateRangeSelector({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Calendar className="h-4 w-4 text-slate-400" />
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        {dateRangeOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+// ── Main Component ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { data, isLoading } = useGetOrderStatsQuery(undefined);
+  const [dateRange, setDateRange] = useState("lifetime");
+
+  const { data, isLoading, refetch } = useGetOrderStatsQuery(dateRange);
   const stats = data?.data as IDashboardStats | undefined;
 
-  // category breakdown — statusBreakdown থেকে chart data বানাও
+  // Handle date range change
+  const handleDateRangeChange = (newRange: string) => {
+    setDateRange(newRange);
+    refetch();
+  };
+
+  // Status breakdown chart data
   const statusChartData = useMemo(() => {
-    if (!stats?.statusBreakdown) return [];
-    return Object.entries(stats.statusBreakdown).map(([key, value]) => ({
+    if (!stats?.breakdown?.status) return [];
+    return Object?.entries(stats.breakdown?.status).map(([key, value]) => ({
       condition: statusConfig[key]?.label ?? key,
       count: value,
     }));
   }, [stats]);
 
+  // Daily orders chart data
   const dailyChartData = useMemo(() => {
-    if (!stats?.dailyOrders) return [];
-    return stats.dailyOrders.map((d) => ({
+    if (!stats?.charts?.dailyOrders) return [];
+    return stats.charts.dailyOrders.map((d) => ({
       date: d.date,
-      patients: d.orders, // DailyRegistrationChart এর prop name
+      patients: d.orders,
     }));
   }, [stats]);
 
@@ -125,32 +195,45 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* ── Header with Date Range Selector ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
+            Dashboard
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            {stats.dateRangeDisplay || "Order Statistics"}
+          </p>
+        </div>
+        <DateRangeSelector value={dateRange} onChange={handleDateRangeChange} />
+      </div>
+
       {/* ── Stats Grid ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatsCard
           title="Total Orders"
-          value={stats.totalOrders}
-          subtitle="All time orders"
+          value={stats.summary?.totalOrders}
+          subtitle={`${stats.dateRangeDisplay}`}
           icon={ShoppingCart}
           color="blue"
         />
         <StatsCard
           title="Total Customers"
-          value={stats.totalCustomers}
+          value={stats.summary?.totalCustomers}
           subtitle="Unique customers"
           icon={Users}
           color="emerald"
         />
         <StatsCard
           title="Total Revenue"
-          value={`৳${stats.totalRevenue}`}
-          subtitle="All time revenue"
+          value={`৳${stats.summary?.totalRevenue.toLocaleString()}`}
+          subtitle={`${stats.dateRangeDisplay}`}
           icon={TrendingUp}
           color="violet"
         />
         <StatsCard
           title="Avg Order Value"
-          value={`৳${stats.avgOrderValue.toLocaleString()}`}
+          value={`৳${stats.summary?.avgOrderValue.toLocaleString()}`}
           subtitle="Average per order"
           icon={Package}
           color="amber"
@@ -163,9 +246,11 @@ export default function DashboardPage() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
           <div className="mb-4">
             <h3 className="text-base font-semibold text-slate-800 dark:text-white">
-              Daily Orders
+              Orders Overview
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">Last 7 days</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {stats.dateRangeDisplay}
+            </p>
           </div>
           <DailyRegistrationChart data={dailyChartData} />
         </div>
@@ -182,9 +267,61 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* ── Additional Insights (Optional) ── */}
+      {stats.breakdown?.topProducts &&
+        stats.breakdown?.topProducts.length > 0 && (
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-white">
+                Top Products
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Best selling products in {stats.dateRangeDisplay}
+              </p>
+            </div>
+            <div className="space-y-3">
+              {stats.breakdown?.topProducts.map((product, idx) => (
+                <div
+                  key={product.productId}
+                  className="flex items-center gap-3"
+                >
+                  <div className="text-sm font-bold text-slate-400 w-6">
+                    #{idx + 1}
+                  </div>
+                  <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 overflow-hidden">
+                    {product.image ? (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <Package className="h-4 w-4 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">
+                      {product.name}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Sold: {product.quantity} units
+                    </p>
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    ৳{product.revenue.toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       {/* ── Status Summary Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-        {Object.entries(stats.statusBreakdown).map(([key, value]) => {
+        {Object?.entries(stats.breakdown?.status).map(([key, value]) => {
           const icons: Record<string, React.ElementType> = {
             pending: Clock,
             processing: Package,
@@ -220,7 +357,9 @@ export default function DashboardPage() {
             <h3 className="text-base font-semibold text-slate-800 dark:text-white">
               Recent Orders
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">Latest 5 orders</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Latest 5 orders • {stats.dateRangeDisplay}
+            </p>
           </div>
         </div>
         <div className="space-y-3">

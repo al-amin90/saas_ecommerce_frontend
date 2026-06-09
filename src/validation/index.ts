@@ -52,9 +52,9 @@ export const deliveryMethodSchema = z.object({
 
 // ----------------size chart
 const chartRowSchema = z.object({
-  size: z.number().min(1, "Required"),
-  innerLength: z.number().optional(),
-  feetLength: z.number().optional(),
+  size: z.string().min(1, "Required"),
+  innerLength: z.string().optional(),
+  feetLength: z.string().optional(),
   ageRange: z.string().optional(),
   note: z.string().optional(),
 });

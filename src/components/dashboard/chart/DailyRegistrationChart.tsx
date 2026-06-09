@@ -18,7 +18,7 @@ type Props = {
 export default function DailyRegistrationChart({ data }: Props) {
   const formatted = data.map((d) => ({
     ...d,
-    label: format(parseISO(d.date), "MMM d"),
+    label: d.date,
   }));
 
   return (

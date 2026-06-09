@@ -243,15 +243,17 @@ export function SizeChartVariant({
     resolver: zodResolver(sizeChartSchema),
     defaultValues: {
       targetGroup: "unisex",
-      rows: [{ size: 0 }],
+      rows: [{ size: "0" }],
       ...defaultValues,
     },
   });
 
   console.log("errors", errors);
 
+  console.log("defaultValues", defaultValues);
+
   useEffect(() => {
-    reset({ targetGroup: "unisex", rows: [{ size: 0 }], ...defaultValues });
+    reset({ targetGroup: "unisex", rows: [{ size: "0" }], ...defaultValues });
   }, [defaultValues]);
 
   const { fields, append, remove } = useFieldArray({
@@ -324,7 +326,7 @@ export function SizeChartVariant({
           </Label>
           <button
             type="button"
-            onClick={() => append({ size: 0 })}
+            onClick={() => append({ size: "0" })}
             className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
           >
             <Plus className="h-3 w-3" />
@@ -349,23 +351,18 @@ export function SizeChartVariant({
               className="grid grid-cols-6 gap-1.5 items-center"
             >
               <Input
-                {...register(`rows.${idx}.size`, { valueAsNumber: true })}
-                type="number"
+                {...register(`rows.${idx}.size`)}
                 placeholder="38"
                 className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
               />
               <Input
-                {...register(`rows.${idx}.innerLength`, {
-                  valueAsNumber: true,
-                })}
-                type="number"
+                {...register(`rows.${idx}.innerLength`)}
                 step="0.1"
                 placeholder="24.0"
                 className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
               />
               <Input
-                {...register(`rows.${idx}.feetLength`, { valueAsNumber: true })}
-                type="number"
+                {...register(`rows.${idx}.feetLength`)}
                 step="0.1"
                 placeholder="23.5"
                 className="h-8 w-full text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"

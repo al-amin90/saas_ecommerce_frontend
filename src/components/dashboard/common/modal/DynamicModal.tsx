@@ -73,7 +73,7 @@ type DynamicModalProps<
   mode?: "create" | "edit";
   isLoading?: boolean;
   onSubmit: (data: T, defaultValues?: Partial<T>) => Promise<void>;
-  defaultValues?: Partial<T>;
+  defaultValues?: Partial<T> | null;
 
   options1?: O[];
   options2?: P[];

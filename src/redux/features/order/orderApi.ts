@@ -43,8 +43,8 @@ const orderApi = baseApi.injectEndpoints({
 
     // ── Get Dashboard Stats ───────────────────────────────────────────────
     getOrderStats: builder.query({
-      query: () => ({
-        url: "order/stats",
+      query: (dateRange = "lifetime") => ({
+        url: `order/stats?dateRange=${dateRange}`,
         method: "GET",
       }),
       providesTags: ["orderStats"],

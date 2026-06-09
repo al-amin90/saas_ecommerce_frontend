@@ -17,9 +17,9 @@ import {
 import { SizeChartFormData } from "@/src/validation";
 
 interface ISizeChartRow {
-  size: number;
-  innerLength?: number;
-  feetLength?: number;
+  size: string;
+  innerLength?: string;
+  feetLength?: string;
   ageRange?: string;
   note?: string;
 }
@@ -254,7 +254,7 @@ export default function SizeChartPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleUpdate}
-        defaultValues={editChart ? {} : undefined}
+        defaultValues={editChart}
         isLoading={updating}
         mode="edit"
         variant="sizeChart"
