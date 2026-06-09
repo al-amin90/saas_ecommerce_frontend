@@ -38,11 +38,10 @@ type NavbarCategory = {
 const categories: NavbarCategory[] = [
   { label: "Home", href: "/" },
   { label: "All Products", href: "/products" },
-  { label: "Boishakhi Dhamaka Offer!", href: "/" },
-  { label: "Samba Craze", href: "/" },
   { label: "Kids", href: "/" },
-  { label: "Sandals", href: "/" },
-  { label: "Sneakers", href: "/" },
+  { label: "Boys", href: "/" },
+  { label: "Girls", href: "/" },
+  { label: "Unisex", href: "/" },
 ];
 
 export default function Navbar() {
@@ -62,7 +61,7 @@ export default function Navbar() {
   return (
     <>
       {/* ── Row 1: Logo / Search / Icons ─────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white ">
+      <header className="sticky top-0 z-50 bg-white">
         <div className="max-w-[1440px] mx-auto pl-4 pr-0 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6 py-4 md:py-6">
             {/* Logo */}

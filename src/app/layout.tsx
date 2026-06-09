@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Geist } from "next/font/google";
+import { Inter, Playfair_Display, Geist, Poppins } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import ReduxProvider from "../provider/ReduxProvider";
 import { Toaster } from "sonner";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+// const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({
+const poppins = Poppins({
   subsets: ["latin"],
-  variable: "--font-serif",
+  weight: ["400", "700", "900"],
+  variable: "--font-poppins",
 });
+
+// const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+// const playfair = Playfair_Display({
+//   subsets: ["latin"],
+//   variable: "--font-serif",
+// });
 
 export const metadata: Metadata = {
   title: "KidsHut BD",
@@ -24,18 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={cn(
-        "h-full",
-        "antialiased",
-        inter.variable,
-        playfair.variable,
-        "font-sans",
-        geist.variable,
-      )}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className={cn("h-full", "antialiased", poppins.variable)}>
+      <body className="min-h-full flex flex-col ">
         <ReduxProvider>{children}</ReduxProvider>
         <Toaster richColors position="top-right" />
       </body>
