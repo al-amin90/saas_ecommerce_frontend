@@ -28,3 +28,11 @@ export interface IProduct {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface IImageItem {
+  id: string;
+  type: "existing" | "new";
+  url: string; // existing এর জন্য cloudinary url
+  file?: File; // new এর জন্য file
+  preview: string; // display এর জন্য
+}

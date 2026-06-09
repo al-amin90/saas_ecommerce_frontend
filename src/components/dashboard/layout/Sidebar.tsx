@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
     label: "Inventory",
     icon: MdOutlineInventory2,
     children: [
-      { href: "/dashboard/product", label: "Product", icon: FolderKanban },
+      { href: "/dashboard/product", label: "Product List", icon: FolderKanban },
     ],
   },
   {

@@ -30,6 +30,7 @@ import { useGetAllSizeChartsQuery } from "@/src/redux/features/sizeChart/sizeCha
 
 export default function ProductPage() {
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<IProduct | null>(null);
@@ -39,7 +40,7 @@ export default function ProductPage() {
 
   const { data, isLoading } = useGetProductQuery({
     url: "/product",
-    params: { page, limit: 10 },
+    params: { page, limit },
   });
 
   const { data: singleData, isLoading: singleLoading } =
@@ -84,7 +85,7 @@ export default function ProductPage() {
       formData.append("categoryID", form.categoryID);
       formData.append("sizeChartId", String(form.sizeChartId));
 
-      if (form.images) {
+      if (form.images?.length) {
         form.images.forEach((image: File) => {
           formData.append("images", image);
         });
@@ -349,7 +350,13 @@ export default function ProductPage() {
         <Pagination
           page={page}
           totalPage={meta.totalPage}
+          total={meta.total}
+          limit={limit}
           onPageChange={setPage}
+          onLimitChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
         />
       )}
 

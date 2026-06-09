@@ -36,6 +36,25 @@ import { Loader, Plus, Trash2, Upload, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { IImageItem } from "@/src/interface/dashboard/product.interface";
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import SortableImage from "../../utils/SortableImage";
+import Image from "next/image";
+import ImageDropzone from "../ui/ImageDropzone";
 
 type VariantProps<T> = {
   onSubmit: (data: T, defaultValues?: Partial<T>) => Promise<void>;
@@ -396,8 +415,7 @@ export function VariantBlock({
   setValue,
   errors,
   colors,
-  imagePreviews, // Local new image previews
-  existingImages,
+  imageItems,
   onRemove,
   canRemove,
 }: {
@@ -408,8 +426,7 @@ export function VariantBlock({
   setValue: any;
   errors: any;
   colors: IColor[];
-  imagePreviews: string[]; // New images
-  existingImages: string[];
+  imageItems: IImageItem[];
   onRemove: () => void;
   canRemove: boolean;
 }) {
@@ -420,16 +437,6 @@ export function VariantBlock({
   } = useFieldArray({ control, name: `variant.${vIdx}.stock` });
 
   const selectedImageIndex = watch(`variant.${vIdx}.imageIndex`);
-
-  // Combine all images: existing + new
-  const allImages = [...(existingImages || []), ...imagePreviews];
-  const imageLabel = (index: number) => {
-    if (index < existingImages.length) {
-      return `Existing Image ${index + 1}`;
-    } else {
-      return `New Image ${index - existingImages.length + 1}`;
-    }
-  };
 
   return (
     <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-3 bg-slate-50/50 dark:bg-slate-800/30">
@@ -483,46 +490,67 @@ export function VariantBlock({
           )}
         </div>
 
-        {/* IMAGE SELECTION - SELECT INPUT */}
+        {/* Image selection */}
         <div className="space-y-1">
           <Label className="text-slate-700 dark:text-slate-300 text-xs">
-            Product Image
+            Variant Image
           </Label>
-          {allImages.length > 0 ? (
-            <Select
-              value={
-                selectedImageIndex !== undefined
-                  ? String(selectedImageIndex)
-                  : ""
-              }
-              onValueChange={(v) =>
-                setValue(`variant.${vIdx}.imageIndex`, parseInt(v))
-              }
-            >
-              <SelectTrigger className="h-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
-                <SelectValue placeholder="Select image" />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-slate-900">
-                {allImages.map((img, idx) => (
-                  <SelectItem key={idx} value={String(idx)}>
-                    <div className="flex items-center gap-2">
-                      {/* Thumbnail preview */}
-                      <img
-                        src={img}
-                        alt={`${imageLabel(idx)}`}
-                        className="w-6 h-6 rounded object-cover"
-                      />
-                      <span className="text-sm">{imageLabel(idx)}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+          {imageItems.length > 0 ? (
+            <>
+              <Select
+                value={
+                  selectedImageIndex !== undefined
+                    ? String(selectedImageIndex)
+                    : ""
+                }
+                onValueChange={(v) =>
+                  setValue(`variant.${vIdx}.imageIndex`, parseInt(v))
+                }
+              >
+                <SelectTrigger className="h-9 w-fit bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                  <SelectValue placeholder="Select image" />
+                </SelectTrigger>
+
+                <SelectContent className="bg-white  dark:bg-slate-900">
+                  {imageItems.map((img, idx) => (
+                    <SelectItem key={img.id} value={String(idx)}>
+                      <div className="flex  items-center gap-2">
+                        <Image
+                          src={img.preview}
+                          alt={`Photo ${idx + 1}`}
+                          height={28}
+                          width={28}
+                          className="rounded-md object-cover flex-shrink-0 border border-slate-200"
+                        />
+                        <div className="flex gap-3 items-center">
+                          <span className="text-sm font-medium">
+                            {idx === 0 ? "Main Photo" : `Photo ${idx + 1}`}
+                          </span>
+                          <span
+                            className={`text-xs ${
+                              img.type === "existing"
+                                ? "text-slate-400"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {img.type === "existing" ? "Saved" : "New"}
+                          </span>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </>
           ) : (
-            <p className="text-xs text-slate-400 italic">
-              Upload images first to select variant image
-            </p>
+            <div className="h-9 flex items-center px-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+              <p className="text-xs text-slate-400 italic">
+                Upload images first
+              </p>
+            </div>
           )}
+
           {errors?.variant?.[vIdx]?.imageIndex && (
             <p className="text-xs text-red-500">
               {errors.variant[vIdx].imageIndex.message}
@@ -533,16 +561,14 @@ export function VariantBlock({
 
       {/* Stock rows */}
       <div className="space-y-2">
-        <div className="flex flex-col">
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => appendStock({})}
-              className="text-xs text-blue-600 cursor-pointer hover:text-blue-700"
-            >
-              + Add Size
-            </button>
-          </div>{" "}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => appendStock({ size: 0, quantity: 0 })}
+            className="text-xs text-blue-600 cursor-pointer hover:text-blue-700"
+          >
+            + Add Size
+          </button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -553,49 +579,48 @@ export function VariantBlock({
             Quantity
           </Label>
         </div>
+
         {stockFields.map((stockField, sIdx) => (
-          <div key={stockField.id} className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <Input
-                  {...register(`variant.${vIdx}.stock.${sIdx}.size`, {
-                    valueAsNumber: true,
-                  })}
-                  type="number"
-                  placeholder="Size"
-                  className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
-                />
-                {errors.variant?.[vIdx]?.stock?.[sIdx]?.size && (
-                  <p className="text-xs text-red-500 mt-0.5">
-                    {errors.variant[vIdx]?.stock?.[sIdx]?.size?.message}
-                  </p>
-                )}
-              </div>
-              <div className="flex-1">
-                <Input
-                  {...register(`variant.${vIdx}.stock.${sIdx}.quantity`, {
-                    valueAsNumber: true,
-                  })}
-                  type="number"
-                  placeholder="Qty"
-                  className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
-                />
-                {errors.variant?.[vIdx]?.stock?.[sIdx]?.quantity && (
-                  <p className="text-xs text-red-500 mt-0.5">
-                    {errors.variant[vIdx]?.stock?.[sIdx]?.quantity?.message}
-                  </p>
-                )}
-              </div>
-              {stockFields.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeStock(sIdx)}
-                  className="text-red-400 hover:text-red-500 text-xs flex-shrink-0"
-                >
-                  ✕
-                </button>
+          <div key={stockField.id} className="flex items-center gap-2">
+            <div className="flex-1">
+              <Input
+                {...register(`variant.${vIdx}.stock.${sIdx}.size`, {
+                  valueAsNumber: true,
+                })}
+                type="number"
+                placeholder="Size"
+                className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+              />
+              {errors.variant?.[vIdx]?.stock?.[sIdx]?.size && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.variant[vIdx]?.stock?.[sIdx]?.size?.message}
+                </p>
               )}
             </div>
+            <div className="flex-1">
+              <Input
+                {...register(`variant.${vIdx}.stock.${sIdx}.quantity`, {
+                  valueAsNumber: true,
+                })}
+                type="number"
+                placeholder="Qty"
+                className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
+              />
+              {errors.variant?.[vIdx]?.stock?.[sIdx]?.quantity && (
+                <p className="text-xs text-red-500 mt-0.5">
+                  {errors.variant[vIdx]?.stock?.[sIdx]?.quantity?.message}
+                </p>
+              )}
+            </div>
+            {stockFields.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeStock(sIdx)}
+                className="text-red-400 hover:text-red-500 text-xs flex-shrink-0 p-1"
+              >
+                ✕
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -618,8 +643,7 @@ export function ProductVariant({
   colors: IColor[];
   sizeCharts: ISizeChart[];
 }) {
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [images, setImages] = useState<IImageItem[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
   const {
@@ -651,10 +675,21 @@ export function ProductVariant({
   });
 
   useEffect(() => {
+    if (!open) return;
+
     if (mode === "edit" && Array.isArray(defaultValues?.existingImages)) {
-      setExistingImages(defaultValues.existingImages);
+      setImages(
+        defaultValues.existingImages.map((url: string, i: number) => ({
+          id: `existing-${i}-${url}`,
+          type: "existing" as const,
+          url,
+          preview: url,
+        })),
+      );
+    } else {
+      setImages([]); // create mode এ reset
     }
-  }, [open, defaultValues, mode, reset]); // ← open যোগ করো
+  }, [open, defaultValues, mode]);
 
   // categories আর sizeCharts load হলে re-trigger করো
   useEffect(() => {
@@ -679,52 +714,23 @@ export function ProductVariant({
     if (sizeCharts.length > 0 && sizeChartId) {
       setValue("sizeChartId", sizeChartId, { shouldValidate: false });
     }
-  }, [categories, sizeCharts, defaultValues, mode, setValue]);
+  }, [categories, sizeCharts, defaultValues, mode, setValue, open]);
 
   // Handle image uploads
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const newFiles = [...images, ...files];
-
-    // Limit to 10 images
-    if (newFiles.length > 10) {
-      alert("Maximum 10 images allowed");
-      return;
-    }
-
-    setImages(newFiles);
-
-    // Create previews
-    const previews: string[] = [];
-    newFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        previews.push(reader.result as string);
-        if (previews.length === newFiles.length) {
-          setImagePreviews(previews);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Update form state with image files
-    setValue("images", newFiles);
+    const files = Array.from(e.target.files ?? []);
+    const newItems: IImageItem[] = files.map((file) => ({
+      id: `new-${Date.now()}-${file.name}`,
+      type: "new",
+      url: "",
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setImages((prev) => [...prev, ...newItems].slice(0, 10));
   };
 
-  const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-    setImages(newImages);
-    setImagePreviews(newPreviews);
-    setValue("images", newImages);
-  };
-
-  const removeExistingImage = (index: number) => {
-    const updatedImages = existingImages.filter((_, i) => i !== index);
-    setExistingImages(updatedImages);
-
-    // Update the form with remaining existing images
-    setValue("existingImages", updatedImages);
+  const removeImage = (id: string) => {
+    setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
   // variant field array
@@ -735,10 +741,46 @@ export function ProductVariant({
   } = useFieldArray({ control, name: "variant" });
 
   const handleFormSubmit = async (form: ProductFormData) => {
+    // images state থেকে collect করো
+    const existingUrls = images
+      .filter((img) => img.type === "existing")
+      .map((img) => img.url);
+
+    const newFiles = images
+      .filter((img) => img.type === "new")
+      .map((img) => img.file!);
+
+    // form এর ভেতরেই দাও — আলাদা argument না
+    const enrichedForm: ProductFormData = {
+      ...form,
+      existingImages: existingUrls,
+      images: newFiles,
+    };
+
     if (mode === "edit") {
-      await onSubmit(form, defaultValues ?? {});
+      await onSubmit(enrichedForm, defaultValues ?? {});
     } else {
-      await onSubmit(form);
+      await onSubmit(enrichedForm);
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 }, // 5px move করলে drag শুরু হবে
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setImages((prev) => {
+        const oldIndex = prev.findIndex((img) => img.id === active.id);
+        const newIndex = prev.findIndex((img) => img.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
     }
   };
 
@@ -880,109 +922,24 @@ export function ProductVariant({
       </div>
 
       {/* ── Images Upload ── */}
-      <div className="space-y-2">
-        <Label className="text-slate-700 dark:text-slate-300 text-sm font-semibold">
-          Product Images
-        </Label>
-
-        {/* Existing Images */}
-        {existingImages.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs text-slate-500 font-medium">
-              Current Images ({existingImages.length})
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {existingImages.map((image, idx) => (
-                <div
-                  key={idx}
-                  className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700"
-                >
-                  <img
-                    src={image}
-                    alt={`Existing ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeExistingImage(idx)}
-                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Upload New Images */}
-        <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
-          <label className="cursor-pointer flex flex-col items-center gap-2">
-            <Upload size={24} className="text-slate-400" />
-            <div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Click to upload or drag and drop
-              </p>
-              <p className="text-xs text-slate-500">PNG, JPG, GIF up to 5MB</p>
-            </div>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-          </label>
+      {/* ── Images Upload ── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-slate-700 dark:text-slate-300 text-sm font-semibold">
+            Product Images
+          </Label>
         </div>
 
-        {/* New Image Previews */}
-        {imagePreviews.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs text-slate-500 font-medium">
-              New Images ({imagePreviews.length})
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {imagePreviews.map((preview, idx) => (
-                <div
-                  key={idx}
-                  className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700"
-                >
-                  <img
-                    src={preview}
-                    alt={`New ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <ImageDropzone
+          value={images}
+          onChange={setImages}
+          maxFiles={10}
+          maxSize={5 * 1024 * 1024}
+        />
 
-        <p className="text-xs text-slate-500">
-          Total: {existingImages.length + imagePreviews.length}/10 images
-        </p>
         {errors.images && (
           <p className="text-xs text-red-500">{errors.images.message}</p>
         )}
-      </div>
-
-      {/* Description */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-          Description
-        </label>
-        <Textarea
-          placeholder="Enter Description"
-          {...register("description")}
-          rows={3}
-        />
       </div>
 
       {/* ── Variants ── */}
@@ -1016,8 +973,7 @@ export function ProductVariant({
             setValue={setValue}
             errors={errors}
             colors={colors as IColor[]}
-            imagePreviews={imagePreviews} // ← PASS new images
-            existingImages={existingImages} // ← PASS existing images
+            imageItems={images}
             onRemove={() => removeVariant(vIdx)}
             canRemove={variantFields.length > 1}
           />
