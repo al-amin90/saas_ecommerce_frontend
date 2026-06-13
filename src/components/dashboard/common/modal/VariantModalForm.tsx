@@ -2,6 +2,8 @@
 // ─── Sub-forms ────────────────────────────────────────────────────────────────
 
 import {
+  BannerFormData,
+  bannerSchema,
   CategoryFormData,
   categorySchema,
   ColorFormData,
@@ -15,7 +17,7 @@ import {
 } from "@/src/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -36,7 +38,10 @@ import { Loader, Plus, Trash2, Upload, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { IImageItem } from "@/src/interface/dashboard/product.interface";
+import {
+  IImageItem,
+  IProduct,
+} from "@/src/interface/dashboard/product.interface";
 import {
   closestCenter,
   DndContext,
@@ -55,6 +60,8 @@ import {
 import SortableImage from "../../utils/SortableImage";
 import Image from "next/image";
 import ImageDropzone from "../ui/ImageDropzone";
+import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
+import { useGetProductQuery } from "@/src/redux/features/product/productApi";
 
 type VariantProps<T> = {
   onSubmit: (data: T, defaultValues?: Partial<T>) => Promise<void>;
@@ -63,6 +70,13 @@ type VariantProps<T> = {
   mode?: "create" | "edit";
   onCancel: () => void;
   open?: boolean;
+};
+
+type BannerVariantProps = Omit<VariantProps<BannerFormData>, "onSubmit"> & {
+  onSubmit: (
+    data: FormData,
+    defaultValues?: Partial<BannerFormData>,
+  ) => Promise<void>;
 };
 
 export function CategoryVariant({
@@ -205,7 +219,7 @@ export function ColorVariant({
           />
           {/* Live preview swatch */}
           <span
-            className="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0"
+            className="w-9 h-9 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm shrink-0"
             style={{ backgroundColor: pickedColor || "#000000" }}
           />
         </div>
@@ -518,7 +532,7 @@ export function VariantBlock({
                           alt={`Photo ${idx + 1}`}
                           height={28}
                           width={28}
-                          className="rounded-md object-cover flex-shrink-0 border border-slate-200"
+                          className="rounded-md object-cover shrink-0 border border-slate-200"
                         />
                         <div className="flex gap-3 items-center">
                           <span className="text-sm font-medium">
@@ -613,7 +627,7 @@ export function VariantBlock({
               <button
                 type="button"
                 onClick={() => removeStock(sIdx)}
-                className="text-red-400 hover:text-red-500 text-xs flex-shrink-0 p-1"
+                className="text-red-400 hover:text-red-500 text-xs shrink-0 p-1"
               >
                 ✕
               </button>
@@ -1257,6 +1271,276 @@ export function DeliveryMethodVariant({
         name="Delivery Method"
       ></ModalFooter>
       {/* Footer */}
+    </form>
+  );
+}
+
+// Banner Variant
+export function BannerVariant({
+  onSubmit,
+  defaultValues,
+  isLoading,
+  mode = "create",
+  onCancel,
+  open,
+}: BannerVariantProps) {
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Fetch products for product selection
+  const { data: productsData } = useGetProductQuery({
+    url: "/product",
+    params: { limit: 100 },
+  });
+
+  const products = productsData?.data ?? [];
+  console.log("products", products);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    control,
+    setValue,
+    formState: { errors },
+  } = useForm<BannerFormData>({
+    resolver: zodResolver(bannerSchema),
+    defaultValues: {
+      title: defaultValues?.title || "",
+      subTitle: defaultValues?.subTitle || "",
+      colorHex: defaultValues?.colorHex || "#ffffff",
+      description: defaultValues?.description || "",
+      productID:
+        typeof defaultValues?.productID === "object"
+          ? (defaultValues.productID as any)?._id
+          : defaultValues?.productID || "",
+      isActive: defaultValues?.isActive ?? true,
+    },
+  });
+
+  useEffect(() => {
+    if (!open) {
+      reset();
+      setImagePreview("");
+      setImageFile(null);
+      return;
+    }
+
+    if (mode === "edit" && defaultValues?.image) {
+      setImagePreview(defaultValues.image as string);
+    }
+  }, [open, mode, defaultValues, reset]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleFormSubmit = async (form: BannerFormData) => {
+    const formData = new FormData();
+
+    // Append all text fields
+    formData.append("title", form.title);
+    if (form.subTitle) formData.append("subTitle", form.subTitle);
+    if (form.colorHex) formData.append("colorHex", form.colorHex);
+    if (form.description) formData.append("description", form.description);
+    if (form.productID) formData.append("productID", form.productID);
+    if (form.isActive !== undefined)
+      formData.append("isActive", String(form.isActive));
+
+    // Append image file if new one selected
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+
+    await onSubmit(formData, defaultValues);
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit(handleFormSubmit)}
+      className="space-y-4 py-2 pr-1"
+    >
+      {/* Title */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Banner Title <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          {...register("title")}
+          placeholder="e.g. Summer Sale 2024"
+          className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+        />
+        {errors.title && (
+          <p className="text-xs text-red-500">{errors.title.message}</p>
+        )}
+      </div>
+
+      {/* Subtitle */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Subtitle
+        </Label>
+        <Input
+          {...register("subTitle")}
+          placeholder="e.g. Up to 50% off"
+          className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg"
+        />
+        {errors.subTitle && (
+          <p className="text-xs text-red-500">{errors.subTitle.message}</p>
+        )}
+      </div>
+
+      {/* Color Hex */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Text Color
+        </Label>
+        <div className="flex gap-2">
+          <Input
+            {...register("colorHex")}
+            placeholder="#ffffff"
+            className="h-9 flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus:border-blue-400 rounded-lg font-mono"
+          />
+          <input
+            type="color"
+            value={watch("colorHex") || "#ffffff"}
+            onChange={(e) => setValue("colorHex", e.target.value)}
+            className="h-9 w-12 rounded-md border border-slate-200 dark:border-slate-700 cursor-pointer"
+          />
+        </div>
+        {errors.colorHex && (
+          <p className="text-xs text-red-500">{errors.colorHex.message}</p>
+        )}
+      </div>
+
+      {/* Image Upload */}
+      <div className="space-y-2">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Banner Image
+        </Label>
+
+        <div className="flex items-center gap-4">
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="relative w-24 h-24 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700">
+              <Image
+                src={imagePreview}
+                alt="Banner preview"
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+
+          {/* Upload Button */}
+          <div className="flex-1">
+            <label className="cursor-pointer">
+              <div className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                <Upload className="h-4 w-4 text-slate-500" />
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  {imagePreview ? "Change Image" : "Upload Image"}
+                </span>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+            <p className="text-xs text-slate-500 mt-1">
+              Recommended size: 1920x600px. Max 5MB
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Description */}
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Description
+        </Label>
+        <textarea
+          {...register("description")}
+          placeholder="Detailed description of the banner offer..."
+          rows={3}
+          className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+        />
+        {errors.description && (
+          <p className="text-xs text-red-500">{errors.description.message}</p>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <Label className="text-slate-700 dark:text-slate-300 text-sm">
+          Link to Product (Optional)
+        </Label>
+
+        <Controller
+          name="productID"
+          control={control}
+          render={({ field }) => (
+            <Select value={field.value || ""} onValueChange={field.onChange}>
+              <SelectTrigger className="h-9 w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
+                <SelectValue placeholder="Select a product" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-slate-900 max-h-64">
+                <SelectItem value="none">None (No product link)</SelectItem>
+                {products.map((product: IProduct) => (
+                  <SelectItem
+                    key={product._id ?? product.name}
+                    value={product._id ?? ""}
+                  >
+                    <div className="flex items-center gap-2">
+                      {product?.images?.[0] && (
+                        <div className="relative w-6 h-6 rounded-md overflow-hidden shrink-0">
+                          <Image
+                            src={product.images[0]}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <span>{product.name}</span>
+                      <span className="text-slate-400">- ${product.price}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+
+        <p className="text-xs text-slate-500">
+          Select a product to link this banner to
+        </p>
+      </div>
+      {/* Active Status (Only for edit mode) */}
+      {mode === "edit" && (
+        <div className="flex items-center justify-between">
+          <Label className="text-slate-700 dark:text-slate-300 text-sm">
+            Active Status
+          </Label>
+          <Switch
+            checked={watch("isActive")}
+            onCheckedChange={(checked) => setValue("isActive", checked)}
+          />
+        </div>
+      )}
+
+      {/* Modal Footer */}
+      <ModalFooter
+        isLoading={isLoading}
+        mode={mode}
+        onCancel={onCancel}
+        name="Banner"
+      />
     </form>
   );
 }

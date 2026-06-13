@@ -14,10 +14,8 @@ import {
   CheckCircle2,
   ImageIcon,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
 import {
   IProduct,
   IVariant,
@@ -129,20 +127,19 @@ const ProductDetailsPage = () => {
   });
   const product = data?.data as PopulatedProduct | undefined;
 
-  console.log(product);
-
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
 
   if (isLoading) return <ProductDetailSkeleton />;
-  if (!product)
+  if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center text-slate-400">
         Product not found.
       </div>
     );
+  }
 
   const images = product.existingImages ?? [];
   const activeVariant = product.variant?.[
@@ -150,7 +147,9 @@ const ProductDetailsPage = () => {
   ] as PopulatedVariant;
 
   const stockList: IStock[] = (activeVariant?.stock ?? []) as IStock[];
-  const selectedStock = stockList.find((s) => s.size === selectedSize);
+  const fallbackSize = stockList.find((s) => s.quantity > 0)?.size ?? null;
+  const effectiveSelectedSize = selectedSize ?? fallbackSize;
+  const selectedStock = stockList.find((s) => s.size === effectiveSelectedSize);
   const inStock = stockList.some((s) => s.quantity > 0);
   const discount =
     product.price > (product.discountPrice || 0)
@@ -161,7 +160,7 @@ const ProductDetailsPage = () => {
 
   // -----------) add to cart here
   const handleAddToCart = () => {
-    if (!selectedSize) {
+    if (!effectiveSelectedSize) {
       toast.warning("Please select a size");
       return;
     }
@@ -177,7 +176,7 @@ const ProductDetailsPage = () => {
         originalPrice: product.originalPrice,
         discountPrice: product.discountPrice ?? 0,
         colorId: activeVariant.color,
-        size: selectedSize,
+        size: effectiveSelectedSize,
         quantity,
         stock: selectedStock?.quantity ?? 0,
       }),
@@ -187,7 +186,7 @@ const ProductDetailsPage = () => {
   };
 
   const handleBuyNow = () => {
-    if (!selectedSize) {
+    if (!effectiveSelectedSize) {
       toast.error("Please select a size");
       return;
     }
@@ -195,7 +194,7 @@ const ProductDetailsPage = () => {
   };
 
   return (
-    <div className="min-h-screen max-w-[1440px] mx-auto bg-white">
+    <div className="min-h-screen max-w-360 mx-auto bg-white">
       {/* Back */}
       <div className="  px-3 sm:px-6 pt-4 sm:pt-8">
         <Link
@@ -238,9 +237,9 @@ const ProductDetailsPage = () => {
                 <button
                   key={i}
                   onMouseEnter={() => setSelectedImage(i)}
-                  className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl cursor-pointer overflow-hidden border-2 transition-all ${
+                  className={`relative shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl cursor-pointer overflow-hidden border-2 transition-all ${
                     selectedImage === i
-                      ? "border-#F48721"
+                      ? "border-orange-400"
                       : "border-transparent hover:border-slate-300"
                   }`}
                 >
@@ -323,16 +322,20 @@ const ProductDetailsPage = () => {
                       onClick={() => {
                         setSelectedVariantIdx(i);
                         setSelectedImage(v.imageIndex);
-                        setSelectedSize(null);
+                        setSelectedSize(
+                          (product.variant?.[i]?.stock ?? []).find(
+                            (s) => s.quantity > 0,
+                          )?.size ?? null,
+                        );
                       }}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                      className={`flex items-center gap-2 px-3 cursor-pointer   py-2 rounded-lg border-2 transition-all ${
                         selectedVariantIdx === i
-                          ? "border-#F48721  bg-white shadow-md"
-                          : "border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-white"
+                          ? "border-orange-400 bg-white shadow-md"
+                          : "border-slate-200 hover:border-orange-400 bg-slate-50 hover:bg-white"
                       }`}
                     >
                       {/* Variant Image Thumbnail */}
-                      <div className="relative w-12 h-12 rounded-md overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-100">
+                      <div className="relative w-12 h-12 rounded-md overflow-hidden border border-slate-200 shrink-0 bg-slate-100">
                         {variantImage ? (
                           <Image
                             src={variantImage}
@@ -373,9 +376,9 @@ const ProductDetailsPage = () => {
                 <p className="text-xs sm:text-sm font-semibold text-slate-700">
                   Size
                 </p>
-                {selectedSize && (
+                {effectiveSelectedSize && (
                   <span className="text-xs text-slate-400">
-                    Selected: {selectedSize}
+                    Selected: {effectiveSelectedSize}
                   </span>
                 )}
               </div>
@@ -386,11 +389,11 @@ const ProductDetailsPage = () => {
                     onClick={() => setSelectedSize(s.size)}
                     disabled={s.quantity === 0}
                     className={`px-2 sm:px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
-                      selectedSize === s.size
-                        ? "bg-black text-white border-#F48721 "
+                      effectiveSelectedSize === s.size
+                        ? "bg-black text-white border-orange-400 "
                         : s.quantity === 0
                           ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed line-through"
-                          : "bg-white text-slate-700 border-slate-200 hover:border-#F48721 "
+                          : "bg-white text-slate-700 border-slate-200 hover:border-orange-400 "
                     }`}
                   >
                     {s.size}
@@ -419,7 +422,7 @@ const ProductDetailsPage = () => {
                 >
                   <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                 </button>
-                <span className="px-2 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold min-w-[2rem] sm:min-w-[2.5rem] text-center">
+                <span className="px-2 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold min-w-8 sm:min-w-10 text-center">
                   {quantity}
                 </span>
                 <button
@@ -433,7 +436,7 @@ const ProductDetailsPage = () => {
 
             <Button
               onClick={handleAddToCart}
-              disabled={!selectedSize || !inStock}
+              disabled={!effectiveSelectedSize || !inStock}
               className="flex-1  h-10 sm:h-12 bg-black hover:bg-slate-800 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all"
             >
               <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -445,7 +448,7 @@ const ProductDetailsPage = () => {
           {/* CTA Buttons */}
 
           <Button
-            disabled={!selectedSize || !inStock}
+            disabled={!effectiveSelectedSize || !inStock}
             variant="outline"
             onClick={handleBuyNow}
             className="w-full h-10 sm:h-12 border-black text-black hover:bg-black hover:text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all"
@@ -466,15 +469,15 @@ const ProductDetailsPage = () => {
             <Accordion title="Shipping">
               <ul className="space-y-1 text-xs sm:text-sm text-slate-600">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 shrink-0" />
                   Standard delivery: 3–5 business days
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 shrink-0" />
                   Express delivery: 1–2 business days
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 shrink-0" />
                   Free returns within 7 days
                 </li>
               </ul>
@@ -504,7 +507,7 @@ const ProductDetailsPage = () => {
         productName={product.name}
         price={discount}
         discountPrice={product.discountPrice ?? 0}
-        selectedSize={selectedSize!}
+        selectedSize={effectiveSelectedSize!}
         selectedColor={activeVariant.color}
         quantity={quantity}
       />

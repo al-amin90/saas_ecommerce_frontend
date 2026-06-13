@@ -27,3 +27,38 @@ export interface ISizeChart {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Add to existing interfaces
+export interface IBanner {
+  _id?: string;
+  title: string;
+  subTitle?: string;
+  colorHex?: string;
+  image?: string;
+  description?: string;
+  productID?:
+    | string
+    | {
+        _id: string;
+        name: string;
+        slug: string;
+        images: string[];
+        discountPrice: number;
+        price: number;
+      }
+    | null;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface IBannerFormData {
+  title: string;
+  subTitle?: string;
+  colorHex?: string;
+  image?: File | string;
+  description?: string;
+  productID?: string;
+  isActive?: boolean;
+}

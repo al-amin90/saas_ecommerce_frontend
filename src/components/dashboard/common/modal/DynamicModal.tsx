@@ -22,6 +22,7 @@ import {
   ProductVariant,
   DeliveryMethodVariant,
   SizeChartVariant,
+  BannerVariant,
 } from "./VariantModalForm";
 import {
   CategoryFormData,
@@ -29,6 +30,7 @@ import {
   ProductFormData,
   DeliveryMethodFormData,
   SizeChartFormData,
+  BannerFormData,
 } from "@/src/validation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -38,7 +40,8 @@ type Variant =
   | "color"
   | "product"
   | "deliveryMethod"
-  | "sizeChart";
+  | "sizeChart"
+  | "banner";
 
 type DynamicModalProps<
   T = Record<string, unknown>,
@@ -91,6 +94,7 @@ const defaultTitleMap: Record<Variant, Record<"create" | "edit", string>> = {
     edit: "Edit Delivery Method",
   },
   sizeChart: { create: "Create Size Chart", edit: "Edit Size Chart" },
+  banner: { create: "Create Banner", edit: "Edit Banner" },
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -150,6 +154,23 @@ const DynamicModal = <T, O, P, Q>({
           />
         );
 
+      case "banner":
+        return (
+          <BannerVariant
+            onSubmit={
+              onSubmit as (
+                data: FormData,
+                defaultValues?: Partial<BannerFormData>,
+              ) => Promise<void>
+            }
+            defaultValues={defaultValues as Partial<BannerFormData>}
+            isLoading={isLoading}
+            mode={mode}
+            onCancel={() => onOpenChange(false)}
+            open={open}
+          />
+        );
+
       case "product":
         return (
           <ProductVariant
@@ -179,7 +200,7 @@ const DynamicModal = <T, O, P, Q>({
                 defaultValues?: Partial<DeliveryMethodFormData>,
               ) => Promise<void>
             }
-            defaultValues={defaultValues}
+            defaultValues={defaultValues as Partial<DeliveryMethodFormData>}
             isLoading={isLoading}
             mode={mode}
             onCancel={() => onOpenChange(false)}

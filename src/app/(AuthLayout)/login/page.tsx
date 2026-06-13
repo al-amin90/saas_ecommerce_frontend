@@ -11,6 +11,7 @@ import { setUser } from "@/src/redux/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 import { IErrorResponse } from "@/src/interface";
 import { setToken } from "@/src/utils/auth";
+import Image from "next/image";
 
 const PRIMARY = "#1A3C34";
 const ACCENT = "#E07B1A";
@@ -86,41 +87,14 @@ export default function LoginPage() {
         />
 
         {/* Logo */}
-        <div className="flex items-center gap-4 mb-12 relative z-10">
-          <div
-            className="w-16 h-16 rounded-[14px] flex items-center justify-center flex-shrink-0"
-            style={{ background: ACCENT }}
-          >
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M3 9.5L12 3l9 6.5V21H3V9.5z"
-                stroke="#fff"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 21v-7h6v7"
-                stroke="#fff"
-                strokeWidth="2"
-                strokeLinejoin="round"
-              />
-              <circle cx="12" cy="10" r="1.5" fill="#fff" />
-            </svg>
-          </div>
-          <div>
-            <h1
-              className="font-['Syne'] font-black text-2xl text-white tracking-wide leading-tight"
-              style={{ letterSpacing: "0.06em" }}
-            >
-              GHORER
-            </h1>
-            <h1
-              className="font-['Syne'] font-black text-2xl tracking-wide leading-tight"
-              style={{ color: ACCENT, letterSpacing: "0.06em" }}
-            >
-              BAZAR
-            </h1>
-          </div>
+        <div className="flex items-center gap-4 mb-2 relative z-10">
+          <Image
+            src={"/logo.jpeg"}
+            height={64}
+            width={64}
+            alt="logo"
+            className="rounded-full"
+          />
         </div>
 
         <h2

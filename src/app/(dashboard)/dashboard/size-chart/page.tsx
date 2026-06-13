@@ -29,7 +29,7 @@ interface ISizeChart {
   chartName: string;
   brand?: string;
   region?: string;
-  targetGroup?: string;
+  targetGroup?: "kids" | "men" | "women" | "unisex";
   rows: ISizeChartRow[];
 }
 

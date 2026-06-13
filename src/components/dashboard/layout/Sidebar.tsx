@@ -33,6 +33,8 @@ import { toast } from "sonner";
 import { logoutUser } from "@/src/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/src/redux/store";
 import { Button } from "@/components/ui/button";
+import { IoSettings } from "react-icons/io5";
+import { GiTatteredBanner } from "react-icons/gi";
 
 type NavChild = {
   href: string;
@@ -79,6 +81,18 @@ const navItems: NavItem[] = [
     href: "/dashboard/size-chart",
     label: "Shoe Size Chart",
     icon: GiShoebillStork,
+  },
+  {
+    href: "/dashboard/system",
+    label: "System Managment",
+    icon: IoSettings,
+    children: [
+      {
+        href: "/dashboard/system/banner",
+        label: "Banner",
+        icon: GiTatteredBanner,
+      },
+    ],
   },
 ];
 

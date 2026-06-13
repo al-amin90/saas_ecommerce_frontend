@@ -67,6 +67,20 @@ export const sizeChartSchema = z.object({
   rows: z.array(chartRowSchema),
 });
 
+export const bannerSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  subTitle: z.string().optional(),
+  colorHex: z
+    .string()
+    .regex(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/, "Invalid hex color format")
+    .optional(),
+  description: z.string().optional(),
+  productID: z.string().optional(),
+  isActive: z.boolean().optional(),
+  image: z.any().optional(),
+});
+
+export type BannerFormData = z.infer<typeof bannerSchema>;
 export type ProductFormData = z.infer<typeof productSchema>;
 
 export type CategoryFormData = z.infer<typeof categorySchema>;
