@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, ImageIcon } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
 import { IErrorResponse } from "@/src/interface";
 import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
-import DataTable from "@/src/components/dashboard/shared/DataTable";
 import Pagination from "@/src/components/dashboard/shared/Pagination";
 import ConfirmDialog from "@/src/components/dashboard/common/modal/ConfirmDialog";
 import DynamicModal from "@/src/components/dashboard/common/modal/DynamicModal";
@@ -27,6 +25,22 @@ import {
   ISizeChart,
 } from "@/src/interface/dashboard/dashboard";
 import { useGetAllSizeChartsQuery } from "@/src/redux/features/sizeChart/sizeChart";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableProductRow } from "@/src/components/dashboard/product/SortableProductRow";
 
 export default function ProductPage() {
   const [page, setPage] = useState(1);
@@ -35,10 +49,11 @@ export default function ProductPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<IProduct | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const [isReordering, setIsReordering] = useState(false);
 
   // ── Queries ──────────────────────────────────────────────────────────────
-
-  const { data, isLoading } = useGetProductQuery({
+  const { data, isLoading, refetch } = useGetProductQuery({
     url: "/product",
     params: { page, limit },
   });
@@ -64,14 +79,65 @@ export default function ProductPage() {
   const [createProduct, { isLoading: creating }] = usePostProductMutation();
   const [updateProduct, { isLoading: updating }] = usePatchProductMutation();
   const [deleteProduct, { isLoading: deleting }] = useDeleteProductMutation();
+  const [reorderProducts, { isLoading: reordering }] = usePostProductMutation();
 
-  const products: IProduct[] = data?.data ?? [];
-  const meta = data?.meta;
+  // Update local state when data loads
+  useEffect(() => {
+    if (data?.data) {
+      setProducts(data.data);
+    }
+  }, [data]);
+
   const categories = categoryData?.data ?? [];
   const colors = colorData?.data ?? [];
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  // ── Drag & Drop Sensors ───────────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
+  // ── Handle Drag End ───────────────────────────────────────────────────────
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = products.findIndex((p) => p._id === active.id);
+      const newIndex = products.findIndex((p) => p._id === over.id);
+
+      const newProducts = arrayMove(products, oldIndex, newIndex);
+      setProducts(newProducts);
+
+      // Prepare order updates
+      const productOrders = newProducts.map((product, index) => ({
+        _id: product._id!,
+        order: index,
+      }));
+
+      setIsReordering(true);
+      try {
+        await reorderProducts({
+          url: "product/reorder",
+          data: { productOrders },
+        }).unwrap();
+        toast.success("Products reordered successfully");
+        refetch();
+      } catch (err) {
+        toast.error("Failed to reorder products");
+        refetch();
+      } finally {
+        setIsReordering(false);
+      }
+    }
+  };
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleCreate = async (form: ProductFormData) => {
     try {
       const formData = new FormData();
@@ -97,6 +163,7 @@ export default function ProductPage() {
 
       toast.success("Product added successfully");
       setCreateOpen(false);
+      refetch();
     } catch (err: unknown) {
       console.log("err", err);
       const error = err as { data?: { message?: string } };
@@ -120,7 +187,6 @@ export default function ProductPage() {
     try {
       const formData = new FormData();
 
-      // ── String fields — changed হলেই শুধু append ──
       if (form.name !== defaultValues?.name) {
         formData.append("name", form.name);
       }
@@ -153,7 +219,6 @@ export default function ProductPage() {
         formData.append("sizeChartId", String(form.sizeChartId));
       }
 
-      // ── Variant — changed হলে append ──
       const variantChanged =
         JSON.stringify(form.variant) !== JSON.stringify(defaultValues?.variant);
 
@@ -161,14 +226,12 @@ export default function ProductPage() {
         formData.append("variant", JSON.stringify(form.variant));
       }
 
-      // ── New image files ──
       if (form.images?.length) {
         form.images.forEach((image) => {
           formData.append("images", image);
         });
       }
 
-      // ── Existing images — আলাদা আলাদা append ──
       if (form.existingImages?.length) {
         form.existingImages.forEach((url) => {
           formData.append("existingImages", url);
@@ -184,6 +247,7 @@ export default function ProductPage() {
 
       toast.success("Product updated");
       setEditOpen(false);
+      refetch();
     } catch (err: unknown) {
       const error = err as { data: IErrorResponse };
       console.log("err", err);
@@ -197,128 +261,12 @@ export default function ProductPage() {
       await deleteProduct({ url: `product/${deleteId}` }).unwrap();
       toast.success("Product deleted");
       setDeleteId(null);
+      refetch();
     } catch (err: unknown) {
       const error = err as IErrorResponse;
       toast.error(error?.message ?? "Failed to delete");
     }
   };
-
-  // ── Columns ───────────────────────────────────────────────────────────────
-
-  const columns = [
-    {
-      key: "image",
-      label: "Image",
-      render: (row: IProduct) => (
-        <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
-          {row.images?.[0] ? (
-            <img
-              src={row.images[0]}
-              alt={row.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <ImageIcon className="h-4 w-4 text-slate-400" />
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "name",
-      label: "Product Name",
-      render: (row: IProduct) => (
-        <span className="font-medium text-slate-700 dark:text-slate-300">
-          {row.name}
-        </span>
-      ),
-    },
-    {
-      key: "sku",
-      label: "SKU",
-      render: (row: IProduct) => (
-        <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
-          {row.sku}
-        </span>
-      ),
-    },
-    {
-      key: "price",
-      label: "Price",
-      render: (row: IProduct) => (
-        <div className="flex flex-col">
-          <span className="font-semibold text-slate-700 dark:text-slate-300">
-            ৳{row.price}
-          </span>
-          {row.discountPrice && row.discountPrice < row.price && (
-            <span className="text-xs text-green-600 dark:text-green-400">
-              ৳{row.discountPrice} Discount
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: "variant",
-      label: "Variants",
-      render: (row: IProduct) => (
-        <span className="text-sm text-slate-500 dark:text-slate-400">
-          {row.variant?.length ?? 0} color
-          {(row.variant?.length ?? 0) !== 1 ? "s" : ""}
-        </span>
-      ),
-    },
-    {
-      key: "isActive",
-      label: "Status",
-      render: (row: IProduct) => (
-        <Badge
-          className={
-            row.isActive
-              ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400 hover:bg-green-100"
-              : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-100"
-          }
-        >
-          {row.isActive ? "Active" : "Inactive"}
-        </Badge>
-      ),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      headClassName: "text-right",
-      render: (row: IProduct) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg"
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditProduct(row);
-              setEditOpen(true);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg"
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteId(row._id || null);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
-  console.log("sizeChartData", sizeChartData);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -326,7 +274,7 @@ export default function ProductPage() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <PageHeadingTitle name="Products" meta={meta} />
+        <PageHeadingTitle name="Products" meta={data?.meta} />
         <Button
           onClick={() => setCreateOpen(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white gap-2 self-start sm:self-auto"
@@ -336,21 +284,89 @@ export default function ProductPage() {
         </Button>
       </div>
 
-      {/* Table */}
-      <DataTable
-        data={products}
-        columns={columns}
-        isLoading={isLoading || sizeChartsLoading}
-        rowKey={(r) => r._id!}
-        emptyMessage="No products found."
-      />
+      {/* Drag & Drop Table */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="overflow-x-auto">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={products.map((p) => p._id!)}
+              strategy={verticalListSortingStrategy}
+            >
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800">
+                  <tr>
+                    <th className="w-12 px-4 py-3"></th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Image
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Variants
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading || sizeChartsLoading ? (
+                    <tr>
+                      <td colSpan={8} className="text-center py-12">
+                        <div className="flex justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : products.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="text-center py-12">
+                        <p className="text-gray-500 dark:text-gray-400">
+                          No products found. Click "Add Product" to create one.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    products.map((product) => (
+                      <SortableProductRow
+                        key={product._id}
+                        product={product}
+                        isReordering={isReordering || reordering}
+                        onEdit={() => {
+                          setEditProduct(product);
+                          setEditOpen(true);
+                        }}
+                        onDelete={() => setDeleteId(product._id || null)}
+                      />
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </SortableContext>
+          </DndContext>
+        </div>
+      </div>
 
       {/* Pagination */}
-      {meta && meta.totalPage >= 1 && (
+      {data?.meta && data.meta.totalPage >= 1 && (
         <Pagination
           page={page}
-          totalPage={meta.totalPage}
-          total={meta.total}
+          totalPage={data.meta.totalPage}
+          total={data.meta.total}
           limit={limit}
           onPageChange={setPage}
           onLimitChange={(newLimit) => {
