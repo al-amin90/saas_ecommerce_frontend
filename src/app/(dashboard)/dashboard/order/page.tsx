@@ -2,21 +2,10 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { Eye, Search, ArrowUpDown } from "lucide-react";
+import { Eye, Search, ArrowUpDown, RefreshCw, LayoutList } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-
 import { Checkbox } from "@/components/ui/checkbox";
-
-import {
-  Clock,
-  Package,
-  Truck,
-  CheckCircle2,
-  XCircle,
-  LayoutList,
-} from "lucide-react";
-
 import {
   Dialog,
   DialogContent,
@@ -39,6 +28,16 @@ import {
 import DataTable from "@/src/components/dashboard/shared/DataTable";
 import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
 import Pagination from "@/src/components/dashboard/shared/Pagination";
+import {
+  ORDER_STATUS_CONFIG,
+  PAYMENT_STATUS_CONFIG,
+  ORDER_STATUS_BADGE,
+  PAYMENT_STATUS_BADGE,
+  ORDER_STATUSES_LIST,
+  PAYMENT_STATUSES_LIST,
+  OrderStatus,
+  PaymentStatus,
+} from "@/src/constants/order.constants";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -74,8 +73,8 @@ export interface IOrderRow {
   };
   userId: { name: string; email: string } | null;
   items: IOrderItem[];
-  orderStatus: keyof typeof ORDER_STATUS_BADGE;
-  paymentStatus: keyof typeof PAYMENT_STATUS_BADGE;
+  orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus;
   paymentMethod: string;
   totalPrice: number;
   createdAt: string;
@@ -92,90 +91,9 @@ interface IMeta {
   shipped: number;
   delivered: number;
   cancelled: number;
+  returned: number;
+  delivery_failed: number;
 }
-
-// ── Config ────────────────────────────────────────────────────────────────────
-
-// ORDER_STATUSES config update করো — icon যোগ করো
-const ORDER_STATUSES = [
-  {
-    key: "pending",
-    label: "Pending",
-    icon: Clock,
-    dot: "bg-yellow-400",
-    bar: "bg-yellow-500",
-    text: "text-yellow-700",
-    activeBg: "bg-yellow-500",
-    activeText: "text-white",
-  },
-  {
-    key: "processing",
-    label: "Processing",
-    icon: Package,
-    dot: "bg-blue-400",
-    bar: "bg-blue-500",
-    text: "text-blue-700",
-    activeBg: "bg-blue-600",
-    activeText: "text-white",
-  },
-  {
-    key: "shipped",
-    label: "Shipped",
-    icon: Truck,
-    dot: "bg-purple-400",
-    bar: "bg-purple-500",
-    text: "text-purple-700",
-    activeBg: "bg-purple-600",
-    activeText: "text-white",
-  },
-  {
-    key: "delivered",
-    label: "Delivered",
-    icon: CheckCircle2,
-    dot: "bg-emerald-400",
-    bar: "bg-emerald-500",
-    text: "text-emerald-700",
-    activeBg: "bg-emerald-600",
-    activeText: "text-white",
-  },
-  {
-    key: "cancelled",
-    label: "Cancelled",
-    icon: XCircle,
-    dot: "bg-red-400",
-    bar: "bg-red-500",
-    text: "text-red-700",
-    activeBg: "bg-red-500",
-    activeText: "text-white",
-  },
-];
-
-const ORDER_STATUS_BADGE: Record<string, string> = {
-  pending:
-    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
-  processing:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
-  shipped:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400",
-  delivered:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
-  cancelled: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
-};
-
-const PAYMENT_STATUS_BADGE: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  completed: "bg-emerald-100 text-emerald-700",
-  failed: "bg-red-100 text-red-700",
-};
-
-const ORDER_STATUSES_LIST = [
-  "pending",
-  "processing",
-  "shipped",
-  "delivered",
-  "cancelled",
-];
-const PAYMENT_STATUSES_LIST = ["pending", "completed", "failed"];
 
 // ── Order Detail Modal ────────────────────────────────────────────────────────
 
@@ -191,8 +109,8 @@ function OrderDetailModal({
   onOpenChange: (v: boolean) => void;
   onStatusUpdate: (
     orderId: string,
-    orderStatus?: string,
-    paymentStatus?: string,
+    orderStatus?: OrderStatus,
+    paymentStatus?: PaymentStatus,
   ) => void;
   isUpdating: boolean;
 }) {
@@ -297,7 +215,9 @@ function OrderDetailModal({
               </p>
               <Select
                 defaultValue={order.orderStatus}
-                onValueChange={(v) => onStatusUpdate(order._id, v, undefined)}
+                onValueChange={(v) =>
+                  onStatusUpdate(order._id, v as OrderStatus, undefined)
+                }
                 disabled={isUpdating}
               >
                 <SelectTrigger className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
@@ -310,7 +230,7 @@ function OrderDetailModal({
                       value={s}
                       className="capitalize text-sm"
                     >
-                      {s}
+                      {ORDER_STATUS_CONFIG[s]?.label || s}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -323,7 +243,9 @@ function OrderDetailModal({
               </p>
               <Select
                 defaultValue={order.paymentStatus}
-                onValueChange={(v) => onStatusUpdate(order._id, undefined, v)}
+                onValueChange={(v) =>
+                  onStatusUpdate(order._id, undefined, v as PaymentStatus)
+                }
                 disabled={isUpdating}
               >
                 <SelectTrigger className="h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm">
@@ -336,7 +258,7 @@ function OrderDetailModal({
                       value={s}
                       className="capitalize text-sm"
                     >
-                      {s}
+                      {PAYMENT_STATUS_CONFIG[s]?.label || s}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -353,8 +275,8 @@ function OrderDetailModal({
 
 export default function OrdersPage() {
   const [page, setPage] = useState(1);
-  const [orderStatus, setOrderStatus] = useState("pending");
-  const [paymentStatus, setPaymentStatus] = useState("all");
+  const [orderStatus, setOrderStatus] = useState<string>("all");
+  const [paymentStatus, setPaymentStatus] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<IOrderRow | null>(null);
@@ -368,8 +290,8 @@ export default function OrdersPage() {
   const { data, isLoading } = useGetAllOrdersQuery({
     page,
     limit,
-    orderStatus,
-    paymentStatus,
+    orderStatus: orderStatus === "all" ? undefined : orderStatus,
+    paymentStatus: paymentStatus === "all" ? undefined : paymentStatus,
     sortBy: "createdAt",
     sortOrder,
   });
@@ -403,8 +325,8 @@ export default function OrdersPage() {
 
   const handleStatusUpdate = async (
     orderId: string,
-    newOrderStatus?: string,
-    newPaymentStatus?: string,
+    newOrderStatus?: OrderStatus,
+    newPaymentStatus?: PaymentStatus,
   ) => {
     try {
       await updateOrderStatus({
@@ -455,10 +377,28 @@ export default function OrdersPage() {
       setSelectedOrderIds(new Set());
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
-
       toast.error(error?.data?.message ?? "Failed to submit orders");
     }
   };
+
+  // ── Get status configs ────────────────────────────────────────────────────
+  const orderStatusConfigs = Object.entries(ORDER_STATUS_CONFIG).map(
+    ([key, config]) => ({
+      key,
+      ...config,
+    }),
+  );
+
+  const orderStatusList = orderStatusConfigs.map((s) => ({
+    key: s.key,
+    label: s.label,
+    icon: s.icon,
+    dot: s.dot,
+    bar: s.bar,
+    text: s.text,
+    activeBg: s.activeBg,
+    activeText: s.activeText,
+  }));
 
   // ── Columns ───────────────────────────────────────────────────────────────
   const columns = [
@@ -533,7 +473,6 @@ export default function OrdersPage() {
         <div className="flex flex-col gap-2 min-w-[260px] max-w-[320px]">
           {row.items.map((item, i) => (
             <div key={item._id ?? i} className="flex items-center gap-2">
-              {/* Product image */}
               <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200 dark:border-slate-700">
                 {item.productId?.images?.[0] ? (
                   <Image
@@ -548,14 +487,11 @@ export default function OrdersPage() {
                   </div>
                 )}
               </div>
-
-              {/* Product info */}
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
                   {item.productId?.name ?? "—"}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  {/* Color swatch */}
                   {item.colorId?.color && (
                     <span className="flex items-center gap-1 text-xs text-slate-400">
                       <span
@@ -565,13 +501,11 @@ export default function OrdersPage() {
                       {item.colorId.name}
                     </span>
                   )}
-                  {/* Size */}
                   {item.selectedSize && (
                     <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded font-mono">
                       {item.selectedSize}
                     </span>
                   )}
-                  {/* Qty × price */}
                   <span className="text-xs text-slate-400">
                     ×{item.quantity}
                   </span>
@@ -607,12 +541,13 @@ export default function OrdersPage() {
           <span
             className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize w-fit ${ORDER_STATUS_BADGE[row.orderStatus]}`}
           >
-            {row.orderStatus}
+            {ORDER_STATUS_CONFIG[row.orderStatus]?.label || row.orderStatus}
           </span>
           <span
             className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize w-fit ${PAYMENT_STATUS_BADGE[row.paymentStatus]}`}
           >
-            {row.paymentStatus}
+            {PAYMENT_STATUS_CONFIG[row.paymentStatus]?.label ||
+              row.paymentStatus}
           </span>
         </div>
       ),
@@ -686,14 +621,33 @@ export default function OrdersPage() {
       )}
 
       {/* ── Status Tab Navigation ── */}
-      {/* ── Status Navigation ── */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-1.5 flex gap-1 flex-wrap">
-        {ORDER_STATUSES.map((s) => {
+        {/* All statuses tab */}
+        <button
+          onClick={() => handleStatusFilter("all")}
+          className={`relative flex items-center cursor-pointer gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 flex-1 min-w-fit justify-center sm:justify-start ${
+            orderStatus === "all"
+              ? "bg-slate-800 text-white shadow-md shadow-black/10 scale-[1.02]"
+              : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+          }`}
+        >
+          <LayoutList className="h-3.5 w-3.5 flex-shrink-0" />
+          <span className="hidden sm:block whitespace-nowrap">All</span>
+          <span
+            className={`ml-auto flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-black flex items-center justify-center transition-all ${
+              orderStatus === "all"
+                ? "bg-white/25 text-white"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+            }`}
+          >
+            {meta?.total ?? 0}
+          </span>
+        </button>
+
+        {/* Individual status tabs */}
+        {orderStatusList.map((s) => {
           const Icon = s.icon;
-          const count =
-            s.key === "all"
-              ? meta?.total
-              : (meta?.[s.key as keyof IMeta] as number | undefined);
+          const count = meta?.[s.key as keyof IMeta] as number | undefined;
           const isActive = orderStatus === s.key;
 
           return (
@@ -706,19 +660,12 @@ export default function OrdersPage() {
                   : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
-              {/* Icon */}
               <Icon
-                className={`h-3.5 w-3.5 flex-shrink-0 ${
-                  isActive ? s.activeText : s.text
-                }`}
+                className={`h-3.5 w-3.5 flex-shrink-0 ${isActive ? s.activeText : s.text}`}
               />
-
-              {/* Label */}
               <span className="hidden sm:block capitalize whitespace-nowrap">
                 {s.label}
               </span>
-
-              {/* Count badge */}
               <span
                 className={`ml-auto flex-shrink-0 min-w-[20px] h-5 px-1.5 rounded-full text-xs font-black flex items-center justify-center transition-all ${
                   isActive
@@ -728,8 +675,6 @@ export default function OrdersPage() {
               >
                 {count ?? 0}
               </span>
-
-              {/* Active bottom bar */}
               {isActive && (
                 <span
                   className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 ${s.bar} rounded-full`}
@@ -768,7 +713,7 @@ export default function OrdersPage() {
           <option value="all">All Payment</option>
           {PAYMENT_STATUSES_LIST.map((s) => (
             <option key={s} value={s} className="capitalize">
-              {s.charAt(0).toUpperCase() + s.slice(1)}
+              {PAYMENT_STATUS_CONFIG[s]?.label || s}
             </option>
           ))}
         </select>

@@ -5,7 +5,7 @@ export interface IStock {
 }
 
 export interface IVariant {
-  color: string; // color _id
+  color: string | { _id?: string; name?: string; color?: string };
   stock: IStock[];
   _id?: string;
 }
@@ -15,9 +15,9 @@ export interface IProduct {
   name: string;
   slug?: string;
   price: number;
-  discountPrice: number;
-  originalPrice: number;
-  categoryID: string;
+  discountPrice?: number;
+  originalPrice?: number;
+  categoryID: string | { _id?: string; name?: string };
   variant: IVariant[];
   images?: string[];
   existingImages?: string[];

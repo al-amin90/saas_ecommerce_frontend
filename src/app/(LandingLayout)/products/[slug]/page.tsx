@@ -151,12 +151,15 @@ const ProductDetailsPage = () => {
   const effectiveSelectedSize = selectedSize ?? fallbackSize;
   const selectedStock = stockList.find((s) => s.size === effectiveSelectedSize);
   const inStock = stockList.some((s) => s.quantity > 0);
-  const discount =
-    product.price > (product.discountPrice || 0)
-      ? Math.round(product.price - (product.discountPrice || 0))
-      : product.price;
+  const hasDiscount =
+    typeof product.discountPrice === "number" && product.discountPrice > 0;
+  const discount = hasDiscount
+    ? Math.round(product.price - (product.discountPrice ?? 0))
+    : product.price;
   const categoryName =
-    typeof product.categoryID === "object" ? product.categoryID.name : "";
+    typeof product.categoryID === "object"
+      ? (product.categoryID.name ?? "")
+      : "";
 
   // -----------) add to cart here
   const handleAddToCart = () => {
@@ -173,7 +176,7 @@ const ProductDetailsPage = () => {
         productName: product.name,
         productImage: product.existingImages?.[0] ?? "",
         price: product.price,
-        originalPrice: product.originalPrice,
+        originalPrice: product.originalPrice ?? product.price,
         discountPrice: product.discountPrice ?? 0,
         colorId: activeVariant.color,
         size: effectiveSelectedSize,
@@ -298,7 +301,7 @@ const ProductDetailsPage = () => {
             <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
               Tk {discount.toLocaleString()}
             </span>
-            {product?.discountPrice > 0 && (
+            {hasDiscount && (
               <span className="text-sm sm:text-base text-slate-400 line-through">
                 Tk {product.price.toLocaleString()}
               </span>

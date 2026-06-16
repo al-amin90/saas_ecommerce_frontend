@@ -19,10 +19,11 @@ export default function ProductCard({ product }: { product: IProduct }) {
   const [hovered, setHovered] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const discount =
-    product.price > (product.discountPrice || 0)
-      ? Math.round(product.price - (product.discountPrice || 0))
-      : product.price;
+  const hasDiscount =
+    typeof product.discountPrice === "number" && product.discountPrice > 0;
+  const discount = hasDiscount
+    ? Math.round(product.price - (product.discountPrice ?? 0))
+    : product.price;
 
   console.log(product);
 
@@ -116,7 +117,7 @@ export default function ProductCard({ product }: { product: IProduct }) {
             >
               ৳{discount}
             </span>
-            {product?.discountPrice > 0 && (
+            {hasDiscount && (
               <>
                 <span className="text-xs sm:text-sm text-gray-400 line-through">
                   ৳{product.price.toLocaleString()}

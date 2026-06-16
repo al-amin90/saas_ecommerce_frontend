@@ -89,9 +89,9 @@ export function SortableProductRow({
       {/* Category */}
       <td className="px-4 py-3">
         <span className="text-sm text-gray-600 dark:text-gray-400">
-          {typeof product.categoryID === "object" && product.categoryID?.name
-            ? product.categoryID.name
-            : "—"}
+          {typeof product.categoryID === "object"
+            ? (product.categoryID?.name ?? "—")
+            : product.categoryID || "—"}
         </span>
       </td>
 
@@ -122,14 +122,25 @@ export function SortableProductRow({
         </span>
         {product.variant && product.variant.length > 0 && (
           <div className="flex items-center gap-1 mt-1">
-            {product.variant.slice(0, 4).map((v, idx) => (
-              <span
-                key={idx}
-                className="w-4 h-4 rounded-full border border-gray-200 dark:border-gray-700"
-                style={{ backgroundColor: v.color?.color || "#ccc" }}
-                title={v.color?.name || "Color"}
-              />
-            ))}
+            {product.variant.slice(0, 4).map((v, idx) => {
+              const colorValue =
+                typeof v.color === "object"
+                  ? (v.color.color ?? "#ccc")
+                  : v.color || "#ccc";
+              const colorName =
+                typeof v.color === "object"
+                  ? (v.color.name ?? "Color")
+                  : "Color";
+
+              return (
+                <span
+                  key={idx}
+                  className="w-4 h-4 rounded-full border border-gray-200 dark:border-gray-700"
+                  style={{ backgroundColor: colorValue }}
+                  title={colorName}
+                />
+              );
+            })}
             {product.variant.length > 4 && (
               <span className="text-xs text-gray-400">
                 +{product.variant.length - 4}
