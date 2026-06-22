@@ -600,6 +600,7 @@ export function VariantBlock({
                 })}
                 type="number"
                 placeholder="Size"
+                step="0.1"
                 className="h-8 text-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg"
               />
               {errors.variant?.[vIdx]?.stock?.[sIdx]?.size && (

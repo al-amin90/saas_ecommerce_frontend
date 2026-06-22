@@ -366,7 +366,7 @@ export default function ImageSlider() {
             src={slide.image}
             alt={slide.title}
             fill
-            className="w-full h-full object-fill"
+            className="w-full h-full object-cover"
             style={{
               transform: "scale(1.04)",
               transition: "transform 8s ease-out",
@@ -382,7 +382,7 @@ export default function ImageSlider() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
         style={{
-          background: `linear-gradient(90deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.3) 55%, transparent 100%)`,
+          background: `linear-gradient(90deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,.3) 10%, transparent 100%)`,
         }}
       />
 
