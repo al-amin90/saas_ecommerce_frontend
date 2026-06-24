@@ -348,10 +348,7 @@ export default function ImageSlider() {
   const prevSlide = prev !== null ? displaySlides[prev] : null;
 
   return (
-    <div
-      className="relative w-full overflow-hidden bg-black select-none group"
-      style={{ height: "88vh", minHeight: 480, maxHeight: 800 }}
-    >
+    <div className="relative w-full h-auto lg:h-[84vh] overflow-hidden bg-black select-none group">
       {/* ── Slides ─────────────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -360,13 +357,14 @@ export default function ImageSlider() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.7, ease: "easeInOut" }}
-          className="absolute inset-0"
+          className="relative w-full aspect-[16/9] lg:aspect-auto lg:absolute lg:inset-0"
         >
           <Image
             src={slide.image}
             alt={slide.title}
             fill
-            className="w-full h-full object-cover"
+            className="object-fill"
+            priority
             style={{
               transform: "scale(1.04)",
               transition: "transform 8s ease-out",
@@ -376,7 +374,7 @@ export default function ImageSlider() {
       </AnimatePresence>
 
       {/* Animated Gradient Overlay */}
-      <motion.div
+      {/* <motion.div
         className="absolute inset-0 pointer-events-none z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -394,15 +392,15 @@ export default function ImageSlider() {
         style={{
           background: `linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 50%)`,
         }}
-      />
+      /> */}
 
       {/* Particle Effect */}
       <ParticleEffect isActive={!isAnimating} accent={slide.accent} />
+      <ParticleEffect isActive={!isAnimating} accent={slide.accent} />
 
       {/* ── Content ─────────────────────────────────────────────────── */}
-      <div className="relative z-20 flex flex-col justify-center h-full mx-8 md:mx-16 lg:mx-24">
+      {/* <div className="relative z-20 flex flex-col justify-center h-full mx-8 md:mx-16 lg:mx-24">
         <div className="max-w-xl">
-          {/* Tag with icon */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -419,14 +417,12 @@ export default function ImageSlider() {
             {slide.subtitle}
           </motion.div>
 
-          {/* Title with glow effect */}
           <GlowingText
             text={slide.title}
             accent={slide.accent}
             className="text-white font-black text-[clamp(2.8rem,6vw,5.5rem)] tracking-[-0.03em] whitespace-pre-line leading-none mb-4"
           />
 
-          {/* Description if available */}
           {slide.description && (
             <motion.p
               initial={{ opacity: 0, y: 30 }}
@@ -439,7 +435,6 @@ export default function ImageSlider() {
             </motion.p>
           )}
 
-          {/* CTA Button with hover effects */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -488,14 +483,14 @@ export default function ImageSlider() {
             )}
           </motion.div>
         </div>
-      </div>
+      </div> */}
 
       {/* ── Slide counter with animation ───────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3 }}
-        className="absolute bottom-8 left-8 md:left-16 lg:left-24 z-20 flex items-end gap-4"
+        className="absolute hidden bottom-8 left-8 md:left-16 lg:left-24 z-20 lg:flex items-end gap-4"
       >
         <motion.span
           key={active}
@@ -515,7 +510,7 @@ export default function ImageSlider() {
       </motion.div>
 
       {/* ── Thumbnail strip with hover effects ─────────────────────────── */}
-      <div className="absolute bottom-8 right-8 md:right-16 z-20 flex gap-3">
+      <div className="hidden lg:flex absolute bottom-8 right-8 md:right-16 z-20  gap-3">
         {displaySlides.map((s, i) => (
           <motion.button
             key={s.id}
@@ -524,7 +519,7 @@ export default function ImageSlider() {
             }
             onMouseEnter={() => setHoveredThumb(i)}
             onMouseLeave={() => setHoveredThumb(null)}
-            className="relative overflow-hidden rounded-lg transition-all duration-300"
+            className="relative w-full h-full overflow-hidden rounded-lg transition-all duration-300"
             whileHover={{ scale: 1.1 }}
             style={{
               width: i === active ? 80 : 56,
@@ -537,7 +532,12 @@ export default function ImageSlider() {
               opacity: i === active ? 1 : 0.5,
             }}
           >
-            <img src={s.image} alt="" className="w-full h-full object-cover" />
+            <Image
+              src={s.image}
+              alt=""
+              fill
+              className="w-full h-full object-cover"
+            />
 
             {/* Hover overlay */}
             {hoveredThumb === i && i !== active && (
@@ -618,7 +618,7 @@ export default function ImageSlider() {
       </motion.button>
 
       {/* Floating elements for extra coolness */}
-      <motion.div
+      {/* <motion.div
         className="absolute top-20 right-20 z-10 opacity-20 pointer-events-none"
         animate={{
           rotate: 360,
@@ -630,7 +630,7 @@ export default function ImageSlider() {
         }}
       >
         <Clock className="w-24 h-24 text-white" />
-      </motion.div>
+      </motion.div> */}
     </div>
   );
 }

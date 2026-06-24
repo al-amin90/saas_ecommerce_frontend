@@ -70,17 +70,17 @@ export default function ShopSection() {
   }, [hasMore, isFetching]);
 
   return (
-    <section id="shop" className="py-20 md:pb-32 bg-[#FAFAF8]">
+    <section id="shop" className="py-12  md:py-20 md:pb-32 bg-[#FAFAF8]">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-5">
         {/* Header */}
         <div className="text-center mb-12">
           <p
-            className="font-['DM_Sans'] text-sm font-semibold tracking-[0.25em] uppercase mb-3"
+            className="font-['DM_Sans'] text-sm font-semibold tracking-[0.25em] uppercase mb-1 lg:mb-3"
             style={{ color: "#C8A97E" }}
           >
             Our Collection
           </p>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+          <h2 className="text-2xl hidden lg:block sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-1 lg:mb-4">
             Shop All Shoes
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-base sm:text-lg font-['DM_Sans']">
@@ -89,8 +89,8 @@ export default function ShopSection() {
         </div>
 
         {/* Filter and Sort Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-8">
-          {/* Filter Button */}
+        {/* <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-8">
+       
           <Button
             variant="outline"
             size="lg"
@@ -101,7 +101,6 @@ export default function ShopSection() {
             <span>Filters</span>
           </Button>
 
-          {/* Sort Dropdown */}
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 rounded-lg text-sm sm:text-base font-['DM_Sans'] focus:ring-2 focus:ring-[#C8A97E]">
               <SelectValue placeholder="Sort by" />
@@ -115,7 +114,6 @@ export default function ShopSection() {
             </SelectContent>
           </Select>
 
-          {/* Active Filters Count */}
           {(selectedBrands.length > 0 ||
             priceRange[0] > 0 ||
             priceRange[1] < 10000) && (
@@ -126,7 +124,7 @@ export default function ShopSection() {
               </span>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Products Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 lg:gap-4 mb-12">

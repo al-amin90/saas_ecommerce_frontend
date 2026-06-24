@@ -161,7 +161,7 @@ function DateRangeSelector({
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const [dateRange, setDateRange] = useState("lifetime");
+  const [dateRange, setDateRange] = useState("today");
 
   const { data, isLoading, refetch } = useGetOrderStatsQuery(dateRange);
   const stats = data?.data as IDashboardStats | undefined;
