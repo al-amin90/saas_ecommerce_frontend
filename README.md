@@ -1,80 +1,114 @@
-# SoleCraft — Premium Shoe Website
+# SaaS Ecommerce Frontend
 
-A full-featured shoe e-commerce website built with Next.js and Material UI.
+A modern, multi-tenant e-commerce frontend built with Next.js and TypeScript. This project provides a polished shopping experience for customers and an admin dashboard for managing products, orders, banners, delivery methods, and system settings.
 
-## 🚀 Quick Start
+## 🚀 Overview
 
-```bash
-# Install dependencies
-npm install
+This frontend is designed to work with a SaaS-style backend and supports:
 
-# Run development server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 📁 Project Structure
-
-```
-shoe-website/
-├── pages/
-│   ├── _app.js          # Theme provider, fonts
-│   └── index.js         # Home page
-├── src/
-│   ├── components/
-│   │   ├── Navbar.js        # Sticky navbar with search, cart, wishlist
-│   │   ├── HeroSlider.js    # Full-screen hero carousel (Swiper.js)
-│   │   ├── FeaturesBar.js   # Delivery/Returns/Warranty/Support bar
-│   │   ├── CategoryBanners.js  # Men's/Women's/Running/Boots grid
-│   │   ├── ProductCard.js   # Product card with hover animations
-│   │   ├── ShopSection.js   # Full shop with filters, categories, sort
-│   │   ├── BrandsSection.js # Infinite scrolling brand marquee
-│   │   ├── Testimonials.js  # Customer reviews grid
-│   │   ├── Newsletter.js    # Email subscription
-│   │   └── Footer.js        # Full footer with links, payment methods
-│   ├── data/
-│   │   └── products.js   # Product data (8 products)
-│   └── theme/
-│       └── theme.js      # MUI theme (Syne + DM Sans fonts)
-├── styles/
-│   └── globals.css       # Global styles, scrollbar, animations
-├── next.config.js
-└── package.json
-```
-
-## 🎨 Design System
-
-- **Fonts**: Syne (headings, bold) + DM Sans (body text)
-- **Colors**:
-  - Primary: `#1A1A1A` (near black)
-  - Accent: `#C8A97E` (warm gold)
-  - Background: `#FAFAF8` (warm white)
-- **Style**: Clean, editorial luxury — inspired by premium international shoe stores
+- Customer-facing storefront and product browsing
+- Shopping cart and order placement flow
+- User authentication and account access
+- Admin dashboard for managing business operations
+- Responsive UI for desktop and mobile devices
 
 ## ✨ Features
 
-- 📱 Fully responsive (mobile, tablet, desktop)
-- 🎠 Auto-play hero carousel (Swiper.js)
-- 🔍 Search with expand/collapse animation
-- 🎯 Category filtering tabs
-- 🏷️ Price range slider + brand checkboxes filter drawer
-- 💛 Add to wishlist (per product)
-- 🛒 Add to bag with success feedback
-- 🔤 Infinite brand marquee scroll
-- 📧 Newsletter subscription
-- 🌙 Polished hover animations throughout
+- Responsive landing page and product catalog
+- Product details, cart, and order success experience
+- Order tracking and order management interfaces
+- Dashboard pages for products, categories, colors, sizes, delivery methods, and banners
+- Dynamic admin forms and reusable UI components
+- State management with Redux Toolkit and persistence
+- Modern animations and toast notifications
 
-## 📦 Dependencies
+## 🛠️ Technology Stack
 
-- `next` 14
-- `@mui/material` + `@mui/icons-material`
-- `@emotion/react` + `@emotion/styled`
-- `swiper` 11 (hero carousel)
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Redux Toolkit
+- RTK Query / Redux Persist
+- shadcn/ui component system
+- Framer Motion for UI animation
+- Recharts for analytics and charts
+- React Hook Form + Zod validation
+- Sonner for notifications
+- Swiper for sliders
 
-## 🛠️ Customization
+## 📁 Project Structure
 
-1. **Products**: Edit `src/data/products.js` to add/edit products
-2. **Colors**: Edit `src/theme/theme.js` palette
-3. **Hero slides**: Edit `heroSlides` in `src/data/products.js`
-4. **Currency**: Search `৳` to change from BDT to your currency
+```bash
+src/
+├── app/                 # App routes and layouts
+├── components/          # Reusable UI and feature components
+├── constants/           # App constants
+├── data/                # Static data
+├── interface/           # TypeScript interfaces
+├── lib/                 # Utility helpers
+├── provider/            # Global providers
+├── redux/               # Redux store, slices, and API setup
+├── utils/               # Shared utilities
+└── validation/          # Form validation schemas
+```
+
+## ⚙️ Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+```bash
+npm install
+```
+
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000 to view the app.
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+### Start Production Server
+
+```bash
+npm run start
+```
+
+## 🧪 Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build the project
+npm run start    # Start production build
+npm run lint     # Run ESLint
+```
+
+## 🌐 Environment Variables
+
+Create a `.env.local` file and configure values such as:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+## 🔗 Backend Integration
+
+This frontend is built to work with a SaaS ecommerce backend that provides authentication, products, orders, banners, delivery methods, and tenant-aware APIs.
+
+## 📌 Notes
+
+- The UI is built with a reusable component system for faster scaling.
+- The app is structured for SaaS-style product expansion and multi-module administration.
+- You can extend the dashboard and storefront as your business grows.

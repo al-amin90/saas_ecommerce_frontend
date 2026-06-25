@@ -210,7 +210,7 @@ export default function BannerPage() {
                       Title
                     </th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Text Color
+                      Bubble Color
                     </th>
                     <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Product

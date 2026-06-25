@@ -835,7 +835,7 @@ export function ProductVariant({
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label className="text-slate-700 dark:text-slate-300 text-sm">
-            Price
+            Selling Price
           </Label>
           <Input
             {...register("price", { valueAsNumber: true })}
@@ -849,7 +849,7 @@ export function ProductVariant({
         </div>
         <div className="space-y-1">
           <Label className="text-slate-700 dark:text-slate-300 text-sm">
-            Original Price
+            Cost Price
           </Label>
           <Input
             {...register("originalPrice", { valueAsNumber: true })}
