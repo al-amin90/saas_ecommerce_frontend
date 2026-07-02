@@ -75,7 +75,7 @@ export default function ShopSection() {
         {/* Header */}
         <div className="text-center mb-12">
           <p
-            className="font-['DM_Sans'] text-sm font-semibold tracking-[0.25em] uppercase mb-1 lg:mb-3"
+            className="font-['DM_Sans'] text-md font-semibold tracking-[0.25em] uppercase mb-1 lg:mb-3"
             style={{ color: "#C8A97E" }}
           >
             Our Collection
@@ -84,7 +84,8 @@ export default function ShopSection() {
             Shop All Shoes
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto text-base sm:text-lg font-['DM_Sans']">
-            Premium footwear for every occasion, style, and stride.
+            ❤️ Committed to safe, quality products for your child ❤️ <br />{" "}
+            Shoes | Clothes | Toys
           </p>
         </div>
 

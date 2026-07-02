@@ -222,6 +222,14 @@ export default function ImageSlider() {
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const DURATION = 6000; // 6 seconds per slide
 
+  // ── Drag/Swipe state ──────────────────────────────────────────────────
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [draggedDistance, setDraggedDistance] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const sliderRef = useRef<HTMLDivElement>(null);
+
   // Fetch banners from API
   const { data, isLoading, error } = useGetDynamicQuery({
     url: "/banner/active",
@@ -255,6 +263,17 @@ export default function ImageSlider() {
       image:
         "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=1200&q=85",
     },
+    {
+      id: "3",
+      tag: "Classic Collection",
+      title: "Timeless\nElegance",
+      subtitle: "Where tradition meets modern comfort.",
+      cta: "Discover More",
+      accent: "#F06292",
+      description: "Handcrafted for the discerning few",
+      image:
+        "https://images.unsplash.com/photo-1539185441755-769473a23570?w=1200&q=85",
+    },
   ];
 
   const displaySlides = slides.length > 0 ? slides : fallbackSlides;
@@ -275,6 +294,159 @@ export default function ImageSlider() {
   const next = () => goTo((active + 1) % displaySlides.length, "right");
   const back = () =>
     goTo((active - 1 + displaySlides.length) % displaySlides.length, "left");
+
+  // ── Mouse Drag Handlers ──────────────────────────────────────────────
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.clientX);
+    setStartY(e.clientY);
+    setDraggedDistance(0);
+    setIsSwiping(false);
+    sliderRef.current?.style.setProperty("cursor", "grabbing");
+
+    // Pause autoplay while dragging
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    if (progressRef.current) clearInterval(progressRef.current);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+
+    const currentX = e.clientX;
+    const diff = startX - currentX;
+    setDraggedDistance(diff);
+
+    // Check if it's a horizontal swipe (not vertical)
+    const currentY = e.clientY;
+    const yDiff = Math.abs(startY - currentY);
+    if (Math.abs(diff) > yDiff && Math.abs(diff) > 10) {
+      setIsSwiping(true);
+    }
+
+    // Visual feedback for drag
+    if (sliderRef.current && isSwiping) {
+      const dragPercent = (diff / window.innerWidth) * 100;
+      sliderRef.current.style.setProperty("--drag-offset", `${dragPercent}px`);
+    }
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    sliderRef.current?.style.setProperty("cursor", "default");
+
+    const threshold = 50; // Minimum pixels to trigger slide change
+    const diff = startX - e.clientX;
+
+    // Reset drag offset
+    if (sliderRef.current) {
+      sliderRef.current.style.setProperty("--drag-offset", "0px");
+    }
+
+    if (isSwiping && Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        // Swipe left -> next slide
+        handleNav(next);
+      } else {
+        // Swipe right -> previous slide
+        handleNav(back);
+      }
+    } else {
+      // Reset autoplay if no slide change
+      resetAutoplay();
+    }
+
+    setDraggedDistance(0);
+    setIsSwiping(false);
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      sliderRef.current?.style.setProperty("cursor", "default");
+      if (sliderRef.current) {
+        sliderRef.current.style.setProperty("--drag-offset", "0px");
+      }
+      resetAutoplay();
+      setDraggedDistance(0);
+      setIsSwiping(false);
+    }
+  };
+
+  // ── Touch Handlers for Mobile ────────────────────────────────────────
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setIsDragging(true);
+    setStartX(touch.clientX);
+    setStartY(touch.clientY);
+    setDraggedDistance(0);
+    setIsSwiping(false);
+
+    // Pause autoplay while touching
+    if (autoplayRef.current) clearInterval(autoplayRef.current);
+    if (progressRef.current) clearInterval(progressRef.current);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !e.touches[0]) return;
+
+    const touch = e.touches[0];
+    const currentX = touch.clientX;
+    const diff = startX - currentX;
+    setDraggedDistance(diff);
+
+    // Check if it's a horizontal swipe
+    const yDiff = Math.abs(startY - touch.clientY);
+    if (Math.abs(diff) > yDiff && Math.abs(diff) > 10) {
+      setIsSwiping(true);
+      // Prevent vertical scroll when swiping horizontally
+      e.preventDefault();
+    }
+
+    // Visual feedback for drag
+    if (sliderRef.current && isSwiping) {
+      const dragPercent = (diff / window.innerWidth) * 100;
+      sliderRef.current.style.setProperty("--drag-offset", `${dragPercent}px`);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    const threshold = 50;
+    const diff = startX - (e.changedTouches[0]?.clientX || startX);
+
+    // Reset drag offset
+    if (sliderRef.current) {
+      sliderRef.current.style.setProperty("--drag-offset", "0px");
+    }
+
+    if (isSwiping && Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        handleNav(next);
+      } else {
+        handleNav(back);
+      }
+    } else {
+      resetAutoplay();
+    }
+
+    setDraggedDistance(0);
+    setIsSwiping(false);
+  };
+
+  const handleTouchCancel = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      if (sliderRef.current) {
+        sliderRef.current.style.setProperty("--drag-offset", "0px");
+      }
+      resetAutoplay();
+      setDraggedDistance(0);
+      setIsSwiping(false);
+    }
+  };
 
   // Autoplay + progress bar
   useEffect(() => {
@@ -348,143 +520,59 @@ export default function ImageSlider() {
   const prevSlide = prev !== null ? displaySlides[prev] : null;
 
   return (
-    <div className="relative w-full h-auto lg:h-[84vh] overflow-hidden bg-black select-none group">
+    <div
+      ref={sliderRef}
+      className="relative w-full h-auto lg:h-[84vh] overflow-hidden bg-black select-none group touch-pan-y"
+      style={
+        {
+          cursor: isDragging ? "grabbing" : "grab",
+          "--drag-offset": "0px",
+          touchAction: isSwiping ? "none" : "pan-y",
+        } as React.CSSProperties
+      }
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
+    >
       {/* ── Slides ─────────────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         <motion.div
           key={active}
           initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
+          animate={{
+            opacity: 1,
+            scale: 1,
+            x: isDragging && isSwiping ? `var(--drag-offset)` : 0,
+          }}
           exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.7, ease: "easeInOut" }}
+          transition={{
+            duration: isDragging ? 0 : 0.7,
+            ease: isDragging ? "linear" : "easeInOut",
+          }}
           className="relative w-full aspect-[16/9] lg:aspect-auto lg:absolute lg:inset-0"
         >
           <Image
             src={slide.image}
             alt={slide.title}
             fill
-            className="object-fill"
+            className="object-fill pointer-events-none"
             priority
             style={{
-              transform: "scale(1.04)",
-              transition: "transform 8s ease-out",
+              transform: isDragging ? "scale(1.02)" : "scale(1.04)",
+              transition: `transform ${isDragging ? "0.1s" : "8s"} ease-out`,
             }}
           />
         </motion.div>
       </AnimatePresence>
-
-      {/* Animated Gradient Overlay */}
-      {/* <motion.div
-        className="absolute inset-0 pointer-events-none z-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        style={{
-          background: `linear-gradient(90deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,.3) 10%, transparent 100%)`,
-        }}
-      />
-
-      <motion.div
-        className="absolute inset-0 pointer-events-none z-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        style={{
-          background: `linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 50%)`,
-        }}
-      /> */}
-
       {/* Particle Effect */}
       <ParticleEffect isActive={!isAnimating} accent={slide.accent} />
+      <ParticleEffect isActive={!isAnimating} accent={slide.accent} />{" "}
       <ParticleEffect isActive={!isAnimating} accent={slide.accent} />
-
-      {/* ── Content ─────────────────────────────────────────────────── */}
-      {/* <div className="relative z-20 flex flex-col justify-center h-full mx-8 md:mx-16 lg:mx-24">
-        <div className="max-w-xl">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-flex items-center gap-2 mb-4 px-3 py-1 text-xs font-bold tracking-widest uppercase rounded-full"
-            style={{
-              background: `${slide.accent}22`,
-              backdropFilter: "blur(8px)",
-              border: `1px solid ${slide.accent}44`,
-              color: slide.accent,
-            }}
-          >
-            <Sparkles className="w-3 h-3" />
-            {slide.subtitle}
-          </motion.div>
-
-          <GlowingText
-            text={slide.title}
-            accent={slide.accent}
-            className="text-white font-black text-[clamp(2.8rem,6vw,5.5rem)] tracking-[-0.03em] whitespace-pre-line leading-none mb-4"
-          />
-
-          {slide.description && (
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-white/60 mb-8 text-sm"
-              style={{ maxWidth: 400 }}
-            >
-              {slide.description}
-            </motion.p>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            {slide.productLink ? (
-              <Link href={slide.productLink}>
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="group flex items-center gap-3 px-8 py-4 text-sm font-bold tracking-widest uppercase text-black rounded-full transition-all duration-300"
-                  style={{
-                    background: `linear-gradient(135deg, ${slide.accent}, ${slide.accent}dd)`,
-                    boxShadow: `0 10px 30px ${slide.accent}66`,
-                  }}
-                >
-                  {slide.cta}
-                  <motion.span
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                    className="transition-transform duration-300 group-hover:translate-x-2"
-                  >
-                    →
-                  </motion.span>
-                </motion.button>
-              </Link>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="group flex items-center gap-3 px-8 py-4 text-sm font-bold tracking-widest uppercase text-black rounded-full transition-all duration-300"
-                style={{
-                  background: `linear-gradient(135deg, ${slide.accent}, ${slide.accent}dd)`,
-                  boxShadow: `0 10px 30px ${slide.accent}66`,
-                }}
-              >
-                {slide.cta}
-                <motion.span
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                  className="transition-transform duration-300 group-hover:translate-x-2"
-                >
-                  →
-                </motion.span>
-              </motion.button>
-            )}
-          </motion.div>
-        </div>
-      </div> */}
-
       {/* ── Slide counter with animation ───────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
@@ -508,7 +596,6 @@ export default function ImageSlider() {
           / {String(displaySlides.length).padStart(2, "0")}
         </span>
       </motion.div>
-
       {/* ── Thumbnail strip with hover effects ─────────────────────────── */}
       <div className="hidden lg:flex absolute bottom-8 right-8 md:right-16 z-20  gap-3">
         {displaySlides.map((s, i) => (
@@ -563,7 +650,6 @@ export default function ImageSlider() {
           </motion.button>
         ))}
       </div>
-
       {/* ── Dot indicators (mobile) ──────────────────────────────────── */}
       <div className="absolute left-1/2 bottom-9 -translate-x-1/2 z-20 flex gap-2 md:hidden">
         {displaySlides.map((_, i) => (
@@ -585,11 +671,10 @@ export default function ImageSlider() {
           />
         ))}
       </div>
-
       {/* ── Nav arrows with hover effects ──────────────────────────────── */}
       <motion.button
         onClick={() => handleNav(back)}
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full text-white transition-all duration-200 opacity-0 group-hover:opacity-100"
+        className="absolute left-6 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full text-white transition-all duration-200 opacity-0 group-hover:opacity-100 hidden md:flex"
         whileHover={{ scale: 1.1, x: -2 }}
         whileTap={{ scale: 0.95 }}
         style={{
@@ -601,10 +686,9 @@ export default function ImageSlider() {
       >
         <ChevronLeftIcon />
       </motion.button>
-
       <motion.button
         onClick={() => handleNav(next)}
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full text-white transition-all duration-200 opacity-0 group-hover:opacity-100"
+        className="absolute right-6 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-12 h-12 rounded-full text-white transition-all duration-200 opacity-0 group-hover:opacity-100 hidden md:flex"
         whileHover={{ scale: 1.1, x: 2 }}
         whileTap={{ scale: 0.95 }}
         style={{
@@ -616,21 +700,6 @@ export default function ImageSlider() {
       >
         <ChevronRightIcon />
       </motion.button>
-
-      {/* Floating elements for extra coolness */}
-      {/* <motion.div
-        className="absolute top-20 right-20 z-10 opacity-20 pointer-events-none"
-        animate={{
-          rotate: 360,
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-          scale: { duration: 3, repeat: Infinity, repeatType: "reverse" },
-        }}
-      >
-        <Clock className="w-24 h-24 text-white" />
-      </motion.div> */}
     </div>
   );
 }
