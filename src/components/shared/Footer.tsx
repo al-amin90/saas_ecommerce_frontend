@@ -40,7 +40,7 @@ export default function Footer() {
     <footer className="bg-[#111111] text-white">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-12">
           {/* Brand column - 4 columns on desktop */}
           <div className="md:col-span-4 space-y-6">
             <Link href="/" className="flex items-center gap-3">
@@ -74,7 +74,7 @@ export default function Footer() {
                 },
                 {
                   icon: <MapPin className="w-5 h-5" />,
-                  text: "Shop No: 464, Level 4 Shyamoli Square Shopping Mall Shyamoli, Mirpur Road Mohammadpur, Thana Dhaka 1207, Dhaka, Bangladesh, 1207",
+                  text: "দক্ষিণ রেলগেট, পূর্ব বামন পাড়া,ভেড়ামারা, কুষ্টিয়া, Kushtia, Bangladesh, 7040",
                 },
               ].map((item, i) => (
                 <div key={i} className="flex items-start  gap-3">

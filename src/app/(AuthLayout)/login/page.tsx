@@ -133,32 +133,17 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-4 sm:px-8 py-8">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <div className="flex md:hidden items-center gap-2 mb-8">
-            <div
-              className="w-10 h-10 rounded-[10px] flex items-center justify-center flex-shrink-0"
-              style={{ background: ACCENT }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M3 9.5L12 3l9 6.5V21H3V9.5z"
-                  stroke="#fff"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M9 21v-7h6v7"
-                  stroke="#fff"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                />
-              </svg>
+          <div className="flex md:hidden items-center justify-center mb-16 ml-3">
+            {/* Logo */}
+            <div className="relative z-10">
+              <Image
+                src={"/logo.jpeg"}
+                height={100}
+                width={100}
+                alt="logo"
+                className="rounded-full"
+              />
             </div>
-            <h1
-              className="font-['Syne'] font-black text-xl"
-              style={{ color: ACCENT }}
-            >
-              GHORER BAZAR
-            </h1>
           </div>
 
           <h1

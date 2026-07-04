@@ -78,7 +78,7 @@ interface IUser {
 const customerSchema = z.object({
   customerType: z.enum(["guest", "existing"]),
   fullName: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
+  email: z.union([z.string().email(), z.literal("")]).optional(),
   phone: z.string().min(1, "Phone is required"),
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
@@ -183,6 +183,7 @@ function ProductCard({
                 setSelectedVariantIdx(i);
                 setSelectedSize("");
               }}
+              type="button"
               title={v.color.name}
               className={`w-6 h-6 rounded-full border-2 transition-all ${
                 selectedVariantIdx === i
@@ -202,6 +203,7 @@ function ProductCard({
             <button
               key={s._id}
               onClick={() => setSelectedSize(String(s.size))}
+              type="button"
               disabled={s.quantity === 0}
               className={`w-9 h-8 rounded-lg text-xs font-medium border transition-all ${
                 selectedSize === String(s.size)
@@ -219,6 +221,7 @@ function ProductCard({
 
       <Button
         onClick={handleAdd}
+        type="button"
         disabled={!selectedSize}
         className="w-full h-8 bg-black hover:bg-slate-800 text-white rounded-lg text-xs font-semibold gap-1"
       >
@@ -396,7 +399,6 @@ export default function ManualOrderPage() {
         phone: form.phone,
         address: form.address,
         city: form.city,
-        postalCode: form.postalCode,
       },
       ...(customerType === "existing" && selectedUser
         ? { userId: selectedUser._id }
@@ -903,12 +905,6 @@ export default function ManualOrderPage() {
                   label: "Address",
                   placeholder: "House, Road, Area",
                 },
-
-                {
-                  name: "postalCode" as const,
-                  label: "Postal Code",
-                  placeholder: "1205",
-                },
               ].map((f) => (
                 <div key={f.name} className="space-y-1">
                   <Label className="text-xs text-slate-600 dark:text-slate-400">
@@ -928,7 +924,7 @@ export default function ManualOrderPage() {
               ))}
 
               {/* Payment method */}
-              <div className="space-y-1.5">
+              {/* <div className="space-y-1.5">
                 <Label className="text-xs text-slate-600 dark:text-slate-400">
                   Payment Method
                 </Label>
@@ -953,7 +949,7 @@ export default function ManualOrderPage() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               {/* Submit */}
               <Button
