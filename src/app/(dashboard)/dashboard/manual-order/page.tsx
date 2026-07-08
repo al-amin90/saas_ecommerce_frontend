@@ -12,13 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
 import { useCreateOrderMutation } from "@/src/redux/features/order/orderApi";
 import {
@@ -76,13 +70,9 @@ interface IUser {
 // ── Schema ────────────────────────────────────────────────────────────────────
 
 const customerSchema = z.object({
-  customerType: z.enum(["guest", "existing"]),
   fullName: z.string().min(1, "Name is required"),
-  email: z.union([z.string().email(), z.literal("")]).optional(),
   phone: z.string().min(1, "Phone is required"),
   address: z.string().min(1, "Address is required"),
-  city: z.string().min(1, "City is required"),
-  postalCode: z.string().optional(),
   paymentMethod: z.enum(["cash", "card"]),
 });
 
@@ -353,7 +343,7 @@ export default function ManualOrderPage() {
     c.toLowerCase().includes(citySearch.toLowerCase()),
   );
 
-  const grandTotal = selectedCity ? totalPrice + deliveryCharge : totalPrice;
+  const grandTotal = totalPrice + deliveryCharge;
 
   // ── Form ──────────────────────────────────────────────────────────────────
 
@@ -374,15 +364,6 @@ export default function ManualOrderPage() {
 
   const selectedPayment = watch("paymentMethod");
 
-  // existing user select করলে form fill করো
-  const handleSelectUser = (user: IUser) => {
-    setSelectedUser(user);
-    setValue("fullName", user.name);
-    setValue("email", user.email);
-    if (user.phone) setValue("phone", user.phone);
-    setUserSearch("");
-  };
-
   // ── Submit ────────────────────────────────────────────────────────────────
 
   const onSubmit = async (form: CustomerForm) => {
@@ -390,6 +371,7 @@ export default function ManualOrderPage() {
       toast.error("Please add at least one product");
       return;
     }
+    console.log("hit");
 
     const payload = {
       guestCheckout: customerType === "guest",
@@ -400,9 +382,7 @@ export default function ManualOrderPage() {
         address: form.address,
         city: form.city,
       },
-      ...(customerType === "existing" && selectedUser
-        ? { userId: selectedUser._id }
-        : {}),
+
       items: cartItems.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -610,7 +590,7 @@ export default function ManualOrderPage() {
                     <div className="flex justify-between text-sm text-slate-500">
                       <span>
                         Delivery
-                        {selectedCity && (
+                        {/* {selectedCity && (
                           <span className="ml-1 text-xs">
                             (
                             {selectedCity.toLowerCase() === "dhaka"
@@ -618,14 +598,14 @@ export default function ManualOrderPage() {
                               : "Outside"}{" "}
                             Dhaka)
                           </span>
-                        )}
+                        )} */}
                       </span>
                       <span
                         className={
                           deliveryChargeEdited ? "text-orange-500" : ""
                         }
                       >
-                        ৳ {selectedCity ? deliveryCharge : "-"}
+                        ৳ {deliveryCharge || "-"}
                       </span>
                     </div>
                     <div className="flex justify-between items-center pt-1 border-t border-slate-100 dark:border-slate-700">
@@ -647,106 +627,6 @@ export default function ManualOrderPage() {
                 Customer Info
               </h2>
 
-              {/* Customer type toggle */}
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { value: "guest", label: "Guest", icon: User },
-                  { value: "existing", label: "Existing User", icon: Users },
-                ].map((opt) => {
-                  const Icon = opt.icon;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => {
-                        setCustomerType(opt.value as "guest" | "existing");
-                        setSelectedUser(null);
-                        setValue(
-                          "customerType",
-                          opt.value as "guest" | "existing",
-                        );
-                      }}
-                      className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border text-xs font-semibold transition-all ${
-                        customerType === opt.value
-                          ? "border-black bg-black text-white"
-                          : "border-slate-200 bg-white dark:bg-slate-800 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-400"
-                      }`}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {opt.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Existing user search */}
-              {customerType === "existing" && (
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                    <Input
-                      value={userSearch}
-                      onChange={(e) => setUserSearch(e.target.value)}
-                      placeholder="Search user by name or email..."
-                      className="pl-8 h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm"
-                    />
-                  </div>
-
-                  {/* User results */}
-                  {users.length > 0 && userSearch && (
-                    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                      {users.map((user) => (
-                        <button
-                          key={user._id}
-                          type="button"
-                          onClick={() => handleSelectUser(user)}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-left border-b border-slate-100 dark:border-slate-700 last:border-0 transition-colors"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
-                              {user.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-slate-800 dark:text-white">
-                              {user.name}
-                            </p>
-                            <p className="text-xs text-slate-400">
-                              {user.email}
-                            </p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {selectedUser && (
-                    <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950/30 rounded-xl px-3 py-2">
-                      <div className="w-6 h-6 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-blue-700 dark:text-blue-300">
-                          {selectedUser.name.charAt(0)}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 truncate">
-                          {selectedUser.name}
-                        </p>
-                        <p className="text-xs text-blue-500 truncate">
-                          {selectedUser.email}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedUser(null)}
-                        className="text-blue-400 hover:text-blue-600 text-xs"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* Form fields */}
               {[
                 {
@@ -754,11 +634,11 @@ export default function ManualOrderPage() {
                   label: "Full Name",
                   placeholder: "আহমেদ হোসেন",
                 },
-                {
-                  name: "email" as const,
-                  label: "Email",
-                  placeholder: "you@example.com",
-                },
+                // {
+                //   name: "email" as const,
+                //   label: "Email",
+                //   placeholder: "you@example.com",
+                // },
                 {
                   name: "phone" as const,
                   label: "Phone",
@@ -783,7 +663,7 @@ export default function ManualOrderPage() {
               ))}
 
               {/* City — Search Dropdown */}
-              <div className="space-y-1 relative">
+              {/* <div className="space-y-1 relative">
                 <Label className="text-xs text-slate-600 dark:text-slate-400">
                   City
                 </Label>
@@ -808,10 +688,8 @@ export default function ManualOrderPage() {
                   />
                 </div>
 
-                {/* Hidden RHF field */}
                 <input type="hidden" {...register("city")} />
 
-                {/* Dropdown */}
                 {cityDropdownOpen && filteredCities.length > 0 && (
                   <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-44 overflow-y-auto">
                     {filteredCities.map((city) => (
@@ -839,65 +717,43 @@ export default function ManualOrderPage() {
                 {errors.city && (
                   <p className="text-xs text-red-500">{errors.city.message}</p>
                 )}
-              </div>
+              </div> */}
 
               {/* Delivery Charge */}
-              {selectedCity && (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-slate-600 dark:text-slate-400">
-                      Delivery Charge
-                    </Label>
-                    {selectedCity && (
-                      <span className="text-xs text-slate-400">
-                        {selectedCity.toLowerCase() === "dhaka"
-                          ? "Inside Dhaka"
-                          : "Outside Dhaka"}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
-                        ৳
-                      </span>
-                      <input
-                        type="number"
-                        value={deliveryCharge}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value);
-                          if (!isNaN(val) && val >= 0) {
-                            setDeliveryCharge(val);
-                            setDeliveryChargeEdited(true);
-                          }
-                        }}
-                        className="w-full h-9 pl-7 pr-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-black rounded-lg outline-none text-slate-800 dark:text-white"
-                      />
-                    </div>
-                    {deliveryChargeEdited && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const charge =
-                            selectedCity.toLowerCase() === "dhaka"
-                              ? DHAKA_CHARGE
-                              : OUTSIDE_DHAKA_CHARGE;
-                          setDeliveryCharge(charge);
-                          setDeliveryChargeEdited(false);
-                        }}
-                        className="text-xs text-blue-600 hover:text-blue-700 whitespace-nowrap"
-                      >
-                        Reset
-                      </button>
-                    )}
-                  </div>
-                  {deliveryChargeEdited && (
-                    <p className="text-xs text-orange-500">
-                      ⚠ Custom delivery charge applied
-                    </p>
-                  )}
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-slate-600 dark:text-slate-400">
+                    Delivery Charge
+                  </Label>
+                  {/* {selectedCity && (
+                    <span className="text-xs text-slate-400">
+                      {selectedCity.toLowerCase() === "dhaka"
+                        ? "Inside Dhaka"
+                        : "Outside Dhaka"}
+                    </span>
+                  )} */}
                 </div>
-              )}
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
+                      ৳
+                    </span>
+                    <input
+                      type="number"
+                      value={deliveryCharge}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val) && val >= 0) {
+                          setDeliveryCharge(val);
+                          setDeliveryChargeEdited(true);
+                        }
+                      }}
+                      className="w-full h-9 pl-7 pr-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-black rounded-lg outline-none text-slate-800 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
 
               {[
                 {
@@ -952,7 +808,7 @@ export default function ManualOrderPage() {
               </div> */}
 
               {/* Submit */}
-              <Button
+              <button
                 type="submit"
                 disabled={isLoading || cartItems.length === 0}
                 className="w-full h-11 bg-black hover:bg-slate-800 text-white rounded-xl text-sm font-semibold"
@@ -960,7 +816,7 @@ export default function ManualOrderPage() {
                 {isLoading
                   ? "Creating Order..."
                   : `Confirm Order · ৳${grandTotal.toLocaleString()}`}
-              </Button>
+              </button>
             </div>
           </div>
         </div>

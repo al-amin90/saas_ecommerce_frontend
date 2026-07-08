@@ -391,7 +391,7 @@ const ProductDetailsPage = () => {
                     key={s._id ?? s.size}
                     onClick={() => setSelectedSize(s.size)}
                     disabled={s.quantity === 0}
-                    className={`px-2 sm:px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
+                    className={`px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
                       effectiveSelectedSize === s.size
                         ? "bg-black text-white border-orange-400 "
                         : s.quantity === 0
@@ -438,27 +438,44 @@ const ProductDetailsPage = () => {
             </div>
 
             <Button
+              variant="outline"
               onClick={handleAddToCart}
-              disabled={!effectiveSelectedSize || !inStock}
-              className="flex-1  h-10 sm:h-12 bg-black hover:bg-slate-800 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all"
+              className="group flex-1 h-10 sm:h-12 border-2 border-black text-slate-800 hover:bg-black hover:text-white hover:border-black rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all duration-300 hover:shadow-lg hover:shadow-black/20 relative overflow-hidden"
             >
-              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Add to cart</span>
-              <span className="sm:hidden">Add</span>
+              {/* Shimmer effect on hover */}
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+              <span className="relative flex items-center justify-center gap-2">
+                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" />
+                <span className="inline">Add to cart</span>
+              </span>
             </Button>
           </div>
 
           {/* CTA Buttons */}
 
           <Button
-            disabled={!effectiveSelectedSize || !inStock}
-            variant="outline"
             onClick={handleBuyNow}
-            className="w-full h-10 sm:h-12 border-black text-black hover:bg-black hover:text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all"
+            className="relative cursor-pointer
+    hover:animate-none
+    animate-pulse-glow
+     w-full h-10 sm:h-12 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 group border-2 border-black hover:border-0 hover:bg-gradient-to-r hover:from-black hover:via-slate-800 hover:to-black hover:text-white hover:shadow-lg hover:shadow-black/30"
           >
-            <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Buy it now</span>
-            <span className="sm:hidden">Buy</span>
+            {/* Continuous pulse animation on hover */}
+            <span className="absolute inset-0 rounded-lg sm:rounded-xl border-2  border-black/20  animate-[pulse_2s_ease-in-out_infinite]" />
+
+            {/* Animated underline */}
+            <span className="underline-animation" />
+
+            {/* Zoom in/out animation container */}
+            <span className="flex items-center justify-center gap-2 group-hover:animate-[zoomInOut_2s_ease-in-out_infinite]">
+              <Zap className="h-3 w-3 sm:h-4 sm:w-4 transition-all duration-300 scale-110 rotate-12 text-yellow-300" />
+              <span className="inline">Buy it now</span>
+              <span className="hidden sm:inline-flex items-center gap-1 text-xs opacity-70 font-normal">
+                <span className="w-1 h-1 rounded-full bg-current" />
+                Cash On Delivery
+              </span>
+            </span>
           </Button>
 
           {/* Accordions */}

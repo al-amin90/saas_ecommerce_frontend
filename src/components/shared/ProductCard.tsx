@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Heart, Eye, ShoppingCart } from "lucide-react";
+import { Heart, Eye, ShoppingCart, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IProduct } from "@/src/interface/dashboard/product.interface";
 import Link from "next/link";
@@ -132,28 +132,21 @@ export default function ProductCard({ product }: { product: IProduct }) {
           </div>
         </div>
 
-        {/* Add to cart button */}
         <Button
-          // disabled={product.inStock === false}
-          className="mt-1.5 sm:mt-2 w-full gap-1 sm:gap-2 text-xs sm:text-sm md:text-base font-semibold py-2 sm:py-2.5 md:py-3 px-2 sm:px-3"
-          // variant={product.inStock === false ? "outline" : "default"}
+          className={`
+    mt-1.5 sm:mt-2 w-full gap-1 sm:gap-2 text-xs sm:text-sm md:text-base font-semibold 
+    py-2 sm:py-2.5 md:py-3 px-2 sm:px-3
+  cursor-pointer
+    hover:animate-none
+    transition-all duration-300
+    relative
+  `}
           variant={"default"}
           style={{ background: "#E07B1A", color: "white" }}
-          // style={
-          //   product.inStock !== false
-          //     ? { background: "#E07B1A", color: "white" }
-          //     : {}
-          // }
         >
-          <ShoppingCart size={14} className="sm:w-5 sm:h-5" />
-          <span className="hidden sm:inline">
-            {"Add to Cart"}
-            {/* {product.inStock === false ? "Out of Stock" : "Add to Cart"} */}
-          </span>
-          <span className="sm:hidden">
-            {/* {product.inStock === false ? "Out" : "Add"} */}
-            {"Add"}
-          </span>
+          <Zap className="h-4 w-4   animate-pulse-glow" />
+          <span className="hidden sm:inline">Order Now</span>
+          <span className="sm:hidden">Order</span>
         </Button>
       </div>
     </Link>

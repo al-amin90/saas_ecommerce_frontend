@@ -190,11 +190,11 @@ export default function BuyNowModal({
               label: "Full Name",
               placeholder: "আহমেদ হোসেন",
             },
-            {
-              name: "email" as const,
-              label: "Email",
-              placeholder: "you@example.com",
-            },
+            // {
+            //   name: "email" as const,
+            //   label: "Email",
+            //   placeholder: "you@example.com",
+            // },
             {
               name: "phone" as const,
               label: "Phone",
@@ -242,10 +242,8 @@ export default function BuyNowModal({
               />
             </div>
 
-            {/* Hidden RHF field */}
             <input type="hidden" {...register("city")} />
 
-            {/* Dropdown */}
             {cityDropdownOpen && filteredCities.length > 0 && (
               <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-44 overflow-y-auto">
                 {filteredCities.map((city) => (
@@ -338,7 +336,7 @@ export default function BuyNowModal({
             {
               name: "address" as const,
               label: "Address",
-              placeholder: "House, Road, Area",
+              placeholder: "House, Road, Area, City",
             },
           ].map((f) => (
             <div key={f.name} className="space-y-1">
@@ -359,14 +357,14 @@ export default function BuyNowModal({
           ))}
 
           {/* Payment method */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label className="text-sm text-slate-600 dark:text-slate-300">
               Payment Method
             </Label>
             <div className="grid grid-cols-1 gap-2">
               {[
                 { value: "cash", label: "Cash on Delivery" },
-                // { value: "online", label: "Online Payment", disabled: true },
+                { value: "online", label: "Online Payment", disabled: true },
               ].map((opt) => (
                 <button
                   key={opt.value}
@@ -387,15 +385,56 @@ export default function BuyNowModal({
                 </button>
               ))}
             </div>
-          </div>
-
+          </div> */}
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 bg-black hover:bg-slate-800 text-white rounded-xl text-sm font-semibold gap-2 mt-2"
+            className={`relative animate-pulse-glow  cursor-pointer
+    hover:animate-none
+    transition-all duration-300 w-full h-12 rounded-xl text-sm font-semibold overflow-hidden group ${
+      isLoading
+        ? "bg-slate-700 text-slate-300 cursor-not-allowed"
+        : "bg-gradient-to-r from-black via-slate-800 to-black  hover:shadow-2xl hover:shadow-black/30 text-white"
+    }`}
           >
-            <Zap className="h-4 w-4" />
-            {isLoading ? "Placing Order..." : `Confirm Order - ${grandTotal}`}
+            {/* Animated shimmer effect */}
+            {!isLoading && (
+              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            )}
+            <span className="underline-animation" />
+
+            <span className="relative flex items-center justify-center gap-2">
+              {isLoading ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Placing Order...
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12" />
+                  Order Now - Cash On Delivery
+                </>
+              )}
+            </span>
           </Button>
         </form>
       </DialogContent>

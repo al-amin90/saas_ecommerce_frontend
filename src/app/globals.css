@@ -157,6 +157,51 @@ body {
     opacity: 1;
   }
 }
+@keyframes pulse-glow {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px 10px rgba(224, 123, 26, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(224, 123, 26, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.underline-animation {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  height: 2px;
+  width: 0;
+  background: #000;
+  transform: translateX(-50%);
+  animation: underline-loop 2s ease-in-out infinite;
+}
+
+@keyframes underline-loop {
+  0% {
+    width: 0;
+    background: #000;
+  }
+
+  50% {
+    width: 50%;
+    background: #fff;
+  }
+
+  100% {
+    width: 0;
+    background: #000;
+  }
+}
 
 .sortable-row-enter {
   animation: slideUp 0.3s ease-out;

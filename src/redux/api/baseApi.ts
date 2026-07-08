@@ -107,7 +107,7 @@ export const baseApi = createApi({
     "orders",
     "singleOrder",
     "orderStats",
-    "deliveryMethod",
+    "delivery-method",
     "banner",
   ],
   endpoints: () => ({}),

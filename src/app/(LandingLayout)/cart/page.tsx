@@ -336,11 +336,11 @@ export default function CartPage() {
                       label: "Full Name",
                       placeholder: "আহমেদ হোসেন",
                     },
-                    {
-                      name: "email" as const,
-                      label: "Email",
-                      placeholder: "you@example.com",
-                    },
+                    // {
+                    //   name: "email" as const,
+                    //   label: "Email",
+                    //   placeholder: "you@example.com",
+                    // },
                     {
                       name: "phone" as const,
                       label: "Phone",
@@ -521,10 +521,13 @@ export default function CartPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 cursor-pointer bg-black hover:bg-slate-800 text-white rounded-xl font-semibold text-sm gap-2"
+              className="w-full h-11  cursor-pointer animate-pulse-glow
+    hover:animate-none
+    transition-all duration-300 bg-black hover:bg-slate-800 text-white rounded-xl font-semibold text-sm gap-2"
             >
               {isLoading ? "Placing Order..." : "Confirm Order"}
               <ArrowRight className="h-4 w-4" />
+              <span className="underline-animation" />
             </Button>
 
             <button

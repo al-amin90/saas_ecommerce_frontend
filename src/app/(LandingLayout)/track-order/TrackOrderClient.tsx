@@ -142,7 +142,7 @@ export default function TrackOrderClient({
           onSubmit={handleSubmit(onTrack)}
           className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4"
         >
-          <div className="space-y-1">
+          {/* <div className="space-y-1">
             <Label className="text-sm text-slate-600">Email Address</Label>
             <Input
               {...register("email")}
@@ -152,7 +152,7 @@ export default function TrackOrderClient({
             {errors.email && (
               <p className="text-xs text-red-500">{errors.email.message}</p>
             )}
-          </div>
+          </div> */}
 
           <div className="space-y-1">
             <Label className="text-sm text-slate-600">Order ID</Label>

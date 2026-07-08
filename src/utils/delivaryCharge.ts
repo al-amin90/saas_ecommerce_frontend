@@ -65,5 +65,5 @@ export const BD_CITIES = [
   "Thakurgaon",
 ];
 
-export const DHAKA_CHARGE = 70;
+export const DHAKA_CHARGE = 100;
 export const OUTSIDE_DHAKA_CHARGE = 150;
