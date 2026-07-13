@@ -76,6 +76,9 @@ export interface IOrderRow {
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: string;
+  courier: {
+    consignmentId?: string;
+  };
   totalPrice: number;
   createdAt: string;
   updatedAt: string;
@@ -303,6 +306,7 @@ export default function OrdersPage() {
     useSubmitBulkOrdersMutation();
 
   const orders: IOrderRow[] = data?.data ?? [];
+  console.log("orders", orders);
   const meta = data?.meta as IMeta | undefined;
 
   // ── Client-side search ────────────────────────────────────────────────────
@@ -433,7 +437,11 @@ export default function OrdersPage() {
           </span>
           <span className="text-xs text-slate-400">
             {format(new Date(row.createdAt), "MMM d, yyyy")}
-          </span>
+          </span>{" "}
+          <br />
+          {row?.courier?.consignmentId && (
+            <span className="text-xs ">CN#{row.courier.consignmentId}</span>
+          )}
         </div>
       ),
     },

@@ -4,7 +4,7 @@ import { FaFacebookMessenger, FaWhatsapp } from "react-icons/fa";
 const contactLinks = [
   {
     label: "WhatsApp",
-    href: "https://wa.me/8801772441997",
+    href: "https://wa.me/8801314244407",
     icon: <FaWhatsapp className="h-6 w-6" />,
     className: "bg-[#25D366] text-white",
   },
