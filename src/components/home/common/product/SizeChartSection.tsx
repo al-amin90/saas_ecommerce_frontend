@@ -13,8 +13,8 @@ function SizeChartSection({
     targetGroup?: string;
     rows: {
       size: number;
-      innerLength?: number;
-      feetLength?: number;
+      innerLength?: string;
+      feetLength?: string;
       ageRange?: string;
       note?: string;
     }[];
@@ -57,30 +57,9 @@ function SizeChartSection({
 
       {/* Interactive size picker */}
       <div className="space-y-2">
-        {/* <p className="text-xs text-slate-400 font-medium">
-          Tap a size to see details
-        </p>
-        <div className="flex gap-2 flex-wrap">
-          {sizeChart.rows.map((row) => (
-            <button
-              key={row.size}
-              onClick={() =>
-                setSelectedSize((prev) => (prev === row.size ? null : row.size))
-              }
-              className={`min-w-[44px] h-10 px-3 rounded-xl border-2 text-sm font-bold transition-all ${
-                selectedSize === row.size
-                  ? "border-#F48721 bg-#F48721 text-white scale-105 shadow-md"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-#F48721"
-              }`}
-            >
-              {row.size}
-            </button>
-          ))}
-        </div> */}
-
         {/* Selected size detail card */}
         {selectedRow && (
-          <div className="bg-#F48721 text-white rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+          <div className=" rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
             {[
               { label: "EU Size", value: selectedRow.size },
               {
@@ -98,10 +77,8 @@ function SizeChartSection({
               { label: "Age Range", value: selectedRow.ageRange || "—" },
             ].map((item) => (
               <div key={item.label} className="text-center space-y-1">
-                <p className="text-xs text-white uppercase tracking-wide">
-                  {item.label}
-                </p>
-                <p className="text-base font-bold text-white">{item.value}</p>
+                <p className="text-xs  uppercase tracking-wide">{item.label}</p>
+                <p className="text-base font-bold ">{item.value}</p>
               </div>
             ))}
             {selectedRow.note && (
@@ -141,7 +118,7 @@ function SizeChartSection({
                 }
                 className={`border-b border-slate-100 last:border-0 cursor-pointer transition-colors ${
                   selectedSize === row.size
-                    ? "bg-#F48721 text-white"
+                    ? "bg-[#F48721] text-white"
                     : "hover:bg-slate-50"
                 }`}
               >

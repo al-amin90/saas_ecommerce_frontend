@@ -49,8 +49,8 @@ interface PopulatedProduct extends Omit<
     targetGroup?: string;
     rows: {
       size: number;
-      innerLength?: number;
-      feetLength?: number;
+      innerLength?: string;
+      feetLength?: string;
       ageRange?: string;
       note?: string;
     }[];
@@ -133,6 +133,9 @@ const ProductDetailsPage = () => {
   const [quantity, setQuantity] = useState(1);
 
   if (isLoading) return <ProductDetailSkeleton />;
+
+  console.log("product", product);
+
   if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center text-slate-400">
@@ -147,6 +150,9 @@ const ProductDetailsPage = () => {
   ] as PopulatedVariant;
 
   const stockList: IStock[] = (activeVariant?.stock ?? []) as IStock[];
+
+  console.log("stockList", stockList);
+
   const fallbackSize = stockList.find((s) => s.quantity > 0)?.size ?? null;
   const effectiveSelectedSize = selectedSize ?? fallbackSize;
   const selectedStock = stockList.find((s) => s.size === effectiveSelectedSize);
@@ -196,6 +202,29 @@ const ProductDetailsPage = () => {
     setBuyNowOpen(true);
   };
 
+  // ------------)  size show data methos
+  const getSizeChartRow = (size: number) => {
+    if (!product.sizeChartId?.rows) return null;
+
+    return product.sizeChartId.rows.find((row) => {
+      const inner = row.innerLength;
+      if (!inner) return false;
+
+      const cleaned = inner.replace(/[^0-9.\-]/g, "").trim();
+
+      if (cleaned.includes("-")) {
+        const [min, max] = cleaned.split("-").map(Number);
+        return size >= min && size <= max;
+      }
+
+      const min = parseInt(cleaned);
+      const max = parseInt(cleaned) + 0.99;
+      console.log("size", size, min, max);
+
+      return size >= min && size <= max;
+    });
+  };
+
   return (
     <div className="min-h-screen max-w-360 mx-auto bg-white">
       {/* Back */}
@@ -208,6 +237,7 @@ const ProductDetailsPage = () => {
           Back
         </Link>
       </div>
+
       <div className="   px-3 sm:px-6 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 ">
         {/* ── Left: Images ── */}
         <div className="space-y-2 sm:space-y-3 ">
@@ -316,7 +346,6 @@ const ProductDetailsPage = () => {
               </p>
               <div className="flex gap-2 flex-wrap">
                 {product.variant.map((v, i) => {
-                  // Get the image for this variant
                   const variantImage = images[v.imageIndex] || images[0];
 
                   return (
@@ -333,8 +362,8 @@ const ProductDetailsPage = () => {
                       }}
                       className={`flex items-center gap-2 px-3 cursor-pointer   py-2 rounded-lg border-2 transition-all ${
                         selectedVariantIdx === i
-                          ? "border-orange-400 bg-white shadow-md"
-                          : "border-slate-200 hover:border-orange-400 bg-slate-50 hover:bg-white"
+                          ? "border-orange-400  bg-[#FF6900] shadow-md"
+                          : " border-orange-400 bg-slate-50 hover:bg-white"
                       }`}
                     >
                       {/* Variant Image Thumbnail */}
@@ -353,12 +382,13 @@ const ProductDetailsPage = () => {
                         )}
                       </div>
 
-                      {/* Color name */}
                       <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-slate-900">
+                        <span
+                          className={`text-xs font-semibold  ${selectedVariantIdx === i ? "text-white" : "text-slate-900"}`}
+                        >
                           {v.color.name}
                         </span>
-                        {/* Optional: Show color swatch */}
+
                         <span
                           className="w-4 h-4 rounded-full border border-slate-300 mt-0.5"
                           style={{ backgroundColor: v.color.color }}
@@ -373,36 +403,81 @@ const ProductDetailsPage = () => {
           )}
 
           {/* Size */}
+          {/* Size */}
           {stockList.length > 0 && (
             <div className="space-y-2 pt-1 sm:pt-0">
-              <div className="flex items-center justify-between">
+              <div className="flex justify-between items-center gap-3">
                 <p className="text-xs sm:text-sm font-semibold text-slate-700">
                   Size
                 </p>
-                {effectiveSelectedSize && (
-                  <span className="text-xs text-slate-400">
-                    Selected: {effectiveSelectedSize}
-                  </span>
-                )}
+                <div className="flex gap-3 items-center">
+                  {effectiveSelectedSize && (
+                    <span className="text-xs text-slate-400">
+                      Selected: {effectiveSelectedSize}
+                    </span>
+                  )}
+                  {selectedStock && (
+                    <span className="text-xs md:text-sm font-semibold text-emerald-600">
+                      {selectedStock.quantity} left
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-1.5 sm:gap-2 flex-wrap">
-                {stockList.map((s) => (
-                  <button
-                    key={s._id ?? s.size}
-                    onClick={() => setSelectedSize(s.size)}
-                    disabled={s.quantity === 0}
-                    className={`px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
-                      effectiveSelectedSize === s.size
-                        ? "bg-black text-white border-orange-400 "
-                        : s.quantity === 0
-                          ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed line-through"
-                          : "bg-white text-slate-700 border-slate-200 hover:border-orange-400 "
-                    }`}
-                  >
-                    {s.size}
-                  </button>
-                ))}
+
+              <div className="flex flex-col gap-1.5 sm:gap-2 ">
+                {stockList.map((s) => {
+                  const chartRow = getSizeChartRow(s.size);
+                  console.log("chartRow", chartRow);
+                  const isSelected = effectiveSelectedSize === s.size;
+                  const isOutOfStock = s.quantity === 0;
+
+                  return (
+                    <button
+                      key={s._id ?? s.size}
+                      onClick={() => setSelectedSize(s.size)}
+                      disabled={isOutOfStock}
+                      className={`relative flex justify-between items-center px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
+                        isSelected
+                          ? "bg-[#FF6900] text-white border-orange-400"
+                          : isOutOfStock
+                            ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed line-through"
+                            : "bg-white text-slate-700  border-orange-400"
+                      }`}
+                    >
+                      <span className="font-bold">{s.size}</span>
+                      {chartRow && (
+                        <span
+                          className={`text-xs leading-tight mt-0.5 ${
+                            isSelected ? "text-white/80" : "text-slate-400"
+                          }`}
+                        >
+                          {chartRow.innerLength}
+                        </span>
+                      )}
+                      {chartRow && (
+                        <span
+                          className={`text-xs leading-tight mt-0.5 ${
+                            isSelected ? "text-white/80" : "text-slate-400"
+                          }`}
+                        >
+                          {chartRow.ageRange} baby
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Selected size detail */}
+              {effectiveSelectedSize &&
+                (() => {
+                  const chartRow = getSizeChartRow(effectiveSelectedSize);
+                  if (!chartRow) return null;
+
+                  return (
+                    <div className="flex flex-wrap gap-3 bg-slate-50 rounded-xl px-4 py-3 mt-1"></div>
+                  );
+                })()}
             </div>
           )}
 
@@ -459,7 +534,7 @@ const ProductDetailsPage = () => {
             className="relative cursor-pointer
     hover:animate-none
     animate-pulse-glow
-     w-full h-10 sm:h-12 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 group border-2 border-black hover:border-0 hover:bg-gradient-to-r hover:from-black hover:via-slate-800 hover:to-black hover:text-white hover:shadow-lg hover:shadow-black/30"
+     w-full h-10 sm:h-12 rounded-lg bg-[#FF6900] sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 group border-2 hover:border-0 hover:bg-gradient-to-r hover:from-black hover:via-slate-800 hover:to-black hover:text-white hover:shadow-lg hover:shadow-black/30"
           >
             {/* Continuous pulse animation on hover */}
             <span className="absolute inset-0 rounded-lg sm:rounded-xl border-2  border-black/20  animate-[pulse_2s_ease-in-out_infinite]" />

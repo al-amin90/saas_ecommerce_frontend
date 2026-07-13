@@ -523,7 +523,7 @@ export default function CartPage() {
               disabled={isLoading}
               className="w-full h-11  cursor-pointer animate-pulse-glow
     hover:animate-none
-    transition-all duration-300 bg-black hover:bg-slate-800 text-white rounded-xl font-semibold text-sm gap-2"
+    transition-all duration-300 bg-[#FF6900] hover:bg-slate-800 text-white rounded-xl font-semibold text-sm gap-2"
             >
               {isLoading ? "Placing Order..." : "Confirm Order"}
               <ArrowRight className="h-4 w-4" />

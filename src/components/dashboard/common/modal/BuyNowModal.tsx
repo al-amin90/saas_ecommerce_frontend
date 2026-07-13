@@ -391,10 +391,10 @@ export default function BuyNowModal({
             disabled={isLoading}
             className={`relative animate-pulse-glow  cursor-pointer
     hover:animate-none
-    transition-all duration-300 w-full h-12 rounded-xl text-sm font-semibold overflow-hidden group ${
+    transition-all duration-300 w-full  h-12 rounded-xl text-sm font-semibold overflow-hidden group ${
       isLoading
         ? "bg-slate-700 text-slate-300 cursor-not-allowed"
-        : "bg-gradient-to-r from-black via-slate-800 to-black  hover:shadow-2xl hover:shadow-black/30 text-white"
+        : "bg-gradient-to-r bg-[#FF6900]  hover:shadow-2xl hover:shadow-black/30 text-white"
     }`}
           >
             {/* Animated shimmer effect */}

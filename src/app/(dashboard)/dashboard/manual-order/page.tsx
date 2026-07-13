@@ -70,6 +70,7 @@ interface IUser {
 // ── Schema ────────────────────────────────────────────────────────────────────
 
 const customerSchema = z.object({
+  customerType: z.string().optional(),
   fullName: z.string().min(1, "Name is required"),
   phone: z.string().min(1, "Phone is required"),
   address: z.string().min(1, "Address is required"),
@@ -330,7 +331,6 @@ export default function ManualOrderPage() {
     setSelectedCity(city);
     setCitySearch(city);
     setCityDropdownOpen(false);
-    setValue("city", city, { shouldValidate: true }); // shouldValidate যোগ করো
 
     if (!deliveryChargeEdited) {
       setDeliveryCharge(
@@ -375,12 +375,12 @@ export default function ManualOrderPage() {
 
     const payload = {
       guestCheckout: customerType === "guest",
-      guestEmail: form.email,
+      // guestEmail: form.email,
       guestInfo: {
         fullName: form.fullName,
         phone: form.phone,
         address: form.address,
-        city: form.city,
+        // city: form.city,
       },
 
       items: cartItems.map((item) => ({
@@ -811,7 +811,7 @@ export default function ManualOrderPage() {
               <button
                 type="submit"
                 disabled={isLoading || cartItems.length === 0}
-                className="w-full h-11 bg-black hover:bg-slate-800 text-white rounded-xl text-sm font-semibold"
+                className="w-full h-11 bg-[#FF6900] hover:bg-slate-800 text-white rounded-xl text-sm font-semibold"
               >
                 {isLoading
                   ? "Creating Order..."
