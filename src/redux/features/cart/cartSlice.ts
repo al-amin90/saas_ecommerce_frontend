@@ -9,6 +9,9 @@ export interface ICartItem {
   originalPrice: number;
   discountPrice: number;
   colorId: { _id: string; name: string; color: string };
+  colorName?: string;
+  colorHex?: string;
+  selectedSize?: string;
   size: string;
   quantity: number;
   stock: number;

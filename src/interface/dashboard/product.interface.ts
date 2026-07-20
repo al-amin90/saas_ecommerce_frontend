@@ -1,5 +1,5 @@
 export interface IStock {
-  size: string;
+  size: number;
   quantity: number;
   _id?: string;
 }
@@ -7,7 +7,7 @@ export interface IStock {
 export interface IVariant {
   color: string | { _id?: string; name?: string; color?: string };
   stock: IStock[];
-  _id?: string;
+  _id: string;
 }
 
 export interface IProduct {

@@ -17,7 +17,7 @@ export default function CartBadge() {
   console.log("itemCount", itemCount);
 
   return (
-    <div className="flex flex-col w-fit h-fit items-center  fixed right-1 z-50 top-1/2 -translate-y-1/2">
+    <div className="flex flex-col w-fit h-fit items-center  fixed right-1 z-50 top-1/3 -translate-y-1/2">
       {/* Orange Box - Exact sizing */}
       <div
         onClick={() => router.push("/cart")}

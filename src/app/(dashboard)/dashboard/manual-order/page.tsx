@@ -32,6 +32,7 @@ interface IStock {
 
 interface IVariant {
   _id: string;
+  imageIndex: number;
   color: { _id: string; name: string; color: string };
   stock: IStock[];
 }
@@ -79,6 +80,10 @@ function ProductCard({
   const [selectedSize, setSelectedSize] = useState<string>("");
 
   const activeVariant = product.variant?.[selectedVariantIdx];
+  console.log("activeVariant", activeVariant);
+  const variantImage =
+    product.images?.[activeVariant?.imageIndex] ?? product.images?.[0] ?? "";
+
   const stockList = activeVariant?.stock ?? [];
 
   const handleAdd = () => {
@@ -97,17 +102,22 @@ function ProductCard({
         ? Math.round(product.price - (product.discountPrice || 0))
         : product.price;
 
+    const variantImage =
+      product.images?.[activeVariant.imageIndex] ?? product.images?.[0] ?? "";
+
     onAddToOrder({
       productId: product._id,
       productName: product.name,
-      productImage: product.images?.[0] ?? "",
-      colorId: activeVariant.color._id,
+      productImage: variantImage,
+      colorId: activeVariant.color,
       colorName: activeVariant.color.name,
       colorHex: activeVariant.color.color,
       selectedSize,
+      size: selectedSize,
       quantity: 1,
       originalPrice: calciulatedPrice,
       price: calciulatedPrice,
+      discountPrice: product.discountPrice || 0,
       stock: stock.quantity,
     });
 
@@ -121,7 +131,7 @@ function ProductCard({
         <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
           {product.images?.[0] ? (
             <Image
-              src={product.images[0]}
+              src={variantImage}
               alt={product.name}
               fill
               className="object-cover"
@@ -362,27 +372,25 @@ export default function ManualOrderPage() {
 
     const payload = {
       guestCheckout: customerType === "guest",
-      // guestEmail: form.email,
       guestInfo: {
         fullName: form.fullName,
         phone: form.phone,
         address: form.address,
-        // city: form.city,
       },
-
       items: cartItems.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
         price: item.price,
         selectedSize: item.selectedSize,
         colorId: item.colorId,
+        image: item.productImage,
       })),
       totalPrice: grandTotal,
       paymentMethod: form.paymentMethod,
     };
 
     try {
-      const res = await createOrder(payload).unwrap();
+      await createOrder(payload).unwrap();
       toast.success("Order created successfully!");
       router.push(`/dashboard/order`);
     } catch (err: unknown) {
@@ -648,63 +656,6 @@ export default function ManualOrderPage() {
                   )}
                 </div>
               ))}
-
-              {/* City — Search Dropdown */}
-              {/* <div className="space-y-1 relative">
-                <Label className="text-xs text-slate-600 dark:text-slate-400">
-                  City
-                </Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-                  <input
-                    value={citySearch}
-                    onChange={(e) => {
-                      setCitySearch(e.target.value);
-                      setCityDropdownOpen(true);
-                      if (!e.target.value) {
-                        setSelectedCity("");
-                        setValue("city", "");
-                      }
-                    }}
-                    onFocus={() => setCityDropdownOpen(true)}
-                    onBlur={() =>
-                      setTimeout(() => setCityDropdownOpen(false), 150)
-                    }
-                    placeholder="Search city..."
-                    className="w-full h-9 pl-8 pr-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-black rounded-lg outline-none text-slate-800 dark:text-white"
-                  />
-                </div>
-
-                <input type="hidden" {...register("city")} />
-
-                {cityDropdownOpen && filteredCities.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-44 overflow-y-auto">
-                    {filteredCities.map((city) => (
-                      <button
-                        key={city}
-                        type="button"
-                        onMouseDown={() => handleCitySelect(city)}
-                        className={`w-full text-left px-3 py-2 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 ${
-                          selectedCity === city
-                            ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 font-medium"
-                            : "text-slate-700 dark:text-slate-300"
-                        }`}
-                      >
-                        <span>{city}</span>
-                        {city.toLowerCase() === "dhaka" && (
-                          <span className="ml-2 text-xs text-emerald-600 font-medium">
-                            ৳{DHAKA_CHARGE} delivery
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {errors.city && (
-                  <p className="text-xs text-red-500">{errors.city.message}</p>
-                )}
-              </div> */}
 
               {/* Delivery Charge */}
 
