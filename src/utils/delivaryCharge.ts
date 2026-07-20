@@ -66,4 +66,4 @@ export const BD_CITIES = [
 ];
 
 export const DHAKA_CHARGE = 100;
-export const OUTSIDE_DHAKA_CHARGE = 150;
+export const OUTSIDE_DHAKA_CHARGE = 130;

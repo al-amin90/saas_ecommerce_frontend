@@ -130,7 +130,11 @@ const ProductDetailsPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [sizeQuantities, setSizeQuantities] = useState<
+    Record<string, [{ size: string; quantity: number; image: string }]>
+  >({});
+
+  console.log("sizeQuantities", sizeQuantities);
 
   if (isLoading) return <ProductDetailSkeleton />;
 
@@ -167,50 +171,86 @@ const ProductDetailsPage = () => {
       ? (product.categoryID.name ?? "")
       : "";
 
-  // -----------) add to cart here
-  const handleAddToCart = () => {
-    if (!effectiveSelectedSize) {
-      toast.warning("Please select a size");
-      return;
-    }
+  const totalSelectedItems = Object.values(sizeQuantities)
+    .flat()
+    .reduce((sum, s) => sum + s.quantity, 0);
 
-    console.log("activeVariant", activeVariant);
-
-    dispatch(
-      addToCart({
-        productId: product._id!,
-        productName: product.name,
-        productImage: product.existingImages?.[0] ?? "",
-        price: product.price,
-        originalPrice: product.originalPrice ?? product.price,
-        discountPrice: product.discountPrice ?? 0,
-        colorId: activeVariant.color,
-        size: effectiveSelectedSize,
-        quantity,
-        stock: selectedStock?.quantity ?? 0,
-      }),
-    );
-
-    toast.success("Added to cart!");
+  const handleVariantChange = (i: number) => {
+    setSelectedVariantIdx(i);
+    setSelectedImage(product.variant?.[i]?.imageIndex ?? 0);
   };
 
-  const handleBuyNow = () => {
-    if (!effectiveSelectedSize) {
-      toast.error("Please select a size");
+  // -----------) add to cart here
+  const handleAddToCart = () => {
+    if (totalSelectedItems === 0) {
+      toast.warning("Please select at least one size");
       return;
     }
+
+    // সব variant এর সব selected size cart এ যাবে
+    Object.entries(sizeQuantities).forEach(([variantId, sizes]) => {
+      const variant = product.variant.find((v) => v._id === variantId);
+      if (!variant) return;
+
+      const variantImage = images[variant.imageIndex] || images[0] || "";
+
+      sizes.forEach(({ size, quantity }) => {
+        if (quantity === 0) return;
+
+        const stock = (variant.stock as IStock[]).find((s) => s.size === size);
+
+        dispatch(
+          addToCart({
+            productId: product._id!,
+            productName: product.name,
+            productImage: variantImage,
+            price: product.price,
+            originalPrice: product.originalPrice ?? product.price,
+            discountPrice: product.discountPrice ?? 0,
+            colorId: variant.color,
+            size,
+            quantity,
+            stock: stock?.quantity ?? 0,
+          }),
+        );
+      });
+    });
+
+    toast.success(
+      `${totalSelectedItems} item${totalSelectedItems > 1 ? "s" : ""} added to cart!`,
+    );
+    setSizeQuantities({});
+  };
+
+  // In ProductDetailsPage component
+
+  const handleBuyNow = () => {
+    // Check if any size is selected
+    const hasSelectedItems = Object.values(sizeQuantities).some(
+      (sizes) => sizes.length > 0 && sizes.some((s) => s.quantity > 0),
+    );
+
+    if (!hasSelectedItems) {
+      toast.error("Please select at least one size");
+      return;
+    }
+
+    // Set the selected sizes for the modal
     setBuyNowOpen(true);
   };
 
   // ------------)  size show data methos
-  const getSizeChartRow = (size: number) => {
+  const getSizeChartRow = (size: string) => {
     if (!product.sizeChartId?.rows) return null;
 
     return product.sizeChartId.rows.find((row) => {
-      const inner = row.innerLength;
+      const inner = row?.innerLength;
       if (!inner) return false;
 
-      const cleaned = inner.replace(/[^0-9.\-]/g, "").trim();
+      console.log("inner", inner);
+      const innerStr = String(inner).trim();
+      const cleaned = innerStr?.replace(/[^0-9.\-]/g, "")?.trim();
+      console.log("cleaned", cleaned);
 
       if (cleaned.includes("-")) {
         const [min, max] = cleaned.split("-").map(Number);
@@ -222,6 +262,43 @@ const ProductDetailsPage = () => {
       console.log("size", size, min, max);
 
       return size >= min && size <= max;
+    });
+  };
+
+  const getSizeQuantity = (variantId: string, size: string): number => {
+    return (
+      sizeQuantities[variantId]?.find((s) => s.size === size)?.quantity ?? 0
+    );
+  };
+
+  const updateSizeQuantity = (
+    variantId: string,
+    size: string,
+    delta: number,
+    maxStock: number,
+  ) => {
+    setSizeQuantities((prev) => {
+      const existing = prev[variantId] ?? [];
+      const sizeEntry = existing.find((s) => s.size === size);
+      const currentQty = sizeEntry?.quantity ?? 0;
+      const nextQty = Math.min(Math.max(0, currentQty + delta), maxStock);
+
+      let updated: { size: string; quantity: number }[];
+
+      if (!sizeEntry) {
+        // নতুন size যোগ করো
+        updated = [...existing, { size, quantity: nextQty }];
+      } else {
+        // existing update করো
+        updated = existing.map((s) =>
+          s.size === size ? { ...s, quantity: nextQty } : s,
+        );
+      }
+
+      // quantity 0 হলে list থেকে সরিয়ে দাও
+      updated = updated.filter((s) => s.quantity > 0);
+
+      return { ...prev, [variantId]: updated };
     });
   };
 
@@ -404,6 +481,7 @@ const ProductDetailsPage = () => {
 
           {/* Size */}
           {/* Size */}
+          {/* Size */}
           {stockList.length > 0 && (
             <div className="space-y-2 pt-1 sm:pt-0">
               <div className="flex justify-between items-center gap-3">
@@ -426,58 +504,184 @@ const ProductDetailsPage = () => {
 
               <div className="flex flex-col gap-1.5 sm:gap-2 ">
                 {stockList.map((s) => {
-                  const chartRow = getSizeChartRow(s.size);
-                  console.log("chartRow", chartRow);
-                  const isSelected = effectiveSelectedSize === s.size;
+                  const qty = getSizeQuantity(activeVariant._id, s.size);
+                  const isSelected = qty > 0;
                   const isOutOfStock = s.quantity === 0;
 
                   return (
-                    <button
+                    <div
                       key={s._id ?? s.size}
-                      onClick={() => setSelectedSize(s.size)}
-                      disabled={isOutOfStock}
-                      className={`relative flex justify-between items-center px-3 py-2 cursor-pointer rounded-lg text-xs sm:text-sm font-medium border transition-all ${
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition-all ${
                         isSelected
-                          ? "bg-[#FF6900] text-white border-orange-400"
+                          ? "border-orange-400 bg-orange-50"
                           : isOutOfStock
-                            ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed line-through"
-                            : "bg-white text-slate-700  border-orange-400"
+                            ? "border-slate-100 bg-slate-50 opacity-50"
+                            : "border-slate-200 bg-white hover:border-orange-200"
                       }`}
                     >
-                      <span className="font-bold">{s.size}</span>
-                      {chartRow && (
-                        <span
-                          className={`text-xs leading-tight mt-0.5 ${
-                            isSelected ? "text-white/80" : "text-slate-400"
-                          }`}
-                        >
-                          {chartRow.innerLength}
-                        </span>
+                      {/* size + chart info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`text-sm font-bold ${isSelected ? "text-orange-600" : isOutOfStock ? "text-slate-300" : "text-slate-800"}`}
+                          >
+                            {isOutOfStock ? (
+                              <span className="line-through">{s.size}</span>
+                            ) : (
+                              s.size
+                            )}
+                          </span>
+                          {getSizeChartRow(s.size)?.innerLength && (
+                            <span className="text-xs text-slate-400">
+                              {getSizeChartRow(s.size)?.innerLength}
+                            </span>
+                          )}
+                          {getSizeChartRow(s.size)?.ageRange && (
+                            <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full">
+                              {getSizeChartRow(s.size)?.ageRange}
+                            </span>
+                          )}
+                        </div>
+                        {!isOutOfStock && (
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {s.quantity} in stock
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Quantity counter */}
+                      {!isOutOfStock && (
+                        <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-white shrink-0">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateSizeQuantity(
+                                activeVariant._id,
+                                s.size,
+                                -1,
+                                s.quantity,
+                              )
+                            }
+                            disabled={qty === 0}
+                            className="px-2.5 py-2 hover:bg-slate-100 transition-colors text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span
+                            className={`px-3 py-2 text-xs font-bold min-w-8 text-center ${qty > 0 ? "text-orange-600" : "text-slate-400"}`}
+                          >
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateSizeQuantity(
+                                activeVariant._id,
+                                s.size,
+                                1,
+                                s.quantity,
+                              )
+                            }
+                            disabled={qty >= s.quantity}
+                            className="px-2.5 py-2 hover:bg-slate-100 transition-colors text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
                       )}
-                      {chartRow && (
-                        <span
-                          className={`text-xs leading-tight mt-0.5 ${
-                            isSelected ? "text-white/80" : "text-slate-400"
-                          }`}
-                        >
-                          {chartRow.ageRange} baby
-                        </span>
-                      )}
-                    </button>
+                    </div>
                   );
                 })}
-              </div>
-
-              {/* Selected size detail */}
-              {effectiveSelectedSize &&
-                (() => {
-                  const chartRow = getSizeChartRow(effectiveSelectedSize);
-                  if (!chartRow) return null;
+                {/* {stockList.map((s) => {
+                  const chartRow = getSizeChartRow(s.size);
+                  const qty = 3; getSizeQuantity(s.size);
+                  const isOutOfStock = s.quantity === 0;
+                  const isSelected = qty > 0;
 
                   return (
-                    <div className="flex flex-wrap gap-3 bg-slate-50 rounded-xl px-4 py-3 mt-1"></div>
+                    <div
+                      key={s._id ?? s.size}
+                      className={`relative gap-1.5 sm:gap-2 flex justify-between items-center `}
+                    >
+                      <div
+                        className={`relative flex-1 flex justify-between items-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all ${
+                          isSelected
+                            ? "bg-[#FF6900] text-white border-orange-400"
+                            : isOutOfStock
+                              ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed line-through"
+                              : "bg-white text-slate-700  border-orange-400"
+                        }`}
+                      >
+                        <p className="font-bold">{s.size}</p>
+                        {chartRow && (
+                          <p
+                            className={`text-xs leading-tight mt-0.5 ${
+                              isSelected ? "text-white/80" : "text-slate-400"
+                            }`}
+                          >
+                            {chartRow.innerLength}
+                          </p>
+                        )}
+                        {chartRow && (
+                          <p
+                            className={`text-xs leading-tight mt-0.5 ${
+                              isSelected ? "text-white/80" : "text-slate-400"
+                            }`}
+                          >
+                            {chartRow.ageRange} baby
+                          </p>
+                        )}
+                      </div>
+
+                      {!isOutOfStock && (
+                        <div
+                          className={`flex items-center rounded-xl overflow-hidden border lg:border-2 transition-all duration-200 ${
+                            isSelected
+                              ? "border-[#FF6900] bg-white shadow-sm"
+                              : "border-slate-200 bg-white group-hover:border-orange-300"
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateSizeQuantity(s.size, -1, s.quantity)
+                            }
+                            disabled={qty === 0}
+                            className={`px-2 lg:px-3 py-2 lg:py-[9px] transition-colors ${
+                              qty === 0
+                                ? "text-slate-300 cursor-not-allowed"
+                                : "text-slate-600 hover:bg-orange-50 active:bg-orange-100"
+                            }`}
+                          >
+                            <Minus className="h-3.5 w-3.5" />
+                          </button>
+                          <span
+                            className={`lg:px-3 lg:py-2.5 text-sm font-bold  text-center ${
+                              qty > 0 ? "text-[#FF6900]" : "text-slate-400"
+                            }`}
+                          >
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateSizeQuantity(s.size, 1, s.quantity)
+                            }
+                            disabled={qty >= s.quantity}
+                            className={`px-2 lg:px-3 py-2 lg:py-[9px] transition-colors ${
+                              qty >= s.quantity
+                                ? "text-slate-300 cursor-not-allowed"
+                                : "text-slate-600 hover:bg-orange-50 active:bg-orange-100"
+                            }`}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   );
-                })()}
+                })} */}
+              </div>
             </div>
           )}
 
@@ -488,42 +692,16 @@ const ProductDetailsPage = () => {
           </p>
 
           <div className="flex gap-3 items-center justify-center  w-full mb-3 relative">
-            {/* Quantity */}
-            <div className="flex items-center gap-2 sm:gap-3 pt-1 sm:pt-0">
-              <span className="text-xs sm:text-sm font-semibold text-slate-700">
-                Qty
-              </span>
-              <div className="flex items-center border border-slate-200 rounded-lg sm:rounded-xl overflow-hidden bg-slate-50">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="px-2 sm:px-3 py-2.5 sm:py-3 hover:bg-slate-100 transition-colors text-slate-600"
-                >
-                  <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
-                </button>
-                <span className="px-2 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold min-w-8 sm:min-w-10 text-center">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="px-2 sm:px-3 py-2.5 sm:py-3 hover:bg-slate-100 transition-colors text-slate-600"
-                >
-                  <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                </button>
-              </div>
-            </div>
-
             <Button
               variant="outline"
               onClick={handleAddToCart}
-              className="group flex-1 h-10 sm:h-12 border-2 border-black text-slate-800 hover:bg-black hover:text-white hover:border-black rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold gap-2 transition-all duration-300 hover:shadow-lg hover:shadow-black/20 relative overflow-hidden"
+              disabled={totalSelectedItems === 0}
+              className="..."
             >
-              {/* Shimmer effect on hover */}
-              <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-              <span className="relative flex items-center justify-center gap-2">
-                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" />
-                <span className="inline">Add to cart</span>
-              </span>
+              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+              {totalSelectedItems > 0
+                ? `Add ${totalSelectedItems} to cart`
+                : "Add to cart"}
             </Button>
           </div>
 
@@ -601,10 +779,9 @@ const ProductDetailsPage = () => {
         productId={product._id!}
         productName={product.name}
         price={discount}
-        discountPrice={product.discountPrice ?? 0}
-        selectedSize={effectiveSelectedSize!}
-        selectedColor={activeVariant.color}
-        quantity={quantity}
+        images={images}
+        variants={product.variant}
+        sizeQuantities={sizeQuantities}
       />
     </div>
   );

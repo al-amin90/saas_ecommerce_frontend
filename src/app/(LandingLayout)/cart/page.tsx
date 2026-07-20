@@ -116,11 +116,14 @@ export default function CartPage() {
             ? Math.round(item.price - (item.discountPrice || 0))
             : item.price,
         selectedSize: String(item.size),
+        image: item.productImage,
         colorId: item.colorId._id,
       })),
       totalPrice: grandTotal,
       paymentMethod: form.paymentMethod,
     };
+
+    console.log("payload", payload);
 
     try {
       const res = await createOrder({
@@ -130,6 +133,7 @@ export default function CartPage() {
       }).unwrap();
       dispatch(clearCart());
       toast.success("Order placed successfully!");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       router.push(`/order-success?orderId=${(res as any)?.data?._id}`);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };

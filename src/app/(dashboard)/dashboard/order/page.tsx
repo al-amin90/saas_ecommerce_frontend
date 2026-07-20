@@ -55,6 +55,7 @@ export interface IOrderItem {
     color: string;
   };
   quantity: number;
+  image: string;
   price: number;
   selectedSize: string;
 }
@@ -169,7 +170,7 @@ function OrderDetailModal({
                 <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
                   {item.productId?.images?.[0] ? (
                     <Image
-                      src={item.productId.images[0]}
+                      src={item.image}
                       alt={item.productId.name}
                       fill
                       className="object-cover"
@@ -306,7 +307,7 @@ export default function OrdersPage() {
     useSubmitBulkOrdersMutation();
 
   const orders: IOrderRow[] = data?.data ?? [];
-  console.log("orders", orders);
+
   const meta = data?.meta as IMeta | undefined;
 
   // ── Client-side search ────────────────────────────────────────────────────
@@ -403,193 +404,183 @@ export default function OrdersPage() {
     activeBg: s.activeBg,
     activeText: s.activeText,
   }));
-  const orderStatusList = orderStatusConfigs.map((s) => ({
-    key: s.key,
-    label: s.label,
-    icon: s.icon,
-    dot: s.dot,
-    bar: s.bar,
-    text: s.text,
-    activeBg: s.activeBg,
-    activeText: s.activeText,
-  }));
 
   // ── Columns ───────────────────────────────────────────────────────────────
-  // const columns = [
-  //   {
-  //     key: "checkbox",
-  //     label: (
-  //       <Checkbox
-  //         checked={
-  //           filteredOrders.length > 0 &&
-  //           selectedOrderIds.size === filteredOrders.length
-  //         }
-  //         onCheckedChange={handleSelectAll}
-  //         className="rounded"
-  //       />
-  //     ),
-  //     render: (row: IOrderRow) => (
-  //       <Checkbox
-  //         checked={selectedOrderIds.has(row._id)}
-  //         onCheckedChange={() => handleSelectOrder(row._id)}
-  //         className="rounded"
-  //         onClick={(e) => e.stopPropagation()}
-  //       />
-  //     ),
-  //   },
-  //   {
-  //     key: "orderNumber",
-  //     label: "Order #",
-  //     render: (row: IOrderRow) => (
-  //       <div>
-  //         <span className="font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold block">
-  //           {row.orderNumber}
-  //         </span>
-  //         <span className="text-xs text-slate-400">
-  //           {format(new Date(row.createdAt), "MMM d, yyyy")}
-  //         </span>{" "}
-  //         <br />
-  //         {row?.courier?.consignmentId && (
-  //           <span className="text-xs ">CN#{row.courier.consignmentId}</span>
-  //         )}
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     key: "customer",
-  //     label: "Customer",
-  //     render: (row: IOrderRow) => (
-  //       <div className="min-w-[160px]">
-  //         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-  //           {row.guestInfo?.fullName ?? row.userId?.name ?? "Unknown"}
-  //         </p>
-  //         <p className="text-xs text-slate-400 mt-0.5">
-  //           {row.guestEmail || row.userId?.email || "—"}
-  //         </p>
-  //         <div className="flex items-center gap-1 mt-1">
-  //           <span className="text-xs text-slate-500">📍</span>
-  //           <span className="text-xs text-slate-500">
-  //             {[
-  //               row.guestInfo?.address,
-  //               row.guestInfo?.city,
-  //               row.guestInfo?.postalCode,
-  //             ]
-  //               .filter(Boolean)
-  //               .join(", ")}
-  //           </span>
-  //         </div>
-  //         <p className="text-xs text-slate-400 mt-0.5">
-  //           📞 {row.guestInfo?.phone ?? "—"}
-  //         </p>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     key: "items",
-  //     label: "Order Items",
-  //     render: (row: IOrderRow) => (
-  //       <div className="flex flex-col gap-2 min-w-[260px] max-w-[320px]">
-  //         {row.items.map((item, i) => (
-  //           <div key={item._id ?? i} className="flex items-center gap-2">
-  //             <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200 dark:border-slate-700">
-  //               {item.productId?.images?.[0] ? (
-  //                 <Image
-  //                   src={item.productId.images[0]}
-  //                   alt={item.productId?.name ?? ""}
-  //                   fill
-  //                   className="object-cover"
-  //                 />
-  //               ) : (
-  //                 <div className="w-full h-full flex items-center justify-center text-slate-300 text-lg">
-  //                   📦
-  //                 </div>
-  //               )}
-  //             </div>
-  //             <div className="flex-1 min-w-0">
-  //               <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
-  //                 {item.productId?.name ?? "—"}
-  //               </p>
-  //               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-  //                 {item.colorId?.color && (
-  //                   <span className="flex items-center gap-1 text-xs text-slate-400">
-  //                     <span
-  //                       className="w-2.5 h-2.5 rounded-full border border-slate-300 inline-block flex-shrink-0"
-  //                       style={{ background: item.colorId.color }}
-  //                     />
-  //                     {item.colorId.name}
-  //                   </span>
-  //                 )}
-  //                 {item.selectedSize && (
-  //                   <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded font-mono">
-  //                     {item.selectedSize}
-  //                   </span>
-  //                 )}
-  //                 <span className="text-xs text-slate-400">
-  //                   ×{item.quantity}
-  //                 </span>
-  //                 <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-  //                   ৳{(item.price * item.quantity).toLocaleString()}
-  //                 </span>
-  //               </div>
-  //             </div>
-  //           </div>
-  //         ))}
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     key: "totalPrice",
-  //     label: "Total",
-  //     render: (row: IOrderRow) => (
-  //       <div className="min-w-[80px]">
-  //         <span className="text-sm font-bold text-slate-800 dark:text-white block">
-  //           ৳{row.totalPrice.toLocaleString()}
-  //         </span>
-  //         <span className="text-xs text-slate-400 capitalize">
-  //           {row.paymentMethod}
-  //         </span>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     key: "orderStatus",
-  //     label: "Status",
-  //     render: (row: IOrderRow) => (
-  //       <div className="flex flex-col gap-1.5 min-w-[100px]">
-  //         <span
-  //           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize w-fit ${ORDER_STATUS_BADGE[row.orderStatus]}`}
-  //         >
-  //           {ORDER_STATUS_CONFIG[row.orderStatus]?.label || row.orderStatus}
-  //         </span>
-  //         <span
-  //           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize w-fit ${PAYMENT_STATUS_BADGE[row.paymentStatus]}`}
-  //         >
-  //           {PAYMENT_STATUS_CONFIG[row.paymentStatus]?.label ||
-  //             row.paymentStatus}
-  //         </span>
-  //       </div>
-  //     ),
-  //   },
-  //   {
-  //     key: "actions",
-  //     label: "",
-  //     headClassName: "text-right",
-  //     render: (row: IOrderRow) => (
-  //       <div className="flex justify-end">
-  //         <button
-  //           onClick={(e) => {
-  //             e.stopPropagation();
-  //             setSelectedOrder(row);
-  //             setDetailOpen(true);
-  //           }}
-  //           className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
-  //         >
-  //           <Eye className="h-4 w-4" />
-  //         </button>
-  //       </div>
-  //     ),
-  //   },
-  // ];
+  const columns = [
+    {
+      key: "checkbox",
+      label: (
+        <Checkbox
+          checked={
+            filteredOrders.length > 0 &&
+            selectedOrderIds.size === filteredOrders.length
+          }
+          onCheckedChange={handleSelectAll}
+          className="rounded"
+        />
+      ),
+      render: (row: IOrderRow) => (
+        <Checkbox
+          checked={selectedOrderIds.has(row._id)}
+          onCheckedChange={() => handleSelectOrder(row._id)}
+          className="rounded"
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
+    },
+    {
+      key: "orderNumber",
+      label: "Order #",
+      render: (row: IOrderRow) => (
+        <div>
+          <span className="font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold block">
+            {row.orderNumber}
+          </span>
+          <span className="text-xs text-slate-400">
+            {format(new Date(row.createdAt), "MMM d, yyyy")}
+          </span>{" "}
+          <br />
+          {row?.courier?.consignmentId && (
+            <span className="text-xs ">CN#{row.courier.consignmentId}</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "customer",
+      label: "Customer",
+      render: (row: IOrderRow) => (
+        <div className="min-w-[160px]">
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+            {row.guestInfo?.fullName ?? row.userId?.name ?? "Unknown"}
+          </p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {row.guestEmail || row.userId?.email || "—"}
+          </p>
+          <div className="flex items-center gap-1 mt-1">
+            <span className="text-xs text-slate-500">📍</span>
+            <span className="text-xs text-slate-500">
+              {[
+                row.guestInfo?.address,
+                row.guestInfo?.city,
+                row.guestInfo?.postalCode,
+              ]
+                .filter(Boolean)
+                .join(", ")}
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-0.5">
+            📞 {row.guestInfo?.phone ?? "—"}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "items",
+      label: "Order Items",
+      render: (row: IOrderRow) => (
+        <div className="flex flex-col gap-2 min-w-[260px] max-w-[320px]">
+          {row.items.map((item, i) => (
+            <div key={item._id ?? i} className="flex items-center gap-2">
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200 dark:border-slate-700">
+                {item.productId?.images?.[0] ? (
+                  <Image
+                    src={item.image}
+                    alt={item.productId?.name ?? ""}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-300 text-lg">
+                    📦
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
+                  {item.productId?.name ?? "—"}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  {item.colorId?.color && (
+                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full border border-slate-300 inline-block flex-shrink-0"
+                        style={{ background: item.colorId.color }}
+                      />
+                      {item.colorId.name}
+                    </span>
+                  )}
+                  {item.selectedSize && (
+                    <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded font-mono">
+                      {item.selectedSize}
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-400">
+                    ×{item.quantity}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    ৳{(item.price * item.quantity).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      key: "totalPrice",
+      label: "Total",
+      render: (row: IOrderRow) => (
+        <div className="min-w-[80px]">
+          <span className="text-sm font-bold text-slate-800 dark:text-white block">
+            ৳{row.totalPrice.toLocaleString()}
+          </span>
+          <span className="text-xs text-slate-400 capitalize">
+            {row.paymentMethod}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "orderStatus",
+      label: "Status",
+      render: (row: IOrderRow) => (
+        <div className="flex flex-col gap-1.5 min-w-[100px]">
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize w-fit ${ORDER_STATUS_BADGE[row.orderStatus]}`}
+          >
+            {ORDER_STATUS_CONFIG[row.orderStatus]?.label || row.orderStatus}
+          </span>
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize w-fit ${PAYMENT_STATUS_BADGE[row.paymentStatus]}`}
+          >
+            {PAYMENT_STATUS_CONFIG[row.paymentStatus]?.label ||
+              row.paymentStatus}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      label: "",
+      headClassName: "text-right",
+      render: (row: IOrderRow) => (
+        <div className="flex justify-end">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedOrder(row);
+              setDetailOpen(true);
+            }}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   // ── Render ────────────────────────────────────────────────────────────────
 

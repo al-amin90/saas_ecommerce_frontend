@@ -20,6 +20,7 @@ import {
   DHAKA_CHARGE,
   OUTSIDE_DHAKA_CHARGE,
 } from "@/src/utils/delivaryCharge";
+import { ICartItem } from "@/src/redux/features/cart/cartSlice";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -44,20 +45,6 @@ interface IProduct {
   images: string[];
   variant: IVariant[];
   categoryID: { name: string };
-}
-
-interface ICartItem {
-  productId: string;
-  productName: string;
-  productImage: string;
-  colorId: string;
-  colorName: string;
-  colorHex: string;
-  selectedSize: string;
-  quantity: number;
-  originalPrice: number;
-  price: number; // editable
-  stock: number;
 }
 
 interface IUser {

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Search, Zap } from "lucide-react";
+import Image from "next/image";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { usePostDynamicMutation } from "@/src/redux/features/dynamic/dynamicApi";
 import { toast } from "sonner";
-import { IColor } from "@/src/interface/dashboard/dashboard";
 import { useState } from "react";
 import {
   BD_CITIES,
@@ -40,7 +40,23 @@ const buyNowSchema = z.object({
 
 type BuyNowForm = z.infer<typeof buyNowSchema>;
 
-// ── Props ─────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface VariantLite {
+  _id: string;
+  imageIndex: number;
+  color: { _id: string; name: string; color: string };
+}
+
+interface SelectedItem {
+  variantId: string;
+  colorId: string;
+  colorName: string;
+  colorHex: string;
+  image: string;
+  size: string;
+  quantity: number;
+}
 
 interface BuyNowModalProps {
   open: boolean;
@@ -48,10 +64,9 @@ interface BuyNowModalProps {
   productId: string;
   productName: string;
   price: number;
-  discountPrice: number;
-  selectedSize: number;
-  selectedColor: IColor;
-  quantity: number;
+  images: string[];
+  variants: VariantLite[];
+  sizeQuantities: Record<string, { size: string; quantity: number }[]>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -61,10 +76,10 @@ export default function BuyNowModal({
   onOpenChange,
   productId,
   productName,
+  images,
+  variants,
+  sizeQuantities,
   price,
-  selectedSize,
-  selectedColor,
-  quantity,
 }: BuyNowModalProps) {
   const router = useRouter();
   const [createOrder, { isLoading }] = usePostDynamicMutation();
@@ -79,7 +94,6 @@ export default function BuyNowModal({
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     reset,
     formState: { errors },
@@ -88,7 +102,33 @@ export default function BuyNowModal({
     defaultValues: { paymentMethod: "cash" },
   });
 
-  const selectedPayment = watch("paymentMethod");
+  // ── Flatten every selected variant/size into one list ──────────────────────
+  const selectedItems: SelectedItem[] = Object.entries(sizeQuantities).flatMap(
+    ([variantId, sizes]) => {
+      const variant = variants.find((v) => v._id === variantId);
+      const image =
+        (variant ? images[variant.imageIndex] : undefined) || images[0] || "";
+
+      return sizes
+        .filter((s) => s.quantity > 0)
+        .map((s) => ({
+          variantId,
+          colorId: variant?.color._id ?? "",
+          colorName: variant?.color.name ?? "",
+          colorHex: variant?.color.color ?? "",
+          image,
+          size: s.size,
+          quantity: s.quantity,
+        }));
+    },
+  );
+
+  const totalQuantity = selectedItems.reduce((sum, i) => sum + i.quantity, 0);
+  const itemsTotal = selectedItems.reduce(
+    (sum, i) => sum + price * i.quantity,
+    0,
+  );
+  const grandTotal = itemsTotal + (selectedCity ? deliveryCharge : 0);
 
   const handleCitySelect = (city: string) => {
     setSelectedCity(city);
@@ -108,9 +148,12 @@ export default function BuyNowModal({
     c.toLowerCase().includes(citySearch.toLowerCase()),
   );
 
-  const grandTotal = selectedCity ? price + deliveryCharge : price;
-
   const onSubmit = async (form: BuyNowForm) => {
+    if (selectedItems.length === 0) {
+      toast.error("Please select at least one size");
+      return;
+    }
+
     const payload = {
       guestCheckout: true,
       guestEmail: form.email,
@@ -120,16 +163,15 @@ export default function BuyNowModal({
         address: form.address,
         city: form.city,
       },
-      items: [
-        {
-          productId,
-          quantity,
-          price: price,
-          selectedSize: String(selectedSize),
-          colorId: selectedColor._id,
-        },
-      ],
-      totalPrice: price * quantity + deliveryCharge,
+      items: selectedItems.map(({ size, quantity, colorId, image }) => ({
+        productId,
+        quantity,
+        price,
+        image,
+        selectedSize: String(size),
+        colorId,
+      })),
+      totalPrice: itemsTotal + deliveryCharge,
       paymentMethod: form.paymentMethod,
     };
 
@@ -164,22 +206,72 @@ export default function BuyNowModal({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Order mini summary */}
-        <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-1">
+        {/* Order mini summary — ALL selected images/sizes/colors */}
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-3">
           <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">
             {productName}
           </p>
-          <p className="text-xs text-slate-400">
-            Size: {selectedSize} · Color: {selectedColor?.name} · Qty:{" "}
-            {quantity}
-          </p>
-          <div className="flex items-center gap-6 pt-1">
-            <span className="text-base  font-bold text-slate-800 dark:text-white">
-              Tk: {(price * quantity).toLocaleString()}
+
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            {selectedItems.map((item) => (
+              <div
+                key={`${item.variantId}-${item.size}`}
+                className="flex items-center gap-3"
+              >
+                <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0 bg-slate-100">
+                  {item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={item.colorName || "variant"}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : null}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="w-3 h-3 rounded-full border border-slate-300 shrink-0"
+                      style={{ backgroundColor: item.colorHex }}
+                    />
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
+                      {item.colorName}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      · Size {item.size}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Qty: {item.quantity} · Tk{" "}
+                    {(price * item.quantity).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            {selectedItems.length === 0 && (
+              <p className="text-xs text-slate-400">No items selected.</p>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+            <span className="text-xs text-slate-500">
+              {totalQuantity} item{totalQuantity !== 1 ? "s" : ""}
             </span>
-            <span className="text-sm font-bold text-slate-800 dark:text-white">
-              Delivery Charge: {selectedCity && deliveryCharge.toLocaleString()}
-            </span>
+            <div className="text-right">
+              <p className="text-base font-bold text-slate-800 dark:text-white">
+                Tk {itemsTotal.toLocaleString()}
+              </p>
+              {selectedCity && (
+                <p className="text-xs text-slate-400">
+                  + Delivery Tk {deliveryCharge.toLocaleString()} ={" "}
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">
+                    Tk {grandTotal.toLocaleString()}
+                  </span>
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -190,11 +282,6 @@ export default function BuyNowModal({
               label: "Full Name",
               placeholder: "আহমেদ হোসেন",
             },
-            // {
-            //   name: "email" as const,
-            //   label: "Email",
-            //   placeholder: "you@example.com",
-            // },
             {
               name: "phone" as const,
               label: "Phone",
@@ -280,13 +367,11 @@ export default function BuyNowModal({
                 <Label className="text-xs text-slate-600 dark:text-slate-400">
                   Delivery Charge
                 </Label>
-                {selectedCity && (
-                  <span className="text-xs text-slate-400">
-                    {selectedCity.toLowerCase() === "dhaka"
-                      ? "Inside Dhaka"
-                      : "Outside Dhaka"}
-                  </span>
-                )}
+                <span className="text-xs text-slate-400">
+                  {selectedCity.toLowerCase() === "dhaka"
+                    ? "Inside Dhaka"
+                    : "Outside Dhaka"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
@@ -296,14 +381,7 @@ export default function BuyNowModal({
                   <input
                     type="number"
                     value={deliveryCharge}
-                    disabled={true}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      if (!isNaN(val) && val >= 0) {
-                        setDeliveryCharge(val);
-                        setDeliveryChargeEdited(true);
-                      }
-                    }}
+                    disabled
                     className="w-full h-9 pl-7 pr-3 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-black rounded-lg outline-none text-slate-800 dark:text-white"
                   />
                 </div>
@@ -324,11 +402,6 @@ export default function BuyNowModal({
                   </button>
                 )}
               </div>
-              {deliveryChargeEdited && (
-                <p className="text-xs text-orange-500">
-                  ⚠ Custom delivery charge applied
-                </p>
-              )}
             </div>
           )}
 
@@ -356,48 +429,17 @@ export default function BuyNowModal({
             </div>
           ))}
 
-          {/* Payment method */}
-          {/* <div className="space-y-2">
-            <Label className="text-sm text-slate-600 dark:text-slate-300">
-              Payment Method
-            </Label>
-            <div className="grid grid-cols-1 gap-2">
-              {[
-                { value: "cash", label: "Cash on Delivery" },
-                { value: "online", label: "Online Payment", disabled: true },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() =>
-                    setValue(
-                      "paymentMethod",
-                      opt.value as BuyNowForm["paymentMethod"],
-                    )
-                  }
-                  className={`py-2.5 px-3 rounded-lg border text-xs font-semibold transition-all ${
-                    selectedPayment === opt.value
-                      ? "border-black bg-black text-white"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-400"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div> */}
           <Button
             type="submit"
-            disabled={isLoading}
-            className={`relative animate-pulse-glow  cursor-pointer
+            disabled={isLoading || selectedItems.length === 0}
+            className={`relative animate-pulse-glow cursor-pointer
     hover:animate-none
-    transition-all duration-300 w-full  h-12 rounded-xl text-sm font-semibold overflow-hidden group ${
+    transition-all duration-300 w-full h-12 rounded-xl text-sm font-semibold overflow-hidden group ${
       isLoading
         ? "bg-slate-700 text-slate-300 cursor-not-allowed"
-        : "bg-gradient-to-r bg-[#FF6900]  hover:shadow-2xl hover:shadow-black/30 text-white"
+        : "bg-gradient-to-r bg-[#FF6900] hover:shadow-2xl hover:shadow-black/30 text-white"
     }`}
           >
-            {/* Animated shimmer effect */}
             {!isLoading && (
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             )}

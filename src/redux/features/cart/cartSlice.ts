@@ -6,12 +6,12 @@ export interface ICartItem {
   productName: string;
   productImage: string;
   price: number;
-  discountPrice: number;
   originalPrice: number;
-  colorId: IColor;
-  size: number;
+  discountPrice: number;
+  colorId: { _id: string; name: string; color: string };
+  size: string;
   quantity: number;
-  stock: number; // max available
+  stock: number;
 }
 
 interface CartState {
@@ -49,7 +49,7 @@ const cartSlice = createSlice({
       action: PayloadAction<{
         productId: string;
         colorId: IColor;
-        size: number;
+        size: string;
       }>,
     ) {
       state.items = state.items.filter(
@@ -67,7 +67,7 @@ const cartSlice = createSlice({
       action: PayloadAction<{
         productId: string;
         colorId: IColor;
-        size: number;
+        size: string;
         quantity: number;
       }>,
     ) {

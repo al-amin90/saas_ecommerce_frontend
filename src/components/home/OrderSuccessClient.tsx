@@ -30,6 +30,7 @@ export default function OrderSuccessClient() {
   );
 
   const order = orderData?.data;
+  console.log("order", order);
 
   if (isLoading) {
     return (
@@ -166,7 +167,7 @@ export default function OrderSuccessClient() {
                         <Image
                           height={64}
                           width={64}
-                          src={item.productId.images[0]}
+                          src={item.image}
                           alt={item.productId.name}
                           className="w-full h-full object-cover rounded-lg"
                         />

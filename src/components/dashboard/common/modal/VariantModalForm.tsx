@@ -584,7 +584,7 @@ export function VariantBlock({
 
         <div className="grid grid-cols-2 gap-3">
           <Label className="text-slate-700 dark:text-slate-300 text-xs">
-            Size
+            Inner Size
           </Label>
           <Label className="text-slate-700 dark:text-slate-300 text-xs">
             Quantity
