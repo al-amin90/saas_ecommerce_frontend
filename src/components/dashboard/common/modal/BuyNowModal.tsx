@@ -172,10 +172,9 @@ export default function BuyNowModal({
         colorId,
       })),
       totalPrice: itemsTotal + deliveryCharge,
+      orderType: "online" as const,
       paymentMethod: form.paymentMethod,
     };
-
-    console.log("payload", payload);
 
     try {
       const res = await createOrder({
@@ -188,11 +187,19 @@ export default function BuyNowModal({
       onOpenChange(false);
       router.push(`/order-success?orderId=${(res as any)?.data?._id}`);
     } catch (err: unknown) {
-      const error = err as { data?: { errorSources: { message?: string }[] } };
-      console.log(err);
-      toast.error(
-        error?.data?.errorSources[0]?.message || "Failed to place order",
-      );
+      const error = err as {
+        data?: { message?: string; errorSources?: { message?: string }[] };
+      };
+      if (error?.data?.errorSources?.length) {
+        const msgs = error.data.errorSources
+          .map((e) => e.message)
+          .filter(Boolean);
+        toast.error(
+          msgs.length > 0 ? msgs.join(". ") : "Failed to place order",
+        );
+      } else {
+        toast.error(error?.data?.message || "Failed to place order");
+      }
     }
   };
 

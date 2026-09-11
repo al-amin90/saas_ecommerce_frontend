@@ -32,7 +32,6 @@ export default function LoginPage() {
       (process.env.NEXT_PUBLIC_TENANCY_TYPE as string) === "multi"
         ? parts[0]
         : "bazar";
-    console.log("subdomain", subdomain);
 
     const postData = { email, password, subdomain };
 
@@ -49,8 +48,7 @@ export default function LoginPage() {
 
       toast.success("Welcome back!");
       router.replace("/dashboard");
-    } catch (err: unknown) {
-      console.log("errf", err);
+    } catch (err: unknown) 
 
       const isErrorResponse = (
         value: unknown,

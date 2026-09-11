@@ -101,7 +101,6 @@ export function CategoryVariant({
   });
 
   useEffect(() => {
-    console.log("defaultValues", defaultValues);
     if (defaultValues) reset({ ...defaultValues });
   }, [defaultValues]);
 
@@ -176,7 +175,6 @@ export function ColorVariant({
   }, [defaultValues]);
 
   const pickedColor = watch("color");
-  console.log("pickedColor", pickedColor);
 
   return (
     <form
@@ -261,10 +259,6 @@ export function SizeChartVariant({
       ...defaultValues,
     },
   });
-
-  console.log("errors", errors);
-
-  console.log("defaultValues", defaultValues);
 
   useEffect(() => {
     reset({ targetGroup: "unisex", rows: [{ size: "0" }], ...defaultValues });
@@ -1295,7 +1289,6 @@ export function BannerVariant({
   });
 
   const products = productsData?.data ?? [];
-  console.log("products", products);
 
   const {
     register,

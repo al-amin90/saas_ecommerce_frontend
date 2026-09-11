@@ -165,7 +165,6 @@ export default function ProductPage() {
       setCreateOpen(false);
       refetch();
     } catch (err: unknown) {
-      console.log("err", err);
       const error = err as { data?: { message?: string } };
       const sourceError = err as {
         data?: { errorSources: { message?: string }[] };
@@ -238,8 +237,6 @@ export default function ProductPage() {
         });
       }
 
-      console.log(Object.fromEntries(formData));
-
       await updateProduct({
         url: `product/${editProduct._id}`,
         data: formData as Partial<IProduct>,
@@ -250,7 +247,7 @@ export default function ProductPage() {
       refetch();
     } catch (err: unknown) {
       const error = err as { data: IErrorResponse };
-      console.log("err", err);
+
       toast.error(error?.data?.message ?? "Failed to update");
     }
   };

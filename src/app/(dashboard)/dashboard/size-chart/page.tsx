@@ -164,7 +164,6 @@ export default function SizeChartPage() {
   const charts: ISizeChart[] = data?.data ?? [];
 
   const handleCreate = async (form: Record<string, unknown>) => {
-    console.log("form", form);
     try {
       await createChart(form).unwrap();
       toast.success("Size chart created");

@@ -119,8 +119,6 @@ const DynamicModal = <T, O, P, Q>({
 }: DynamicModalProps<T, O, P, Q>) => {
   const title = defaultTitleMap[variant][mode];
 
-  console.log("defaultValues", defaultValues);
-
   const renderVariant = () => {
     switch (variant) {
       case "category":

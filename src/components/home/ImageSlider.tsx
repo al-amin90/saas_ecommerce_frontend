@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useGetDynamicQuery } from "@/src/redux/features/dynamic/dynamicApi";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -61,32 +60,6 @@ const transformBannerToSlide = (banner: IBanner): TransformedSlide => {
         : undefined,
   };
 };
-
-// ─── Loading Skeleton ─────────────────────────────────────────────────────
-const LoadingSkeleton = () => (
-  <div
-    className="relative w-full overflow-hidden bg-gradient-to-r from-gray-900 to-gray-800"
-    style={{ height: "88vh", minHeight: 480, maxHeight: 800 }}
-  >
-    <div className="absolute inset-0 animate-pulse">
-      <div className="w-full h-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800" />
-      <div className="absolute inset-0 bg-black/50" />
-
-      {/* Skeleton Content */}
-      <div className="relative z-20 flex flex-col justify-center h-full mx-8 md:mx-16 lg:mx-24">
-        <div className="max-w-xl space-y-6">
-          <div className="h-8 w-32 bg-white/20 rounded animate-pulse" />
-          <div className="space-y-4">
-            <div className="h-20 w-96 bg-white/20 rounded animate-pulse" />
-            <div className="h-20 w-80 bg-white/20 rounded animate-pulse" />
-          </div>
-          <div className="h-6 w-64 bg-white/20 rounded animate-pulse" />
-          <div className="h-12 w-48 bg-white/20 rounded animate-pulse" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 // ─── Arrow Icons ─────────────────────────────────────────────────────────────
 const ChevronLeftIcon = () => (
@@ -211,7 +184,7 @@ const GlowingText = ({
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function ImageSlider() {
+export default function ImageSlider({ banners = [] }: { banners?: IBanner[] }) {
   const [active, setActive] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
   const [animDir, setAnimDir] = useState<"left" | "right">("right");
@@ -230,13 +203,8 @@ export default function ImageSlider() {
   const [isSwiping, setIsSwiping] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  // Fetch banners from API
-  const { data, isLoading, error } = useGetDynamicQuery({
-    url: "/banner/active",
-  });
-
-  // Transform API data to slides
-  const banners: IBanner[] = data?.data ?? [];
+  // Banners are fetched server-side (Next.js fetch, revalidated daily) and
+  // passed in as props. Fallback slides are used if none are provided.
   const slides: TransformedSlide[] = banners.map(transformBannerToSlide);
 
   // Fallback slides if no banners from API
@@ -507,14 +475,6 @@ export default function ImageSlider() {
     fn();
     resetAutoplay();
   };
-
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (error) {
-    console.error("Failed to load banners:", error);
-  }
 
   const slide = displaySlides[active];
   const prevSlide = prev !== null ? displaySlides[prev] : null;

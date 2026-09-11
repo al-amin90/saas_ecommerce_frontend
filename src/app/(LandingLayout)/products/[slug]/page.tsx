@@ -141,8 +141,6 @@ const ProductDetailsPage = () => {
     Record<string, SizeQuantityEntry[]>
   >({});
 
-  console.log("selectedSize", selectedSize);
-
   if (isLoading) return <ProductDetailSkeleton />;
 
   if (!product) {
@@ -159,9 +157,6 @@ const ProductDetailsPage = () => {
   ] as PopulatedVariant;
 
   const stockList: IStock[] = (activeVariant?.stock ?? []) as IStock[];
-
-  console.log("stockList", stockList);
-  console.log("activeVariant", activeVariant);
 
   const fallbackSize = stockList.find((s) => s.quantity > 0)?.size ?? null;
   const effectiveSelectedSize = selectedSize ?? fallbackSize;

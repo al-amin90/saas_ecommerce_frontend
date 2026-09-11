@@ -42,7 +42,6 @@ const baseQuery = fetchBaseQuery({
     let tenantID;
 
     const tenantType = process.env.NEXT_PUBLIC_TENANCY_TYPE;
-    console.log("tenantType", tenantType);
 
     if (tenantType === "single") {
       tenantID = "bazar";
@@ -59,7 +58,6 @@ const baseQuery = fetchBaseQuery({
       }
     }
 
-    console.log("tenantID", tenantID);
     if (tenantID) {
       headers.set("x-tenant", tenantID);
     }
@@ -74,7 +72,6 @@ const baseQueryWithRefreshToken: BaseQueryFn<
   FetchBaseQueryError
 > = async (args: string | FetchArgs, api: any, extraOptions?: any) => {
   const result = await baseQuery(args, api, extraOptions);
-  console.log("result", result);
 
   if (result?.error?.status === 401) {
     const errorData = result?.error?.data as { message?: string } | undefined;
@@ -99,7 +96,7 @@ export const baseApi = createApi({
   tagTypes: [
     "auth",
     "category",
-    // "product",
+    "product",
     "color",
     "products",
     "singleProduct",

@@ -120,10 +120,9 @@ export default function CartPage() {
         colorId: item.colorId._id,
       })),
       totalPrice: grandTotal,
+      orderType: "online" as const,
       paymentMethod: form.paymentMethod,
     };
-
-    console.log("payload", payload);
 
     try {
       const res = await createOrder({
@@ -136,8 +135,19 @@ export default function CartPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       router.push(`/order-success?orderId=${(res as any)?.data?._id}`);
     } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Failed to place order");
+      const error = err as {
+        data?: { message?: string; errorSources?: { message?: string }[] };
+      };
+      if (error?.data?.errorSources?.length) {
+        const msgs = error.data.errorSources
+          .map((e) => e.message)
+          .filter(Boolean);
+        toast.error(
+          msgs.length > 0 ? msgs.join(". ") : "Failed to place order",
+        );
+      } else {
+        toast.error(error?.data?.message || "Failed to place order");
+      }
     }
   };
 

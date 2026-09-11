@@ -25,8 +25,6 @@ export default function ProductCard({ product }: { product: IProduct }) {
     ? Math.round(product.price - (product.discountPrice ?? 0))
     : product.price;
 
-  console.log(product);
-
   return (
     <Link
       onMouseEnter={() => setHovered(true)}

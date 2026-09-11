@@ -80,7 +80,7 @@ function ProductCard({
   const [selectedSize, setSelectedSize] = useState<string>("");
 
   const activeVariant = product.variant?.[selectedVariantIdx];
-  console.log("activeVariant", activeVariant);
+
   const variantImage =
     product.images?.[activeVariant?.imageIndex] ?? product.images?.[0] ?? "";
 
@@ -230,12 +230,9 @@ export default function ManualOrderPage() {
     "guest",
   );
   const [userSearch, setUserSearch] = useState("");
-  const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
   //   delivary charge
   const [citySearch, setCitySearch] = useState("");
-  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState("");
   const [deliveryCharge, setDeliveryCharge] = useState(OUTSIDE_DHAKA_CHARGE);
   const [deliveryChargeEdited, setDeliveryChargeEdited] = useState(false);
 
@@ -324,22 +321,6 @@ export default function ManualOrderPage() {
   );
   // ── Delivary charge ──────────────────────────────────────────────────────────────────
 
-  const handleCitySelect = (city: string) => {
-    setSelectedCity(city);
-    setCitySearch(city);
-    setCityDropdownOpen(false);
-
-    if (!deliveryChargeEdited) {
-      setDeliveryCharge(
-        city.toLowerCase() === "dhaka" ? DHAKA_CHARGE : OUTSIDE_DHAKA_CHARGE,
-      );
-    }
-  };
-
-  const filteredCities = BD_CITIES.filter((c) =>
-    c.toLowerCase().includes(citySearch.toLowerCase()),
-  );
-
   const grandTotal = totalPrice + deliveryCharge;
 
   // ── Form ──────────────────────────────────────────────────────────────────
@@ -368,7 +349,6 @@ export default function ManualOrderPage() {
       toast.error("Please add at least one product");
       return;
     }
-    console.log("hit");
 
     const payload = {
       guestCheckout: customerType === "guest",
@@ -382,10 +362,11 @@ export default function ManualOrderPage() {
         quantity: item.quantity,
         price: item.price,
         selectedSize: item.selectedSize,
-        colorId: item.colorId,
+        colorId: item.colorId._id,
         image: item.productImage,
       })),
       totalPrice: grandTotal,
+      orderType: "manual" as const,
       paymentMethod: form.paymentMethod,
     };
 
@@ -394,8 +375,19 @@ export default function ManualOrderPage() {
       toast.success("Order created successfully!");
       router.push(`/dashboard/order`);
     } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Failed to create order");
+      const error = err as {
+        data?: { message?: string; errorSources?: { message?: string }[] };
+      };
+      if (error?.data?.errorSources?.length) {
+        const msgs = error.data.errorSources
+          .map((e) => e.message)
+          .filter(Boolean);
+        toast.error(
+          msgs.length > 0 ? msgs.join(". ") : "Failed to create order",
+        );
+      } else {
+        toast.error(error?.data?.message || "Failed to create order");
+      }
     }
   };
 

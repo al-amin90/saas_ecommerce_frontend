@@ -19,6 +19,7 @@ const orderApi = baseApi.injectEndpoints({
         limit?: number;
         orderStatus?: string;
         paymentStatus?: string;
+        orderType?: string;
         sortBy?: string;
         sortOrder?: "asc" | "desc";
       }) => ({
@@ -35,6 +36,9 @@ const orderApi = baseApi.injectEndpoints({
             : {}),
           ...(params.paymentStatus && params.paymentStatus !== "all"
             ? { paymentStatus: params.paymentStatus }
+            : {}),
+          ...(params.orderType && params.orderType !== "all"
+            ? { orderType: params.orderType }
             : {}),
         },
       }),

@@ -12,9 +12,7 @@ export default function CartBadge() {
   const totalPrice = useAppSelector(selectCartTotal);
   const router = useRouter();
 
-  console.log("totalItems", totalItems);
   const itemCount = totalItems.reduce((sum, item) => sum + item.quantity, 0);
-  console.log("itemCount", itemCount);
 
   return (
     <div className="flex flex-col w-fit h-fit items-center  fixed right-1 z-50 top-1/3 -translate-y-1/2">

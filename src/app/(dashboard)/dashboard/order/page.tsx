@@ -63,6 +63,7 @@ export interface IOrderItem {
 export interface IOrderRow {
   _id: string;
   orderNumber: string;
+  orderType: "manual" | "online";
   guestCheckout: boolean;
   guestEmail: string;
   guestInfo: {
@@ -281,6 +282,7 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [orderStatus, setOrderStatus] = useState<string>("all");
   const [paymentStatus, setPaymentStatus] = useState<string>("all");
+  const [orderType, setOrderType] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<IOrderRow | null>(null);
@@ -296,6 +298,7 @@ export default function OrdersPage() {
     limit,
     orderStatus: orderStatus === "all" ? undefined : orderStatus,
     paymentStatus: paymentStatus === "all" ? undefined : paymentStatus,
+    orderType: orderType === "all" ? undefined : orderType,
     sortBy: "createdAt",
     sortOrder,
   });
@@ -446,6 +449,7 @@ export default function OrdersPage() {
         </div>
       ),
     },
+
     {
       key: "customer",
       label: "Customer",
@@ -540,6 +544,21 @@ export default function OrdersPage() {
             {row.paymentMethod}
           </span>
         </div>
+      ),
+    },
+    {
+      key: "orderType",
+      label: "Type",
+      render: (row: IOrderRow) => (
+        <span
+          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${
+            row.orderType === "manual"
+              ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+              : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+          }`}
+        >
+          {row.orderType === "manual" ? "Manual" : "Online"}
+        </span>
       ),
     },
     {
@@ -725,6 +744,20 @@ export default function OrdersPage() {
               {PAYMENT_STATUS_CONFIG[s]?.label || s}
             </option>
           ))}
+        </select>
+
+        {/* Order Type filter */}
+        <select
+          value={orderType}
+          onChange={(e) => {
+            setOrderType(e.target.value);
+            setPage(1);
+          }}
+          className="h-9 px-3 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none text-slate-700 dark:text-slate-300"
+        >
+          <option value="all">All Order Types</option>
+          <option value="manual">Manual</option>
+          <option value="online">Online</option>
         </select>
 
         {/* Sort toggle */}

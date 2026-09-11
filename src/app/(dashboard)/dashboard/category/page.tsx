@@ -50,9 +50,6 @@ export default function CategoryPage() {
     { skip: !editCategory },
   );
 
-  console.log("data", data);
-  console.log("editCategory", editCategory);
-
   const [createCategory, { isLoading: creating }] = usePostDynamicMutation();
   const [updateCategory, { isLoading: updating }] = usePatchDynamicMutation();
   const [deleteCategory, { isLoading: deleting }] = useDeleteDynamicMutation();
@@ -66,7 +63,6 @@ export default function CategoryPage() {
       toast.success("Category added successfully");
       setCreateOpen(false);
     } catch (err: unknown) {
-      console.log(";errf", err);
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Failed to add Category");
     }
@@ -74,7 +70,6 @@ export default function CategoryPage() {
 
   const handleUpdate = async (form: Record<string, unknown>) => {
     if (!editCategory) return;
-    console.log("editCategory", editCategory);
 
     try {
       await updateCategory({
@@ -84,7 +79,6 @@ export default function CategoryPage() {
       toast.success("Category updated");
       setEditOpen(false);
     } catch (err: unknown) {
-      console.log("err", err);
       const error = err as IErrorResponse;
       toast.error(error?.message ?? "Failed to delete");
     }
@@ -99,7 +93,6 @@ export default function CategoryPage() {
       toast.success("Category deleted");
       setDeleteId(null);
     } catch (err: unknown) {
-      console.log("err", err);
       const error = err as IErrorResponse;
       toast.error(error?.message ?? "Failed to delete");
     }

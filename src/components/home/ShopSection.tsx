@@ -41,8 +41,6 @@ export default function ShopSection() {
     params: { page, limit: "9" },
   });
 
-  console.log("products.data", data);
-
   useEffect(() => {
     if (data?.data) {
       // eslint-disable-next-line react-hooks/set-state-in-effect

@@ -30,7 +30,6 @@ export default function OrderSuccessClient() {
   );
 
   const order = orderData?.data;
-  console.log("order", order);
 
   if (isLoading) {
     return (
