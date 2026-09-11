@@ -48,8 +48,7 @@ export default function LoginPage() {
 
       toast.success("Welcome back!");
       router.replace("/dashboard");
-    } catch (err: unknown) 
-
+    } catch (err: unknown) {
       const isErrorResponse = (
         value: unknown,
       ): value is { data: IErrorResponse } =>
