@@ -72,6 +72,45 @@ const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ["orders", "singleOrder", "orderStats"],
     }),
 
+    // ── Full Update Order (admin edit) ────────────────────────────────────
+    updateOrder: builder.mutation({
+      query: ({
+        orderId,
+        data,
+      }: {
+        orderId: string;
+        data: Partial<{
+          guestCheckout: boolean;
+          guestEmail: string;
+          guestInfo: {
+            fullName: string;
+            phone: string;
+            address: string;
+            city: string;
+            postalCode: string;
+          };
+          items: {
+            productId: string;
+            colorId: string;
+            quantity: number;
+            selectedSize: string;
+            image?: string;
+            price: number;
+          }[];
+          totalPrice: number;
+          orderType: "manual" | "online";
+          paymentMethod: "cod" | "card";
+          orderStatus: string;
+          paymentStatus: string;
+        }>;
+      }) => ({
+        url: `order/${orderId}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["orders", "singleOrder", "orderStats"],
+    }),
+
     // ✅ Submit bulk orders
     submitBulkOrders: builder.mutation({
       query: ({ orderIds, deliveryMethodId }) => ({
@@ -105,6 +144,7 @@ export const {
   useGetAllOrdersQuery,
   useGetOrderStatsQuery,
   useUpdateOrderStatusMutation,
+  useUpdateOrderMutation,
   useSubmitBulkOrdersMutation,
   useGetRevenueReportQuery,
 } = orderApi;

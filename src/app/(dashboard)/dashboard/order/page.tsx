@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { Eye, Search, ArrowUpDown, RefreshCw, LayoutList } from "lucide-react";
+import { Eye, Search, ArrowUpDown, RefreshCw, LayoutList, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,6 +28,7 @@ import {
 import DataTable from "@/src/components/dashboard/shared/DataTable";
 import PageHeadingTitle from "@/src/components/dashboard/shared/PageHeadingTitle";
 import Pagination from "@/src/components/dashboard/shared/Pagination";
+import OrderEditModal from "@/src/components/dashboard/order/OrderEditModal";
 import {
   ORDER_STATUS_CONFIG,
   PAYMENT_STATUS_CONFIG,
@@ -287,6 +288,8 @@ export default function OrdersPage() {
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<IOrderRow | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<IOrderRow | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const [limit, setLimit] = useState(10);
 
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(
@@ -585,7 +588,7 @@ export default function OrdersPage() {
       label: "",
       headClassName: "text-right",
       render: (row: IOrderRow) => (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -595,6 +598,16 @@ export default function OrdersPage() {
             className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
           >
             <Eye className="h-4 w-4" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingOrder(row);
+              setEditOpen(true);
+            }}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+          >
+            <Pencil className="h-4 w-4" />
           </button>
         </div>
       ),
@@ -804,6 +817,16 @@ export default function OrdersPage() {
         onStatusUpdate={handleStatusUpdate}
         isUpdating={isUpdating}
       />
+
+      {/* ── Edit Modal ── */}
+      {editOpen && (
+        <OrderEditModal
+          key={editingOrder?._id}
+          order={editingOrder}
+          open
+          onOpenChange={setEditOpen}
+        />
+      )}
     </div>
   );
 }
