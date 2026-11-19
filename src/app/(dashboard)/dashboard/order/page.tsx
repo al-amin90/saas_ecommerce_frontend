@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { Eye, Search, ArrowUpDown, RefreshCw, LayoutList, Pencil } from "lucide-react";
+import {
+  Eye,
+  Search,
+  ArrowUpDown,
+  RefreshCw,
+  LayoutList,
+  Pencil,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -122,6 +129,8 @@ function OrderDetailModal({
 }) {
   if (!order) return null;
 
+  console.log("order", order);
+
   const customerName =
     order.guestInfo?.fullName ?? order.userId?.name ?? "Unknown";
   const customerEmail = order.guestEmail ?? order.userId?.email ?? "—";
@@ -141,9 +150,16 @@ function OrderDetailModal({
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
               Customer
             </p>
-            <p className="text-sm font-semibold text-slate-800 dark:text-white">
-              {customerName}
-            </p>
+            <div className="flex justify-between">
+              <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                {customerName}
+              </p>
+              {order.courier.consignmentId && (
+                <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                  CN#{order.courier.consignmentId}
+                </p>
+              )}
+            </div>
             <p className="text-xs text-slate-400">{customerEmail}</p>
             {order.guestInfo && (
               <>
@@ -443,7 +459,7 @@ export default function OrdersPage() {
             {row.orderNumber}
           </span>
           <span className="text-xs text-slate-400">
-            {format(new Date(row.createdAt), "MMM d, yyyy")}
+            {format(new Date(row.createdAt), "MMM d, yyyy hh:mm:ss a")}
           </span>{" "}
           <br />
           {row?.courier?.consignmentId && (
